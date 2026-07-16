@@ -37,9 +37,9 @@ CREATE TABLE taza_ops.tasks (
     depends_on       BIGINT REFERENCES taza_ops.tasks(task_id) ON DELETE SET NULL,
 
     -- What this task is for: every task must trace to a Customer Event
-    -- (opportunity) or a Production Batch (Schema Contract v1 §5 binding rule).
-    -- FKs added in 80_production_links.sql once those tables exist.
-    opportunity_id   BIGINT,
+    -- (opportunity, UUID PK) or a Production Batch (BIGINT PK) — Schema Contract
+    -- v1 §5 binding rule. FKs added in 99_constraints.sql once those tables exist.
+    opportunity_id   UUID,
     batch_id         BIGINT,
 
     -- Gamification: base points a crew member earns for closing this card.
