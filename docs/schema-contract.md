@@ -58,17 +58,39 @@ cross-cutting FKs and must run last.
 These are recorded here because SQL comments reference them. None block the
 schema; each needs a ruling or later data.
 
-### Contradictions with the documentation (need Nick's ruling)
-- **Inference host.** Nick: the Aoostar runs sales inference (+ hot backup).
-  Docs: the **N100** runs the nightly LLM (`qwen2.5:14b`, `llama.cpp`; Ollama
-  deprecated), and the Aoostar's purchase note calls it a dev machine to cut API
-  spend. The multi-round "anticipatory follow-up to Sandra's phone" is a **V1.x
-  roadmap** item, not built. Schema is host-agnostic; pipelines are not.
-- **Do Sandra's overrides capture "why"?** Nick wants exceptions to ask "why
-  this way, not that?" Docs (HAI-001) make Sandra's routine overrides carry
-  **no** justification ("PIN = auth, not justification"), reserving "why" for
-  Nick's invoice deltas + the Socratic loop. `overrides` currently has **no**
-  reasoning column (doc-faithful); `exceptions.resolution_reasoning` is optional.
+### Contradictions — RESOLVED at the 7/16 field session (round 2)
+- **Inference host → the AOOSTAR** (Nick, superseding the docs). The N100 is too
+  weak for same-day inference; the Aoostar (→ 64GB RAM planned) is now the
+  inference host, dev box, and Nick's personal AI-memory partner. The N100 stays
+  the orchestrator + DB + NocoDB, and is the **hot-backup target**. The
+  "anticipatory follow-up to Sandra's phone" is **promoted to V1.0**. Schema is
+  host-agnostic; only the pipelines/timers target a host.
+- **"Why" capture → optional + deferrable.** A real-time Socratic "why?" is
+  ideal but never required; if the crew is busy, the system re-asks later ("for
+  that event you did X — why?") to learn. `overrides` stays justification-free
+  (HAI-001) for the real-time tap; the deferred teaching loop needs a new
+  `learning_prompts` queue (see round-2 additions).
+
+### Round-2 additions (implement as `db/migrations/001_*`)
+Captured from the 7/16 field session; not yet in the base DDL:
+- **`learning_prompts`** — deferred Socratic queue: a pending "why did you do X?"
+  question tied to any record, answered later, answer stored as a RAG signal.
+- **Crew + resources for conflict inference** — crew attributes (on-call,
+  speed-dial, FOH-experienced, role) and a **vehicles/vans** resource with
+  commitment tracking, so the AI can watch the `hello@` Google Calendar and ask
+  smart questions ("both vans committed — delivery fallback?"; "who runs FOH on
+  the small event?") then record answers for learning.
+- **Safety stock / par levels** — per-item target the system aligns to and
+  alerts on (critical-shortage prompts); values set by asking the crew.
+- **Van restock capture** — the "clean & restock vans" kanban card prompts for
+  dry-good inventory, stored for later Last-Known-Location lookups.
+- **Shelf-life learning** — `menu_items.shelf_life_days`/`buy_ahead_max_days`
+  become learned, not just static.
+- **Deposit basis** — deposit = 50% of the INITIAL quoted amount, locked; later
+  headcount/scope changes do NOT require additional deposit. Add
+  `invoices.deposit_basis_cents` to make the basis explicit.
+- **Output surfaces** — day-of / BOE web page and emergency power-outage QR
+  printouts render from existing opportunity/task data (no new core tables).
 
 ### Wanted but undocumented (hooks built; values/logic TBD)
 - **Date/time conflict detection** — columns + index exist; conflict *logic* is
