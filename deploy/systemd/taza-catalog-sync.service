@@ -1,0 +1,15 @@
+[Unit]
+Description=Taza OS — Square catalog sync into PostgreSQL (menu_items)
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=taza
+WorkingDirectory=/opt/taza-os/pipelines/catalog_sync
+EnvironmentFile=/opt/taza-os/pipelines/catalog_sync/.env
+ExecStart=/opt/taza-os/pipelines/catalog_sync/.venv/bin/python catalog_sync.py
+Nice=10
+
+[Install]
+WantedBy=multi-user.target

@@ -42,6 +42,7 @@ All schema and automation behavior conforms to **Taza OS — Schema Contract v1*
 
 - [x] **Wed 7/16** — PostgreSQL schema build (33 tables, validated on PG16)
 - [x] **Wed 7/16** — Square invoice/order import pipeline (validated on real data)
+- [x] **Wed 7/16** — Square catalog sync → menu_items (variation-keyed, weekly; validated)
 - [ ] **Wed 7/16** — Wix order import pipeline
 - [ ] Thu 7/17 — Nick structured interview (shopping app, workflows)
 - [ ] Fri 7/18 — Sandra recipe/allergen deep interview

@@ -114,6 +114,24 @@ class Square:
                 out[o["id"]] = o
         return out
 
+    def order_custom_attributes(self, order_id: str) -> dict:
+        """Hybrid layer: typed event facts (setup_type, tables_count,
+        linens_tier, kitchen_departure, ...) stored as Order Custom Attributes.
+        Returns {key: value}; empty for orders that don't use them yet."""
+        out: dict[str, Any] = {}
+        cursor = None
+        while True:
+            q = "?with_definitions=false"
+            if cursor:
+                q += f"&cursor={cursor}"
+            data = self._get(f"/v2/orders/{order_id}/custom-attributes{q}")
+            for ca in data.get("custom_attributes", []):
+                if "key" in ca:
+                    out[ca["key"]] = ca.get("value")
+            cursor = data.get("cursor")
+            if not cursor:
+                return out
+
 
 # --------------------------------------------------------------------------- #
 # Helpers                                                                      #
@@ -293,16 +311,16 @@ def upsert_invoice(cur, inv: dict, order: dict | None, account_id: str | None) -
     return cur.fetchone()[0]
 
 
-def upsert_order(cur, order: dict, invoice_id: str, account_id: str | None) -> str:
-    net = order.get("net_amounts", {})
+def upsert_order(cur, order: dict, invoice_id: str, account_id: str | None,
+                 custom_attributes: dict | None = None) -> str:
     cur.execute(
         """
         INSERT INTO taza_ops.orders
             (invoice_id, account_id, order_source, status, provider_status,
              total_cents, total_tax_cents, total_tip_cents, net_amount_due_cents,
-             source_system, external_id, external_updated_at, external_payload_hash,
-             raw_payload)
-        VALUES (%s, %s, 'square', %s, %s, %s, %s, %s, %s, 'square', %s, %s, %s, %s)
+             custom_attributes, source_system, external_id, external_updated_at,
+             external_payload_hash, raw_payload)
+        VALUES (%s, %s, 'square', %s, %s, %s, %s, %s, %s, %s, 'square', %s, %s, %s, %s)
         ON CONFLICT (source_system, external_id) DO UPDATE SET
             invoice_id           = EXCLUDED.invoice_id,
             account_id           = EXCLUDED.account_id,
@@ -312,6 +330,7 @@ def upsert_order(cur, order: dict, invoice_id: str, account_id: str | None) -> s
             total_tax_cents      = EXCLUDED.total_tax_cents,
             total_tip_cents      = EXCLUDED.total_tip_cents,
             net_amount_due_cents = EXCLUDED.net_amount_due_cents,
+            custom_attributes    = COALESCE(EXCLUDED.custom_attributes, taza_ops.orders.custom_attributes),
             external_updated_at  = EXCLUDED.external_updated_at,
             external_payload_hash= EXCLUDED.external_payload_hash,
             raw_payload          = EXCLUDED.raw_payload,
@@ -327,6 +346,7 @@ def upsert_order(cur, order: dict, invoice_id: str, account_id: str | None) -> s
             money(order.get("total_tax_money")),
             money(order.get("total_tip_money")),
             money(order.get("net_amount_due_money")),
+            psycopg2.extras.Json(custom_attributes) if custom_attributes else None,
             order["id"],
             parse_dt(order.get("updated_at")),
             payload_hash(order),
@@ -459,7 +479,10 @@ def import_location(sq: Square, conn, location_id: str) -> dict:
                 account_id = upsert_account(cur, inv.get("primary_recipient", {}))
                 invoice_id = upsert_invoice(cur, inv, order, account_id)
                 if order:
-                    internal_order_id = upsert_order(cur, order, invoice_id, account_id)
+                    custom_attrs = sq.order_custom_attributes(order["id"])
+                    internal_order_id = upsert_order(
+                        cur, order, invoice_id, account_id, custom_attrs
+                    )
                     replace_line_items(cur, invoice_id, internal_order_id, order)
                     dep = deposit_fields(inv)["deposit_amount_cents"]
                     stats["payments"] += upsert_payments(

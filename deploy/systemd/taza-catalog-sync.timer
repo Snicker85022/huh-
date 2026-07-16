@@ -1,0 +1,12 @@
+[Unit]
+Description=Taza OS — run the Square catalog sync weekly
+
+[Timer]
+# Weekly, Monday 03:15 local time (kitchen is closed, catalog is quiet).
+OnCalendar=Mon *-*-* 03:15:00
+RandomizedDelaySec=300
+Persistent=true
+Unit=taza-catalog-sync.service
+
+[Install]
+WantedBy=timers.target
