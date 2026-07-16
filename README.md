@@ -41,7 +41,7 @@ All schema and automation behavior conforms to **Taza OS — Schema Contract v1*
 ## Build status (week of July 15–19, 2026)
 
 - [x] **Wed 7/16** — PostgreSQL schema build (33 tables, validated on PG16)
-- [ ] **Wed 7/16** — Square invoice/order import pipeline
+- [x] **Wed 7/16** — Square invoice/order import pipeline (validated on real data)
 - [ ] **Wed 7/16** — Wix order import pipeline
 - [ ] Thu 7/17 — Nick structured interview (shopping app, workflows)
 - [ ] Fri 7/18 — Sandra recipe/allergen deep interview

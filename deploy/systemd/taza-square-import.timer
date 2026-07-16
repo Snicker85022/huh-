@@ -1,0 +1,14 @@
+[Unit]
+Description=Taza OS — run the Square import on a schedule
+
+[Timer]
+# Every 30 minutes, plus ~5 min after boot. Catches invoice/payment updates.
+OnBootSec=5min
+OnUnitActiveSec=30min
+# Spread load / avoid exact-minute stampede.
+RandomizedDelaySec=60
+Persistent=true
+Unit=taza-square-import.service
+
+[Install]
+WantedBy=timers.target

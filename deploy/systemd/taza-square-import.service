@@ -1,0 +1,17 @@
+[Unit]
+Description=Taza OS — Square invoice/order import into PostgreSQL
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# Adjust paths/user to match the N100 deployment.
+User=taza
+WorkingDirectory=/opt/taza-os/pipelines/square_import
+EnvironmentFile=/opt/taza-os/pipelines/square_import/.env
+ExecStart=/opt/taza-os/pipelines/square_import/.venv/bin/python square_import.py
+# Don't hammer Square/DB on transient failure; the timer will retry next cycle.
+Nice=10
+
+[Install]
+WantedBy=multi-user.target
