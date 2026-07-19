@@ -152,6 +152,17 @@ def buyer_name(order: dict) -> str | None:
     return name or None
 
 
+def tip_cents(order: dict) -> int | None:
+    """Tips arrive as an additionalFees entry named 'Tip' (included in total)."""
+    total = 0
+    found = False
+    for fee in order.get("additionalFees") or []:
+        if (fee.get("name") or "").strip().lower() == "tip":
+            total += to_cents(fee.get("price")) or 0
+            found = True
+    return total if found else None
+
+
 # --------------------------------------------------------------------------- #
 # Upserts                                                                      #
 # --------------------------------------------------------------------------- #
@@ -216,10 +227,10 @@ def upsert_order(cur, order: dict, account_id: str | None) -> str:
             (account_id, order_source, status, provider_status,
              order_number, payment_status, fulfillment_status, currency,
              subtotal_cents, shipping_cents, discount_cents, total_tax_cents,
-             total_cents, buyer_email,
+             total_tip_cents, net_amount_due_cents, total_cents, buyer_email,
              source_system, external_id, external_updated_at,
              external_payload_hash, raw_payload)
-        VALUES (%s, 'wix', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+        VALUES (%s, 'wix', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                 'wix', %s, %s, %s, %s)
         ON CONFLICT (source_system, external_id) DO UPDATE SET
             account_id            = EXCLUDED.account_id,
@@ -233,6 +244,8 @@ def upsert_order(cur, order: dict, account_id: str | None) -> str:
             shipping_cents        = EXCLUDED.shipping_cents,
             discount_cents        = EXCLUDED.discount_cents,
             total_tax_cents       = EXCLUDED.total_tax_cents,
+            total_tip_cents       = EXCLUDED.total_tip_cents,
+            net_amount_due_cents  = EXCLUDED.net_amount_due_cents,
             total_cents           = EXCLUDED.total_cents,
             buyer_email           = EXCLUDED.buyer_email,
             external_updated_at   = EXCLUDED.external_updated_at,
@@ -253,6 +266,8 @@ def upsert_order(cur, order: dict, account_id: str | None) -> str:
             to_cents(ps.get("shipping")),
             to_cents(ps.get("discount")),
             to_cents(ps.get("tax")),
+            tip_cents(order),
+            to_cents((order.get("balanceSummary") or {}).get("balance")),
             to_cents(ps.get("total")) or 0,
             (order.get("buyerInfo") or {}).get("email"),
             order["id"],
@@ -264,20 +279,49 @@ def upsert_order(cur, order: dict, account_id: str | None) -> str:
     return cur.fetchone()[0]
 
 
-def _payment_method(p: dict) -> tuple[str | None, str | None, str | None]:
-    """Return (method_label, provider_txn_id, raw_status) for a Wix payment."""
+def _payment_method(p: dict) -> dict:
+    """Extract method label, provider txn id, raw status, and card brand/last4
+    for a Wix payment (regular / gift-card / membership)."""
     reg = p.get("regularPaymentDetails")
     if reg:
-        return (
-            reg.get("paymentMethod"),
-            reg.get("providerTransactionId") or reg.get("gatewayTransactionId"),
-            reg.get("status"),
-        )
+        card = reg.get("creditCardDetails") or {}
+        return {
+            "method": reg.get("paymentMethod"),
+            "provider_txn": reg.get("providerTransactionId") or reg.get("gatewayTransactionId"),
+            "status": reg.get("status"),
+            "card_brand": card.get("brand"),
+            "card_last4": card.get("lastFourDigits"),
+        }
     if p.get("giftCardPaymentDetails"):
-        return ("gift_card", (p["giftCardPaymentDetails"] or {}).get("giftCardId"), None)
+        return {"method": "gift_card", "status": None,
+                "provider_txn": (p["giftCardPaymentDetails"] or {}).get("giftCardId"),
+                "card_brand": None, "card_last4": None}
     if p.get("membershipPaymentDetails"):
-        return ("membership", None, None)
-    return (None, None, None)
+        return {"method": "membership", "provider_txn": None, "status": None,
+                "card_brand": None, "card_last4": None}
+    return {"method": None, "provider_txn": None, "status": None,
+            "card_brand": None, "card_last4": None}
+
+
+def refund_amount_status(r: dict) -> tuple[int, str]:
+    """Amount + status for a Wix refund. A refund carries per-payment
+    transactions each with a refundStatus (SUCCEEDED / FAILED / PENDING); only
+    SUCCEEDED transactions actually moved money, so a FAILED refund attempt must
+    record $0 (not inflate the order's refunded total). Transactions with no
+    explicit status are treated as succeeded (older/simple providers)."""
+    txns = r.get("transactions") or []
+    if not txns:
+        return 0, "refunded"
+    succeeded = sum(
+        to_cents(t.get("amount")) or 0
+        for t in txns
+        if t.get("refundStatus") in (None, "SUCCEEDED")
+    )
+    if succeeded > 0:
+        return succeeded, "refunded"
+    if any(t.get("refundStatus") == "PENDING" for t in txns):
+        return 0, "pending"
+    return 0, "failed"
 
 
 def upsert_payments(cur, tx: dict, order_id: str, account_id: str | None) -> int:
@@ -287,15 +331,19 @@ def upsert_payments(cur, tx: dict, order_id: str, account_id: str | None) -> int
         pid = p.get("id")
         if not pid:
             continue
-        method, provider_txn, raw_status = _payment_method(p)
-        status = PAYMENT_STATUS_MAP.get((raw_status or "").upper(), "completed")
+        pm = _payment_method(p)
+        # regularPaymentDetails.status is authoritative; fall back to top-level.
+        status = PAYMENT_STATUS_MAP.get(
+            (pm["status"] or p.get("status") or "").upper(), "completed"
+        )
         cur.execute(
             """
             INSERT INTO taza_ops.payments
                 (order_id, account_id, payment_type, rail, amount_cents, status,
                  paid_at, payment_method, provider_transaction_id,
+                 card_brand, card_last4,
                  source_system, external_id, external_updated_at, raw_payload)
-            VALUES (%s, %s, 'full', 'wix', %s, %s, %s, %s, %s,
+            VALUES (%s, %s, 'full', 'wix', %s, %s, %s, %s, %s, %s, %s,
                     'wix', %s, %s, %s)
             ON CONFLICT (source_system, external_id) DO UPDATE SET
                 amount_cents            = EXCLUDED.amount_cents,
@@ -303,12 +351,15 @@ def upsert_payments(cur, tx: dict, order_id: str, account_id: str | None) -> int
                 paid_at                 = EXCLUDED.paid_at,
                 payment_method          = EXCLUDED.payment_method,
                 provider_transaction_id = EXCLUDED.provider_transaction_id,
+                card_brand              = EXCLUDED.card_brand,
+                card_last4              = EXCLUDED.card_last4,
                 raw_payload             = EXCLUDED.raw_payload,
                 updated_at              = now()
             """,
             (
                 order_id, account_id, to_cents(p.get("amount")) or 0, status,
-                parse_dt(p.get("createdDate")), method, provider_txn,
+                parse_dt(p.get("createdDate")), pm["method"], pm["provider_txn"],
+                pm["card_brand"], pm["card_last4"],
                 pid, parse_dt(p.get("updatedDate") or p.get("createdDate")),
                 psycopg2.extras.Json(p),
             ),
@@ -319,11 +370,7 @@ def upsert_payments(cur, tx: dict, order_id: str, account_id: str | None) -> int
         rid = r.get("id")
         if not rid:
             continue
-        # A refund may span several payment transactions; sum them for the amount.
-        amt = sum(
-            to_cents((t or {}).get("amount")) or 0
-            for t in (r.get("transactions") or [])
-        )
+        amt, status = refund_amount_status(r)
         reason = (r.get("details") or {}).get("reason") or r.get("reason")
         cur.execute(
             """
@@ -331,7 +378,7 @@ def upsert_payments(cur, tx: dict, order_id: str, account_id: str | None) -> int
                 (order_id, account_id, payment_type, rail, amount_cents, status,
                  paid_at, payment_method, refund_reason,
                  source_system, external_id, external_updated_at, raw_payload)
-            VALUES (%s, %s, 'refund', 'wix', %s, 'refunded', %s, 'refund', %s,
+            VALUES (%s, %s, 'refund', 'wix', %s, %s, %s, 'refund', %s,
                     'wix', %s, %s, %s)
             ON CONFLICT (source_system, external_id) DO UPDATE SET
                 amount_cents  = EXCLUDED.amount_cents,
@@ -342,8 +389,8 @@ def upsert_payments(cur, tx: dict, order_id: str, account_id: str | None) -> int
                 updated_at    = now()
             """,
             (
-                order_id, account_id, amt, parse_dt(r.get("createdDate")), reason,
-                rid, parse_dt(r.get("createdDate")), psycopg2.extras.Json(r),
+                order_id, account_id, amt, status, parse_dt(r.get("createdDate")),
+                reason, rid, parse_dt(r.get("createdDate")), psycopg2.extras.Json(r),
             ),
         )
         n += 1

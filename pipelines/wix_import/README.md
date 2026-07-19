@@ -11,8 +11,24 @@ online platter store** (≤10% of revenue).
 |------------|----------------|
 | `order.buyerInfo` + `order.billingInfo.contactDetails` | `accounts` + `contacts` |
 | `order` (`POST /ecom/v1/orders/search`) | `orders` (`order_source='wix'`; status/totals mapped; full order in `raw_payload`) |
-| `orderTransactions.payments` (`POST /ecom/v1/payments/list-by-ids`) | `payments` (`payment_type='full'`, `rail='wix'`) |
-| `orderTransactions.refunds` | `payments` (`payment_type='refund'`, `status='refunded'`) |
+| `order.additionalFees[name="Tip"]` | `orders.total_tip_cents` |
+| `order.balanceSummary.balance` | `orders.net_amount_due_cents` |
+| `orderTransactions.payments` (`POST /ecom/v1/payments/list-by-ids`) | `payments` (`payment_type='full'`, `rail='wix'`; `regularPaymentDetails.creditCardDetails` → `card_brand`/`card_last4`) |
+| `orderTransactions.refunds` | `payments` (`payment_type='refund'`) — only **SUCCEEDED** refund transactions move money; a FAILED/PENDING refund records `$0` with `status='failed'`/`'pending'` so refund totals aren't inflated |
+
+### Verified against the live store (2026-07-19)
+
+Mapping was validated against real orders from the production **Taza Catering &
+Events** store: money is a decimal-string in the order currency (converted to
+cents), `number` is a string, buyers are individuals (no `company`), payment
+methods seen are "Credit/Debit Cards" and "Apple Pay", and a real fully-refunded
+order (with one succeeded + one failed refund attempt) reconciles to the order's
+`balanceSummary.refunded`.
+
+**Not yet mapped (preserved in `orders.raw_payload`):** catering-relevant
+`extendedFields.namespaces._user_fields` — `number_of_guests` and
+`allergies_and_special_requests` — and `shippingInfo` (pickup/delivery slot +
+recipient). Candidates for a follow-up once the platter→event link is designed.
 
 A Wix platter sale is a store **order**, not a Square-style invoice, so it lands
 in `orders` — not `invoices`. The order's **line items are preserved in
