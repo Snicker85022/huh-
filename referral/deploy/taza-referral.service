@@ -1,0 +1,21 @@
+[Unit]
+Description=Taza Spatula Referral service (Flask, port 9002)
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=taza
+WorkingDirectory=/home/taza/huh-/referral
+# Secrets + config. TAZA_REFERRAL_SECRET must stay constant for the life of the
+# system or already-burned QRs stop verifying. Generate once: openssl rand -hex 32
+EnvironmentFile=/home/taza/huh-/referral/deploy/referral.env
+ExecStart=/home/taza/laser/venv/bin/python /home/taza/huh-/referral/app.py
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
