@@ -1,0 +1,9 @@
+# Taza referral service + laser stack (N100, Python 3.10+ / Ubuntu 22.04)
+Flask>=3.0
+psycopg2-binary>=2.9
+qrcode[pil]>=7.4
+Pillow>=10.0
+pyserial>=3.5
+# Headless raster -> GRBL gcode for the Elidor engraver:
+image2gcode>=3.0
+gcode2image>=1.2
