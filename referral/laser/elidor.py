@@ -32,6 +32,19 @@ class ElidorError(RuntimeError):
     pass
 
 
+def _looks_like_grbl(text: str) -> bool:
+    """True if `text` contains anything a live GRBL controller would emit —
+    the boot banner, a status frame like <Idle|...>, an 'ok', or an error.
+    We accept any of these because this Elidor's CH340 board does NOT reset on
+    DTR, so we can't count on catching the power-on banner."""
+    t = (text or "").lower()
+    if "grbl" in t or "error:" in t:
+        return True
+    if any(s in t for s in ("<idle", "<run", "<hold", "<alarm", "<jog", "<door")):
+        return True
+    return "ok" in t.split()
+
+
 class Elidor:
     def __init__(self, port: str | None = None, baud: int = BAUD, timeout: float = 2.0):
         self.port = port or DEFAULT_PORT
@@ -41,29 +54,52 @@ class Elidor:
         self.banner: str = ""
 
     # -- connection -------------------------------------------------------
-    def connect(self) -> str:
-        """Open the port (autodetecting if needed) and return the GRBL banner.
-        Does NOT enable the laser."""
+    def connect(self, dtr_reset: bool = False) -> str:
+        """Open the port (autodetecting if needed) and confirm GRBL responds.
+        Does NOT enable the laser.
+
+        dtr_reset defaults False: this Elidor Z6's CH340 board does NOT wire DTR
+        to the MCU reset (confirmed on the N100), so toggling DTR yields no boot
+        banner. Instead we probe with a status query, which GRBL answers whether
+        or not it just booted. Pass dtr_reset=True only for boards known to reset
+        on DTR.
+        """
         port = self._resolve_port()
         self.ser = serial.Serial(port, self.baud, timeout=self.timeout)
         self.port = port
-        # Toggle DTR to reset the board, then read the welcome banner.
-        self.ser.setDTR(False)
-        time.sleep(0.1)
-        self.ser.reset_input_buffer()
-        self.ser.setDTR(True)
-        time.sleep(2.0)  # GRBL boot
-        self.banner = self._read_all()
-        if "grbl" not in self.banner.lower():
-            # One retry: soft reset and re-read.
+        if dtr_reset:
+            self.ser.setDTR(False)
+            time.sleep(0.1)
+            self.ser.reset_input_buffer()
+            self.ser.setDTR(True)
+            time.sleep(2.0)  # GRBL boot
+        self.banner = self._probe()
+        if not _looks_like_grbl(self.banner):
+            # A soft reset re-emits the banner on boards that reset; harmless otherwise.
             self.ser.write(SOFT_RESET)
             time.sleep(1.5)
-            self.banner += self._read_all()
-        if "grbl" not in self.banner.lower():
+            self.banner += self._probe()
+        if not _looks_like_grbl(self.banner):
             raise ElidorError(
-                f"No GRBL banner from {port} at {self.baud} baud. Got: {self.banner!r}"
+                f"No GRBL response from {port} at {self.baud} baud. Got: {self.banner!r}"
             )
         return self.banner.strip()
+
+    def _probe(self) -> str:
+        """Elicit a GRBL response WITHOUT resetting the board: newline wake, then
+        a real-time '?' status query and '$I'. Returns whatever came back."""
+        assert self.ser
+        self.ser.reset_input_buffer()
+        self.ser.write(b"\r\n")
+        time.sleep(0.2)
+        out = self._read_all()
+        self.ser.write(b"?")           # real-time status query — no newline
+        time.sleep(0.2)
+        out += self._read_all()
+        self.ser.write(b"$I\n")
+        time.sleep(0.3)
+        out += self._read_all()
+        return out
 
     def _resolve_port(self) -> str:
         candidates = [self.port] + sorted(glob.glob("/dev/ttyUSB*")) + sorted(glob.glob("/dev/ttyACM*"))
@@ -80,9 +116,12 @@ class Elidor:
                 last_err = e
                 continue
             try:
-                s.setDTR(False); time.sleep(0.1); s.setDTR(True); time.sleep(2.0)
+                # Probe without DTR reset (CH340-safe): wake + status query.
+                s.reset_input_buffer()
+                s.write(b"\r\n"); time.sleep(0.2)
+                s.write(b"?"); time.sleep(0.2)
                 data = s.read(s.in_waiting or 128).decode("ascii", "replace")
-                if "grbl" in data.lower():
+                if _looks_like_grbl(data):
                     s.close()
                     return c
             finally:
