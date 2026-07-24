@@ -1,0 +1,15 @@
+[Unit]
+Description=Taza OS — run the Wix import on a schedule
+
+[Timer]
+# Every 15 minutes, plus ~3 min after boot. Paid platter orders land promptly
+# so they replace the manual paper-checklist entry.
+OnBootSec=3min
+OnUnitActiveSec=15min
+# Spread load / avoid exact-minute stampede.
+RandomizedDelaySec=60
+Persistent=true
+Unit=taza-wix-import.service
+
+[Install]
+WantedBy=timers.target
