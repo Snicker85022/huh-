@@ -13,3 +13,12 @@
 - Open decision (2026-08-01, from GPU failover work): ntfy.sh paid plan vs promote
   self-hosted n100:2586 to primary vs keep fallback chain. See
   specs/llama-gflip-failover.md "Notifications".
+
+## [2026-08-01 logged] Spec gaps found on word-for-word review (risk_engine build)
+- GAP a: specs/03 capability_matrix schema table is missing a `status` column
+  (probation/graduated) that specs/07 references directly. Needs a one-line
+  schema addition to 03 at some point.
+- GAP b: specs/07 self-correction protocol has 4 triggers; the 5th
+  (self-diagnostic on suspected impairment) discussed earlier was never drafted
+  into 07 - spec 11's session-start ritual may already cover this. Decision
+  needed: add a 5th trigger to 07, or treat spec 11 as sufficient coverage.
