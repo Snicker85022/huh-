@@ -1,4 +1,4 @@
-from risk_engine import score
+from risk_engine import aggregate_batch_risk, score
 import unittest
 
 class TestRiskEngine(unittest.TestCase):
@@ -152,6 +152,57 @@ class TestRiskEngine(unittest.TestCase):
             score(-1, 1, 1)
         with self.assertRaises(ValueError):
             score(1, 5, 7)
+
+class TestAggregateBatchRisk(unittest.TestCase):
+    """Spec 09 ABR table (8 rows): aggregate_batch_risk(item_scores, chained)."""
+
+    def test_any_number_of_r_le_2_items(self):
+        # Any number of items with R <= 2.0 | No | 0 | ok
+        result = aggregate_batch_risk([2.0, 2.0, 2.0], chained=False)
+        self.assertEqual(result["abr"], 0.0)
+        self.assertEqual(result["outcome"], "ok")
+
+    def test_one_item_r_3(self):
+        # One item, R = 3.0 | No | 1.0 | ok
+        result = aggregate_batch_risk([3.0], chained=False)
+        self.assertEqual(result["abr"], 1.0)
+        self.assertEqual(result["outcome"], "ok")
+
+    def test_fourteen_items_r_3(self):
+        # Fourteen items, each R = 3.0 | No | 14.0 | near_ceiling
+        result = aggregate_batch_risk([3.0] * 14, chained=False)
+        self.assertEqual(result["abr"], 14.0)
+        self.assertEqual(result["outcome"], "near_ceiling")
+
+    def test_one_item_r_5(self):
+        # One item, R = 5.0 | No | 9.0 | ok
+        result = aggregate_batch_risk([5.0], chained=False)
+        self.assertEqual(result["abr"], 9.0)
+        self.assertEqual(result["outcome"], "ok")
+
+    def test_two_items_r_5(self):
+        # Two items, each R = 5.0 | No | 18.0 | reject
+        result = aggregate_batch_risk([5.0, 5.0], chained=False)
+        self.assertEqual(result["abr"], 18.0)
+        self.assertEqual(result["outcome"], "reject")
+
+    def test_r_5_plus_r_4_not_chained(self):
+        # One item R = 5.0 + one item R = 4.0 | No | 13.0 | near_ceiling
+        result = aggregate_batch_risk([5.0, 4.0], chained=False)
+        self.assertEqual(result["abr"], 13.0)
+        self.assertEqual(result["outcome"], "near_ceiling")
+
+    def test_r_5_plus_r_4_chained(self):
+        # One item R = 5.0 + one item R = 4.0 | Yes | 19.5 | reject (13.0 x 1.5)
+        result = aggregate_batch_risk([5.0, 4.0], chained=True)
+        self.assertEqual(result["abr"], 19.5)
+        self.assertEqual(result["outcome"], "reject")
+
+    def test_three_items_r_3_chained(self):
+        # Three items, R = 3.0 each, chained | Yes | 4.5 | ok (3 x 1.0 x 1.5)
+        result = aggregate_batch_risk([3.0, 3.0, 3.0], chained=True)
+        self.assertEqual(result["abr"], 4.5)
+        self.assertEqual(result["outcome"], "ok")
 
 if __name__ == '__main__':
     unittest.main()
