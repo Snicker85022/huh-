@@ -19,14 +19,20 @@
    failure -> back to CPU.
 4. Manual: /usr/local/bin/llama-failover.sh {status|cpu|gpu|down|recover}
 
-## Notifications (ntfy, self-hosted on n100:2586)
-- Client config: /etc/taza/ntfy.conf (canonical: repo/scripts/taza-ntfy.conf)
-  NTFY_URL=http://192.168.2.102:2586  NTFY_TOPIC=taza-llama-alerts
-- Server: ntfy v2.26.3 on n100 (repo/scripts/ntfy.service + ntfy-server.yml), port 2586.
-- Phone: ntfy app -> settings -> add server http://192.168.2.102:2586 -> subscribe taza-llama-alerts.
-  (LAN-only for now; off-LAN later via public domain reverse proxy.)
+## Notifications (ntfy) - PRIMARY ntfy.sh/taza-ops per Nick (2026-08-01)
+- Config: /etc/taza/ntfy.conf (canonical: repo/scripts/taza-ntfy.conf)
+  NTFY_URL=https://ntfy.sh  NTFY_TOPIC=taza-ops
+  NTFY_FALLBACK_URL=http://192.168.2.102:2586  NTFY_FALLBACK_TOPIC=taza-llama-alerts
+- PRIMARY = public ntfy.sh/taza-ops: Nick's phone already subscribed; cc-watcher proven
+  channel. Manual send: curl -s -d "msg" ntfy.sh/taza-ops
+- CAVEAT (observed 2026-08-01): ntfy.sh free tier is quota-exhausted from the LAN
+  (429 "daily message quota reached" on taza-ops and fresh topics alike). The failover
+  script auto-falls back to the self-hosted server on n100:2586 (ntfy v2.26.3, repo
+  scripts/ntfy.service + ntfy-server.yml) so alerts are never dropped.
+  If quota persists -> ntfy paid plan, or promote self-hosted to primary.
 - Priorities: GPU->CPU high/warning; DOWN urgent/skull; recovery ok default/check.
-- Public ntfy.sh free tier hit daily quota (429) -> do NOT revert to it.
+- Self-hosted fallback phone setup (optional, for redundancy): ntfy app -> add server
+  http://192.168.2.102:2586 -> subscribe taza-llama-alerts.
 
 ## Zee panel (Taza OS Health Dashboard, n100:9000)
 - Patched dashboard.py (backup: dashboard.py.bak-20260801):
@@ -44,3 +50,13 @@
 - After any reboot: everything persists (systemd units+drop-ins, dpkg amdvlk,
   /etc/environment VK_ICD_FILENAMES, sysctl swappiness=10, journald 1G cap, timers).
 - Memory cage: MemoryHigh=23G / MemoryMax=26G. GPU healthy: `curl http://127.0.0.1:8080/health`.
+
+## Z33 panel (Nick's console) - 2026-08-01
+- 21.5" Android 9 touch tablet (RK3288), portrait, wired 192.168.2.105 (mac 20:18:0e:d5:a4:e3).
+  Old IP .101 removed (dead). Dashboard inventory entry "TCL TV A (unconf)" at .105 was
+  stale/phantom (MAC 00:e0:4c:22:6e:88 absent from neighbor table) -> removed 2026-08-01.
+- Runs Chrome; primary cockpit = Taza OS Health Dashboard http://192.168.2.102:9000
+  (gflip AI card + mode banner + "Llama GPU" header link added 2026-08-01).
+- Llama status page: http://192.168.2.107:8088/ (big colored card, 15s refresh) - open
+  directly from z33 or via the dashboard header link.
+- Other z33 targets: kanban :9003, VNC :6080 (MeerK40t), Shell-in-a-box :4200.

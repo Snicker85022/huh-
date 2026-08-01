@@ -17,7 +17,15 @@ WEB=/var/www/taza-status
 mkdir -p /var/lib/taza /var/log/taza "$WEB"
 log() { echo "$(date -Is) $*" | tee -a "$LOG" | logger -t llama-failover; }
 
-ntfy() { curl -sf --max-time 8 -H "Title: $1" -H "Priority: $2" -H "Tags: $3" -d "$4" "$NTFY_URL/$NTFY_TOPIC" >/dev/null 2>&1 && log "ntfy ok: $1" || log "ntfy FAIL: $1"; }
+ntfy() {
+  if curl -sf --max-time 8 -H "Title: $1" -H "Priority: $2" -H "Tags: $3" -d "$4" "$NTFY_URL/$NTFY_TOPIC" >/dev/null 2>&1; then
+    log "ntfy ok ($NTFY_URL/$NTFY_TOPIC): $1"
+  elif [ -n "$NTFY_FALLBACK_URL" ] && curl -sf --max-time 8 -H "Title: $1" -H "Priority: $2" -H "Tags: $3" -d "$4" "$NTFY_FALLBACK_URL/$NTFY_FALLBACK_TOPIC" >/dev/null 2>&1; then
+    log "ntfy ok fallback ($NTFY_FALLBACK_URL/$NTFY_FALLBACK_TOPIC): $1"
+  else
+    log "ntfy FAIL primary+fallback: $1"
+  fi
+}
 
 get_mode() { [ -f "$STATE" ] && sed -n 's/^mode=//p' "$STATE" | head -1 || echo GPU; }
 
