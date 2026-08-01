@@ -46,7 +46,25 @@ evidence.
 | `decided_by` | nick / deepseek / claude-chat |
 | `status` | `locked` / `proposed` / `superseded` |
 | `supersedes` | nullable FK to another `decision_id`, only set for trigger A |
+| `steps` | int -- batch size, for batch-shape telemetry (03 sweep) |
+| `chained` | bool -- batch chained/interdependent flag (02) |
+| `abr` | numeric -- aggregate batch risk (02) |
+| `abr_outcome` | `ok` / `near_ceiling` / `reject` |
 | `created_at` | |
+
+### `decision_qa` schema (Postgres, per 03's sweep -- the scheduled reader of the audit trail)
+
+| Column | Notes |
+|---|---|
+| `qa_id` | PK |
+| `sweep_ts` | when the sweep ran |
+| `decision_id` | FK to `decision_log` -- one row per audited decision |
+| `band_delta` | band-predicted vs Verifier-verified outcome delta |
+| `nature` | deadlock nature per 04 (structural / epistemic_asymmetry / None) |
+| `elicitation_delta` | per-axis re-elicitation disagreement |
+| `decided_by` | engine / nick-override |
+| `override_accurate` | bool nullable -- was the override right (outcome-verified)? |
+| `process_debt_ticket` | nullable FK -- opened when a rate crosses its threshold (01) |
 
 **Nick's decisions are evidence, not axioms.** No participant is an oracle - not the
 models, not Nick. decision_log rows with decided_by=nick update the precedent table

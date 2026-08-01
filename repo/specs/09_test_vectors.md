@@ -3,7 +3,7 @@
 Verifier runs every row before signing off on any implementation. Revision note (2026-08-01, post-review): the Fourteen-items ABR row corrected to
 near_ceiling (02's ceiling definition is authoritative; see 00 step 4 on boundary
 audits); DA-loop table extended with 04's nature/arbitration cases; the "Executor
-subtype selection" section was an earlier scope addition. All other rows unchanged.
+subtype selection" section was an earlier scope addition. Second revision (2026-08-01, DA review): DELTA 1 -> 04 `resolve_concern` signature (nature/evidence); DELTA 2 -> `[2.9] * 15` near_ceiling-only route vector added; DELTA 3 -> epistemic_asymmetry-no-evidence guardrail row added. All other rows unchanged.
 
 ## R, band, and overlay flags
 
@@ -67,6 +67,7 @@ Combined with existing ABR rows:
 | `[3.0]` | False | `"aider"` | `proceed=True`, `da_required=True` (single item is Band 2), `executor_subtypes=["Executor-Aider"]`, `abr=1.0`, `outcome="ok"` |
 | `[5.0, 5.0]` | False | `"both"` | `proceed=False`, `reason="abr_ceiling_exceeded"`. `executor_subtypes` must NOT appear in this response - function returns before reaching that line. Check for the key's absence, not just an empty/null value. |
 | `[5.0, 4.0]` | False | `"aider"` | `proceed=True`, `da_required=True`, `abr=13.0`, `outcome="near_ceiling"` |
+| `[2.9] * 15` | False | `"aider"` | `proceed=True`, `da_required=True` (every item is Band 3 -- near_ceiling-only branch; fails if the near_ceiling OR is missing/misplaced in route()), `executor_subtypes=["Executor-Aider"]`, `abr=12.15`, `outcome="near_ceiling"` |
 
 ## Dispatch design
 
@@ -86,6 +87,7 @@ Combined with existing ABR rows:
 | Concern raised, mitigation agreed round 1 AND round 2, still unresolved | `status='deadlock'`, `rounds_used=2`, flagged for Verifier, ntfy fired |
 | Concern deadlocked with nature=structural | escalated to Nick (pause-level ntfy); does not proceed past Nick's gate |
 | Concern deadlocked with nature=epistemic_asymmetry, evidence shown in transcript | forced decision, Verifier flag, inform-level ntfy |
+| Concern deadlocked with nature=epistemic_asymmetry, transcript cites no evidence | defaults to nature=structural, escalates to Nick (04 guardrail) |
 | Concern resolved with no cited evidence in transcript | auto-flagged low-weight to Verifier |
 | Post-execution re-analysis: conclusive on round 1 | `status='settled'`, `confidence_weight='high'` |
 | Post-execution re-analysis: still inconclusive after round 2 | `status='forced_call'`, `confidence_weight='low'`, note to revisit if recurs |

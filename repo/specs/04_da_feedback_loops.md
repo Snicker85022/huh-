@@ -100,7 +100,10 @@ as a settled outcome.
 
 ```python
 def resolve_concern(concern, max_rounds=2):
-    """Returns {'status': 'resolved'|'deadlock', 'rounds_used': int, ...}"""
+    """Returns {'status': 'resolved'|'deadlock', 'rounds_used': int,
+    'nature': 'structural'|'epistemic_asymmetry'|None, 'evidence': str|None, ...}
+    'nature' is set only when status='deadlock'. 'evidence' is required when
+    status='resolved'."""
 
 def reanalyze_deadlock(deadlock_record, results, max_rounds=2):
     """Only called when resolve_concern returned status='deadlock'.
