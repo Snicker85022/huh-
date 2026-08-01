@@ -47,6 +47,7 @@
 - Bench tools hang at exit on AMDVLK (vkDeviceWaitIdle): kill by PID; watchdog reaps stale llama-bench.
 - Session ritual (AI on gflip): read /var/lib/taza/llama-mode + .taza-ai-notice first;
   if needs_root_cause=1, tell Nick + investigate before restoring GPU.
+  Also read /opt/taza/repo/TODO.md (backlog) and surface Nick-requested open items (e.g. ntfy noise reduction).
 - After any reboot: everything persists (systemd units+drop-ins, dpkg amdvlk,
   /etc/environment VK_ICD_FILENAMES, sysctl swappiness=10, journald 1G cap, timers).
 - Memory cage: MemoryHigh=23G / MemoryMax=26G. GPU healthy: `curl http://127.0.0.1:8080/health`.
