@@ -37,6 +37,12 @@ R = S^(1/3) * O^(1/6) * D^(1/2)
 Notification: Band 1/2 actions fire via ntfy (see 06), not Notion. Band assignment
 itself is unaffected - table above is the complete rule.
 
+**Escalation Gate.** Not a third mechanism. The Escalation Gate is the combination of (a)
+band assignment from the table above and (b) the notify_nick() trigger that band implies.
+"Run through the Escalation Gate" (see 00) means: compute R, assign the band, fire the
+band's notify action, and let the graph apply that band's block/proceed semantics. Nothing
+beyond this exists to implement.
+
 No separate "Consequence x Cost-if-wrong" axis pair. Consequence folds into Severity;
 Cost-if-wrong is an output of Severity x Detection interacting, not an independent
 input. Do not add a second scoring pass.
@@ -75,6 +81,14 @@ detection instrumentation. Mirrors the existing Six Sigma ladder (200/15/5 ppm).
 | 3.0 <= R < 4.0 | 3 | Read manual + search forums before proposing. |
 | R >= 4.0 | 4 | Full research + explicit KB contradiction check. |
 
+**Re-score after research.** The score that assigns a research tier is provisional. After
+completing the tier's prescribed research, re-run score() with the updated O before final
+band assignment -- the band gates (DA, Nick) must read the final re-scored band, never the
+provisional one. Research that succeeds only improves O, so R moves down; the only raise
+path is a discovered KB contradiction (O -> 5). If re-scoring raises the band, the
+newly-required tier's work must be completed before the band gates, or the item routes to
+DA/Nick flagged as a contradiction item.
+
 ## Function signature
 
 Floating-point trap, confirmed during spec verification: S=O=D=3 is mathematically
@@ -85,13 +99,25 @@ there, still far above 4.0). Fix: `round(r, 6)` before any threshold comparison.
 Required, not optional.
 
 ```python
+def band_of(r: float) -> int:
+    """Band from an already-rounded R value. Single source of truth for all band
+    thresholds (2.0 / 3.0 / 4.0) -- score() and role_routing's route() both call this so
+    the thresholds can never drift apart. r must be round(r_raw, 6) before calling."""
+    if r >= 4.0:
+        return 1
+    if r >= 3.0:
+        return 2
+    if r >= 2.0:
+        return 3
+    return 4
+
 def score(s: int, o: int, d: int) -> dict:
     """s, o, d each in 1..5. Returns R, band, color, research_tier, both overlay flags."""
     if not (1 <= s <= 5 and 1 <= o <= 5 and 1 <= d <= 5):
         raise ValueError(f"S, O, D must each be in 1..5, got S={s} O={o} D={d}")
     r_raw = s ** (1/3) * o ** (1/6) * d ** (1/2)
     r = round(r_raw, 6)  # required -- see floating-point trap above
-    band = 1 if r >= 4.0 else 2 if r >= 3.0 else 3 if r >= 2.0 else 4
+    band = band_of(r)  # single source of truth -- see band_of() above
     color = {1: "red", 2: "coral", 3: "amber", 4: "green"}[band]
     research_tier = band
     conundrum = (d == 5 and s >= 4) or (d == 4 and s * o > 9)

@@ -20,6 +20,9 @@ round = 0
 while True:
     da_raises_concern()
     well_founded = coder_and_da_discuss()  # Socratic: coder explains reasoning
+    # Criterion: a concern is well-founded iff it is STRUCTURAL -- it would still bite if
+    # the other side had perfect knowledge. A concern that dissolves once the homework is
+    # done was an information gap, not a design flaw; resolve it by doing the homework.
     if not well_founded:
         log("concern_resolved", justification=coder_reasoning)
         break  # proceed to execution
@@ -28,14 +31,31 @@ while True:
     # This is an inclusive choice, situation-dependent -- never treat it as either/or.
     round += 1
     if round >= 2:
-        log("deadlock", flagged_for_review=True, mitigation_attempted=mitigation)
-        break  # proceed to execution ANYWAY -- forced decision, not blocked indefinitely
+        nature = classify_disagreement(transcript)  # "structural" | "epistemic_asymmetry"
+        log("deadlock", flagged_for_review=True, mitigation_attempted=mitigation, nature=nature)
+        if nature == "structural":
+            escalate_to_nick(urgency="pause")  # Nick's thumb decides; do not proceed past Nick's gate
+            break  # proceed to the NEXT gate -- for a Band-1 item that is still Nick's approval
+        break  # epistemic_asymmetry: forced decision, Verifier flag, inform-level ntfy -- never silent
     # otherwise loop again with the revised plan
 ```
 
 Key rules:
 - "Well-founded" is determined by the coder's justification actually holding up under
-  Socratic questioning, not by assertion.
+  Socratic questioning, not by assertion. Operational criterion: a concern is well-founded
+  iff it is structural - it would still bite if the other side had perfect knowledge (all
+  homework done, all evidence in hand). A concern that dissolves once the homework is done
+  was an information gap, not a design flaw; resolve it by doing the homework, don't
+  escalate it.
+- Loop 1 resolves BEFORE the Band-1 gate. "Proceed to execution anyway" on deadlock means
+  proceed to the NEXT gate - for a Band-1 item, that is still Nick's approval. It never
+  means straight to execution.
+- A logged resolution (well_founded = False) must cite the specific evidence that changed
+  the mind - a fact, a command output, a re-derived number. A resolution with zero new
+  evidence in the transcript is auto-flagged low-weight to the Verifier.
+- Deadlock classifications are auditable: an epistemic_asymmetry classification is valid
+  only if the transcript shows the evidence (the homework). Otherwise it defaults to
+  structural. The Verifier checks classifications on its re-execution pass.
 - Mitigation choice is genuinely three-way: minimize risk before proceeding, add testing
   after, or both - pick whichever fits the specific situation. Do not hardcode this as a
   binary choice.

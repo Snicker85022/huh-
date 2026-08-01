@@ -32,7 +32,7 @@ square is what makes combining risk expensive rather than merely additive.
 |---|---|---|
 | Any number of R <= 2.0 items | 0 | Always allowed |
 | One R = 3.0 item | 1 | Allowed |
-| Fourteen R = 3.0 items | 14 | Allowed - the size limit for medium-risk batching isn't this ceiling, it's the Dispatch Design checklist (05) |
+| Fourteen R = 3.0 items | 14 | Near-ceiling - allowed, but triggers the mandatory second look (DA gate, 03) |
 | One R = 5.0 item alone | 9 | Allowed |
 | Two R = 5.0 items together | 18 | Rejected - two high-risk items must never share a batch |
 | One R = 5.0 + one R = 4.0 item | 13 | Allowed, but near-ceiling - flag for manual look |

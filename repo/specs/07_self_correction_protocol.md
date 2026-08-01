@@ -21,6 +21,12 @@ def can_assert_capability(model, role, domain_scope, max_age_days=None) -> bool:
 If False: respond "I need to verify that," then dispatch a check. Never assert and
 hope.
 
+Probation: the first use of any capability runs under Band-1-style supervision by
+definition -- the smoke test IS the evidence. The row is logged status='probation' and
+auto-graduates after N=3 verified outcomes; Nick does not have to track which
+capabilities are still on probation. For Executor-Browser, the first browser-use+VNC run
+is a supervised test by definition, not an assertion of readiness.
+
 ## 2. Diagnose before retry
 
 On any dispatch failure, do not retry the same approach with different wording.
@@ -63,6 +69,11 @@ def verify_dispatch_claim(claim: str, fresh_capture: str | None) -> dict:
     if fresh_capture is None:
         return {"accepted": False, "reason": "no_fresh_capture_provided"}
     return {"accepted": True, "evidence": fresh_capture}
+
+Blinding (see 03): the Verifier re-runs the acceptance check itself, own execution, own
+fresh capture. The Executor's report is an audit artifact, not evidence -- reading it
+primes the Verifier toward confirmation. Where the Executor's report is the only record,
+treat it as a claim to re-test, never as verification.
 ```
 
 Two specific failure shapes to check for:

@@ -1,8 +1,9 @@
 # Test Vectors - Acceptance Oracle
 
-Verifier runs every row before signing off on any implementation. Scope-change note:
-only the "Executor subtype selection" section is new; no other row's expected value
-changed.
+Verifier runs every row before signing off on any implementation. Revision note (2026-08-01, post-review): the Fourteen-items ABR row corrected to
+near_ceiling (02's ceiling definition is authoritative; see 00 step 4 on boundary
+audits); DA-loop table extended with 04's nature/arbitration cases; the "Executor
+subtype selection" section was an earlier scope addition. All other rows unchanged.
 
 ## R, band, and overlay flags
 
@@ -43,7 +44,7 @@ Band 3 instead of Band 2. Single most important row to check first.
 |---|---|---|---|
 | Any number of items with R <= 2.0 | No | 0 | `ok` |
 | One item, R = 3.0 | No | 1.0 | `ok` |
-| Fourteen items, each R = 3.0 | No | 14.0 | `ok` |
+| Fourteen items, each R = 3.0 | No | 14.0 | `near_ceiling` |
 | One item, R = 5.0 | No | 9.0 | `ok` |
 | Two items, each R = 5.0 | No | 18.0 | `reject` |
 | One item R = 5.0 + one item R = 4.0 | No | 13.0 | `near_ceiling` |
@@ -63,8 +64,9 @@ Combined with existing ABR rows:
 
 | item_scores | chained | tool_access | Expected result |
 |---|---|---|---|
-| `[3.0]` | False | `"aider"` | `proceed=True`, `executor_subtypes=["Executor-Aider"]`, `abr=1.0`, `outcome="ok"` |
+| `[3.0]` | False | `"aider"` | `proceed=True`, `da_required=True` (single item is Band 2), `executor_subtypes=["Executor-Aider"]`, `abr=1.0`, `outcome="ok"` |
 | `[5.0, 5.0]` | False | `"both"` | `proceed=False`, `reason="abr_ceiling_exceeded"`. `executor_subtypes` must NOT appear in this response - function returns before reaching that line. Check for the key's absence, not just an empty/null value. |
+| `[5.0, 4.0]` | False | `"aider"` | `proceed=True`, `da_required=True`, `abr=13.0`, `outcome="near_ceiling"` |
 
 ## Dispatch design
 
@@ -82,5 +84,8 @@ Combined with existing ABR rows:
 | Concern raised, coder justifies successfully on round 1 | `status='resolved'`, `rounds_used=1` |
 | Concern raised, mitigation agreed round 1, resolved round 2 | `status='resolved'`, `rounds_used=2` |
 | Concern raised, mitigation agreed round 1 AND round 2, still unresolved | `status='deadlock'`, `rounds_used=2`, flagged for Verifier, ntfy fired |
+| Concern deadlocked with nature=structural | escalated to Nick (pause-level ntfy); does not proceed past Nick's gate |
+| Concern deadlocked with nature=epistemic_asymmetry, evidence shown in transcript | forced decision, Verifier flag, inform-level ntfy |
+| Concern resolved with no cited evidence in transcript | auto-flagged low-weight to Verifier |
 | Post-execution re-analysis: conclusive on round 1 | `status='settled'`, `confidence_weight='high'` |
 | Post-execution re-analysis: still inconclusive after round 2 | `status='forced_call'`, `confidence_weight='low'`, note to revisit if recurs |

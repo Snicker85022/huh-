@@ -48,6 +48,14 @@ evidence.
 | `supersedes` | nullable FK to another `decision_id`, only set for trigger A |
 | `created_at` | |
 
+**Nick's decisions are evidence, not axioms.** No participant is an oracle - not the
+models, not Nick. decision_log rows with decided_by=nick update the precedent table
+through the same mechanism as dispatch outcomes, including overrides of the engine. When
+an override fails, the posterior moves on the anchor and the elicitation ("this problem
+class is riskier than we both thought"), never on a personal ledger; the decision-QA
+sweep (03) tracks calibration rates, the Bayesian update tracks the world. This is what
+makes Nick's thumb a participant in the loop rather than an exit from it.
+
 ---
 
 ## Hardware

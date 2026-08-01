@@ -5,9 +5,9 @@
 | Role | Who (currently) | Engages when | Job |
 |---|---|---|---|
 | Driver | DeepSeek V4 Flash | Every batch, always | Plans, designs, sequences the batch - locked architecture decision (Postgres+Git migration, 2026-07-26): DeepSeek is the primary dev brain, not Claude Code. |
-| Devil's Advocate (DA) | Claude Chat | Only when any item in the batch has individual Band 1 or 2 | Adversarially/collaboratively reviews the Driver's plan before Executor touches it. Covers research-risk proposals (source trust, contradiction-checking) and execution-risk proposals (code/batch/sequencing). See 04 for the feedback loop. |
+| Devil's Advocate (DA) | Claude Chat | When any item in the batch has individual Band 1/2, OR the batch ABR outcome is near_ceiling (02) -- the near-ceiling "mandatory second look" has no other owner | Adversarially/collaboratively reviews the Driver's plan before Executor touches it. Covers research-risk proposals (source trust, contradiction-checking) and execution-risk proposals (code/batch/sequencing). Standing instruction for every review: any item with D=5 requires a detection-instrumentation or explicit-visibility component in its mitigation -- the D-half of the Conundrum action, applied even where the full dual-track doesn't fire (S < 4). See 04 for the feedback loop. |
 | Executor | Local model, one of two subtypes (below) | Every batch that clears the DA gate (or every batch, if DA wasn't triggered) | Writes/runs the change. |
-| Verifier | Local model, separate session from Executor - non-negotiable | Every batch, always | Tests, verifies against acceptance criteria, documents. Must never share context with Executor - that's what makes it an independent check rather than the same reasoning validating itself. |
+| Verifier | Local model, separate session from Executor - non-negotiable | Every batch, always | Tests, verifies against acceptance criteria, documents. Must never share context with Executor - that's what makes it an independent check rather than the same reasoning validating itself. Blinding: the Verifier re-runs the acceptance check itself, own execution, own fresh capture; the Executor's report is an audit artifact, not evidence. Reading the Executor's pasted output primes the Verifier -- verification from narrative is confirmation, not checking (see 07). |
 
 ### Executor subtypes
 
@@ -32,11 +32,31 @@ well-scoped batch, not decided per-item.
 2. If ABR outcome is `reject`, batch is rescoped/split, does not proceed.
 3. Driver plans the batch (always) and declares the batch's `tool_access`
    (`aider` / `browser` / `both`).
-4. DA gate check: does any item have Band 1 or 2? Yes -> DA reviews the plan (04's
-   pre-execution loop runs here). No -> skip straight to Executor.
+4. DA gate check: does any item have Band 1/2, or is the batch ABR outcome near_ceiling?
+   Yes -> DA reviews the plan (04's pre-execution loop runs here; the near-ceiling second
+   look has no other owner). No -> skip straight to Executor.
 5. Executor subtype(s) selected from `tool_access` (table above). Executor runs.
    Verifier runs, separate session, always.
 6. Bayesian KB update fires regardless of outcome (see below).
+
+## Decision-QA sweep (Driver recurring duty)
+
+After every 3 completed decisions (count-based, not calendar -- adjust if the
+signal-to-noise ratio is too low), the Driver sweeps decision_log and appends to the
+`decision_qa` table in Postgres (taza_os):
+
+- band-predicted vs Verifier-verified outcome deltas, per decision
+- structural deadlocks per N decisions, per 04's nature classification
+- elicitation deltas (re-elicitation disagreements per N, per axis)
+- per-decider rate series: engine-only decisions vs Nick-override decisions, accuracy
+  over a sliding window -- Nick gets the same calibration feedback the models get, privately
+- Nick's override rate (reversals of the engine per N decisions): rising = trust erosion in
+  the engine's inputs, a process-debt signal; falling = the loop is working
+
+Any rate crossing its threshold opens a process-debt ticket per 01's out-of-control
+mechanism (eliminate root cause / mitigation plan / add detection instrumentation). This
+sweep is the scheduled reader of the audit trail; nothing reads the trail if this doesn't
+run.
 
 ## Domain Capability Matrix
 
@@ -84,13 +104,13 @@ model/config actually runs against this architecture.
 
 ```python
 def route(item_scores: list[float], chained: bool, tool_access: str) -> dict:
-    from batch_aggregate_risk import aggregate_batch_risk
+    from risk_engine import aggregate_batch_risk, band_of  # single module per 00; band thresholds live in 01
     if tool_access not in ("aider", "browser", "both"):
         raise ValueError(f"tool_access must be one of aider/browser/both, got {tool_access!r}")
     abr_result = aggregate_batch_risk(item_scores, chained)
     if abr_result["outcome"] == "reject":
         return {"proceed": False, "reason": "abr_ceiling_exceeded", **abr_result}
-    da_required = any(band_of(r) in (1, 2) for r in item_scores)
+    da_required = (abr_result["outcome"] == "near_ceiling") or any(band_of(r) in (1, 2) for r in item_scores)
     executor_subtypes = (
         ["Executor-Aider"] if tool_access == "aider"
         else ["Executor-Browser"] if tool_access == "browser"
