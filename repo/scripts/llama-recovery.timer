@@ -1,0 +1,8 @@
+[Unit]
+Description=Daily GPU recovery attempt for llama-gflip
+
+[Timer]
+OnCalendar=*-*-* 04:15:00
+
+[Install]
+WantedBy=timers.target

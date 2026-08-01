@@ -1,0 +1,9 @@
+[Unit]
+Description=Taza llama-gflip status page (port 8088)
+
+[Service]
+ExecStart=/usr/bin/python3 -m http.server 8088 --bind 0.0.0.0 --directory /var/www/taza-status
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
