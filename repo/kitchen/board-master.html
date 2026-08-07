@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taza — Board-Master (z33 expeditor)</title>
+<style>
+  /* ============================================================
+     TAZA — BOARD-MASTER VIEW · z33 · landscape 1920×1080
+     The expeditor / game-master god-view (Sandra / Nick).
+     Shares the approved design language (felt · wood · cream
+     cards · gold · LB monogram) with the crew view, re-cast for
+     whole-board overview + control:
+       · every event + its task chains as a dependency graph
+       · parallelization (batch) opportunities highlighted
+       · team / per-pair / per-individual scoreboard
+       · GAME-MASTER controls: award bonus / assign demerit
+         (Uno-style, per-individual) with the sad-sound feel
+       · bottleneck / blocked-chain at-a-glance
+       · heat-of-battle green→amber→red board state
+     ============================================================ */
+  :root{
+    --felt-1:#1f5741; --felt-2:#123a2b; --felt-3:#0b271d;
+    --wood-1:#5a3a22; --wood-2:#3a2414;
+    --card:#f4ecd6; --card-edge:#e6dcc0; --ink:#1c1712; --ink-soft:#5f574a;
+    --red:#c1122f; --amber:#d98a12; --grn:#2f7d54; --gold:#c9a227;
+    --pad:#fbf6e9; --chain:#3a6ea5; --batch:#8a5cc9;
+    font-size:15px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;}
+  html,body{height:100%;}
+  body{background:#0a0a0c;font-family:"Segoe UI",system-ui,-apple-system,sans-serif;overflow:hidden;color:#eae0c8;}
+  .board{position:relative;width:100vw;height:100vh;overflow:hidden;
+    background:radial-gradient(120% 90% at 50% 30%,var(--felt-1) 0%,var(--felt-2) 50%,var(--felt-3) 100%);
+    box-shadow:inset 0 0 0 12px var(--wood-2),inset 0 0 0 22px var(--wood-1);
+    display:grid;grid-template-columns:1fr 320px;grid-template-rows:64px 1fr;gap:0;transition:box-shadow .6s;}
+  body.heat-amber .board{box-shadow:inset 0 0 0 12px var(--wood-2),inset 0 0 0 22px #8a5a12;}
+  body.heat-red .board{box-shadow:inset 0 0 0 12px var(--wood-2),inset 0 0 0 22px #7a0d1c;}
+  .board::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='120' height='120' filter='url(%23n)' opacity='0.5'/></svg>");}
+
+  /* ---------- header ---------- */
+  .hdr{grid-column:1/3;display:flex;align-items:center;gap:18px;padding:0 26px;z-index:3;}
+  .hdr .mono{width:40px;height:40px;border-radius:50%;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;
+    font-family:Georgia,serif;font-style:italic;font-size:16px;color:var(--gold);flex:0 0 auto;}
+  .hdr h1{font-family:Georgia,serif;font-size:22px;font-weight:700;color:#f4ecd6;letter-spacing:.01em;}
+  .hdr h1 small{font-style:italic;font-weight:400;color:#bfe0cf;font-size:14px;margin-left:8px;}
+  .hdr .heatlbl{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;}
+  .heatpill{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:800;letter-spacing:.1em;}
+  .heatpill.g{background:rgba(47,125,84,.3);color:#9fe6bf;border:1px solid var(--grn);}
+  .heatpill.a{background:rgba(217,138,18,.28);color:#f4c878;border:1px solid var(--amber);}
+  .heatpill.r{background:rgba(193,18,47,.3);color:#f7a3b0;border:1px solid var(--red);animation:hp 1.6s infinite;}
+  @keyframes hp{0%,100%{opacity:1;}50%{opacity:.6;}}
+  .clock{font-family:Georgia,serif;font-size:18px;color:#f4ecd6;}
+
+  /* ---------- main board: event lanes ---------- */
+  .lanes{grid-column:1;grid-row:2;overflow:auto;padding:6px 20px 20px;display:flex;flex-direction:column;gap:18px;}
+  .lanes::-webkit-scrollbar{height:8px;width:8px;} .lanes::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:8px;}
+  .event{background:rgba(0,0,0,.22);border-radius:14px;padding:14px 16px;border:1px solid rgba(255,255,255,.06);}
+  .event .ehead{display:flex;align-items:baseline;gap:12px;margin-bottom:12px;}
+  .event .ename{font-family:Georgia,serif;font-size:18px;font-weight:700;color:#f4ecd6;}
+  .event .emeta{font-size:12px;color:#bfe0cf;opacity:.85;}
+  .event .prog{margin-left:auto;font-size:12px;color:#bfe0cf;}
+  .event .prog b{color:var(--gold);font-family:Georgia,serif;font-size:15px;}
+
+  /* a chain = a horizontal row of connected nodes */
+  .chain{display:flex;align-items:stretch;gap:0;margin-bottom:10px;flex-wrap:wrap;}
+  .chain .clabel{align-self:center;font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:#8fb9d6;width:74px;flex:0 0 auto;}
+  .node{position:relative;width:172px;flex:0 0 auto;background:var(--card);color:var(--ink);border-radius:10px;padding:9px 11px 10px;
+    box-shadow:0 6px 14px rgba(0,0,0,.4);border-left:5px solid var(--grn);}
+  .node.u-rush{border-left-color:var(--red);} .node.u-soon{border-left-color:var(--amber);} .node.u-normal{border-left-color:var(--grn);}
+  .node.done{opacity:.55;} .node.done .ntitle{text-decoration:line-through;}
+  .node.blocked{outline:2px dashed rgba(58,110,165,.6);}
+  .node.bottleneck{outline:2px solid var(--red);box-shadow:0 0 0 4px rgba(193,18,47,.25),0 6px 14px rgba(0,0,0,.4);}
+  .node .ntop{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--ink-soft);font-weight:700;letter-spacing:.06em;}
+  .node .st{margin-left:auto;font-size:9px;font-weight:800;padding:1px 6px;border-radius:20px;text-transform:uppercase;letter-spacing:.06em;}
+  .st.todo{background:rgba(0,0,0,.08);color:var(--ink-soft);}
+  .st.active{background:rgba(217,138,18,.2);color:#8a5a12;}
+  .st.done{background:rgba(47,125,84,.2);color:#245c3e;}
+  .st.blocked{background:rgba(58,110,165,.18);color:#2b527d;}
+  .node .ntitle{font-family:Georgia,serif;font-size:14px;font-weight:700;line-height:1.12;margin:4px 0 5px;}
+  .node .nwho{display:inline-block;background:rgba(201,162,39,.16);border:1px solid rgba(201,162,39,.35);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:700;color:#7a5f12;}
+  .node .nlkl{font-size:10.5px;color:var(--ink-soft);margin-top:5px;display:flex;align-items:center;gap:4px;}
+  .node .peri{margin-top:5px;font-size:10px;font-weight:800;color:var(--red);letter-spacing:.03em;}
+  .node .allerg{position:absolute;top:8px;right:8px;font-size:12px;}
+  /* connector arrow between chain nodes */
+  .link{align-self:center;width:26px;flex:0 0 auto;text-align:center;color:var(--chain);font-size:18px;font-weight:800;}
+  .link.done{color:var(--grn);}
+
+  /* batch / parallelization banner spanning two events */
+  .batchrow{display:flex;align-items:center;gap:12px;background:rgba(138,92,201,.16);border:1px dashed var(--batch);border-radius:12px;padding:10px 14px;margin-top:4px;}
+  .batchrow .zap{font-size:22px;}
+  .batchrow .btxt{font-size:13px;color:#e7d8ff;line-height:1.25;}
+  .batchrow .btxt b{color:#cbb0ef;}
+  .batchrow .bnodes{display:flex;gap:10px;margin-left:auto;}
+  .batchrow .bnode{background:var(--card);color:var(--ink);border-radius:8px;padding:5px 9px;font-size:11px;font-weight:700;border-left:4px solid var(--batch);}
+  .batchrow .act{background:var(--batch);color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:800;cursor:pointer;}
+
+  /* ---------- right rail: scoreboard + GM controls ---------- */
+  .rail{grid-column:2;grid-row:2;overflow:auto;padding:6px 18px 20px 6px;display:flex;flex-direction:column;gap:14px;}
+  .rail::-webkit-scrollbar{width:8px;} .rail::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:8px;}
+  .card-pane{background:var(--pad);color:var(--ink);border-radius:12px;padding:14px 15px;box-shadow:0 6px 16px rgba(0,0,0,.4);}
+  .card-pane h3{font-family:Georgia,serif;font-size:15px;margin-bottom:4px;}
+  .card-pane .h-sub{font-size:11px;color:var(--ink-soft);margin-bottom:10px;letter-spacing:.02em;}
+
+  .teamscore{display:flex;align-items:baseline;gap:8px;}
+  .teamscore .big{font-family:Georgia,serif;font-size:44px;font-weight:800;color:var(--ink);}
+  .teamscore .lbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);font-weight:800;}
+  .pairbars{display:flex;flex-direction:column;gap:9px;margin-top:12px;}
+  .pairbar .pb-top{display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:3px;}
+  .pairbar .track{height:9px;background:rgba(0,0,0,.08);border-radius:9px;overflow:hidden;}
+  .pairbar .fill{height:100%;border-radius:9px;transition:width .5s;}
+  .pairbar.cook .fill{background:var(--chain);} .pairbar.pack .fill{background:var(--grn);}
+
+  .indiv{display:flex;flex-direction:column;gap:7px;}
+  .prow{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:9px;background:rgba(0,0,0,.04);}
+  .prow .av{width:30px;height:30px;border-radius:50%;background:var(--gold);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-family:Georgia,serif;flex:0 0 auto;}
+  .prow .pn{font-weight:700;font-size:13px;} .prow .pp{font-size:11px;color:var(--ink-soft);}
+  .prow .psc{margin-left:auto;font-family:Georgia,serif;font-weight:800;font-size:18px;}
+  .prow .gm{display:flex;gap:5px;}
+  .prow .gm button{border:none;border-radius:7px;width:30px;height:30px;font-size:15px;font-weight:800;cursor:pointer;line-height:1;}
+  .prow .gm .plus{background:rgba(201,162,39,.22);color:#7a5f12;}
+  .prow .gm .minus{background:rgba(193,18,47,.16);color:var(--red);}
+  .prow .gm button:active{transform:scale(.9);}
+
+  .bottlenecks{display:flex;flex-direction:column;gap:7px;}
+  .bn{display:flex;align-items:center;gap:8px;font-size:12px;padding:7px 9px;border-radius:8px;background:rgba(193,18,47,.08);border:1px solid rgba(193,18,47,.25);color:var(--ink);}
+  .bn .dot{width:8px;height:8px;border-radius:50%;background:var(--red);flex:0 0 auto;}
+  .bn.ok{background:rgba(47,125,84,.08);border-color:rgba(47,125,84,.25);} .bn.ok .dot{background:var(--grn);}
+
+  /* GM award modal */
+  .gmov{position:absolute;inset:0;z-index:100;background:rgba(6,18,13,.76);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;}
+  .gmov.show{display:flex;}
+  .gmsheet{width:440px;background:var(--card);color:var(--ink);border-radius:18px;padding:22px;position:relative;box-shadow:0 24px 60px rgba(0,0,0,.6),inset 0 0 0 6px #fff,inset 0 0 0 7px var(--card-edge);}
+  .gmsheet h2{font-family:Georgia,serif;font-size:20px;margin-bottom:2px;}
+  .gmsheet .gsub{font-size:12px;color:var(--ink-soft);margin-bottom:16px;}
+  .gmsheet .amts{display:flex;gap:8px;margin-bottom:14px;}
+  .gmsheet .amts button{flex:1;padding:12px 0;border-radius:10px;border:2px solid rgba(0,0,0,.14);background:#fff;font-weight:800;font-size:16px;font-family:Georgia,serif;cursor:pointer;color:var(--ink);}
+  .gmsheet .amts button.sel{border-color:var(--gold);background:rgba(201,162,39,.14);}
+  .gmsheet textarea{width:100%;border-radius:10px;border:2px solid rgba(0,0,0,.14);padding:10px;font-family:inherit;font-size:13px;resize:none;height:64px;color:var(--ink);}
+  .gmsheet .go{display:flex;gap:10px;margin-top:16px;}
+  .gmsheet .go button{flex:1;border:none;border-radius:10px;padding:13px 0;font-weight:800;font-size:15px;cursor:pointer;font-family:inherit;}
+  .gmsheet .go .award{background:var(--gold);color:#fff;box-shadow:0 4px 0 #9a7a12;}
+  .gmsheet .go .demerit{background:var(--red);color:#fff;box-shadow:0 4px 0 #8a0d22;}
+  .gmsheet .cancel{position:absolute;top:14px;right:16px;background:none;border:none;font-size:22px;color:var(--ink-soft);cursor:pointer;}
+  .toastw{position:absolute;bottom:26px;left:50%;transform:translateX(-50%) translateY(30px);z-index:120;opacity:0;transition:all .4s cubic-bezier(.2,.8,.3,1);
+    background:var(--pad);color:var(--ink);border-radius:12px;padding:12px 20px;box-shadow:0 16px 40px rgba(0,0,0,.5);font-weight:700;font-size:14px;}
+  .toastw.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="board">
+  <div class="hdr">
+    <div class="mono" title="in memory of LB">LB</div>
+    <h1>Taza Board-Master <small>z33 · expeditor / game-master</small></h1>
+    <div class="heatlbl">
+      <span>Heat of battle</span>
+      <span class="heatpill g" id="heatPill">CALM</span>
+      <span class="clock" id="clock">—</span>
+    </div>
+  </div>
+
+  <div class="lanes" id="lanes"></div>
+
+  <div class="rail">
+    <div class="card-pane">
+      <h3>Team score</h3>
+      <div class="h-sub">Everyone wins together · pairs compete within</div>
+      <div class="teamscore"><span class="big" id="teamScore">0</span><span class="lbl">points tonight</span></div>
+      <div class="pairbars" id="pairbars"></div>
+    </div>
+    <div class="card-pane">
+      <h3>Crew · tap to judge</h3>
+      <div class="h-sub">Award a bonus for quality · assign an Uno-style demerit</div>
+      <div class="indiv" id="indiv"></div>
+    </div>
+    <div class="card-pane">
+      <h3>Bottlenecks & status</h3>
+      <div class="h-sub">Blocked chains and rush cards, at a glance</div>
+      <div class="bottlenecks" id="bottlenecks"></div>
+    </div>
+  </div>
+</div>
+
+<!-- GM award / demerit modal -->
+<div class="gmov" id="gmov">
+  <div class="gmsheet">
+    <button class="cancel" onclick="closeGm()">✕</button>
+    <h2 id="gmName">Edgar</h2>
+    <div class="gsub" id="gmRole">Cook pair</div>
+    <div class="amts" id="gmAmts"></div>
+    <textarea id="gmReason" placeholder="Why? (this shows on the crew card — keep it playful)"></textarea>
+    <div class="go">
+      <button class="award" onclick="doGm('bonus')">◆ Award bonus</button>
+      <button class="demerit" onclick="doGm('demerit')">🫤 Demerit</button>
+    </div>
+  </div>
+</div>
+<div class="toastw" id="toastw"></div>
+
+<script>
+/* ============================================================
+   SAME SAMPLE DATA SHAPE as crew-view / the 08 schema.
+   In production these rows stream from PostgreSQL over SSE;
+   GM actions POST back to the scoring engine (deterministic).
+   ============================================================ */
+const EVENTS=[
+  {key:"paypal", name:"PayPal — corporate lunch", meta:"120 guests · today 12:00 · Downtown loft"},
+  {key:"nguyen", name:"Nguyen wedding", meta:"80 guests · today 17:00 · Garden Hall"},
+];
+const TASKS=[
+  {id:1, ev:"paypal", chain:"salmon", ci:0, title:"Pull salmon from walk-in", who:"Bambi", urg:"soon",  lkl:"Walk-in B", status:"done",    allergen:null,   peri:null},
+  {id:2, ev:"paypal", chain:"salmon", ci:1, title:"Fire Cypress salmon ×40",  who:"Edgar", urg:"rush",  lkl:"Cold line A", status:"active",allergen:"Fish", peri:"cook→chill ≤2h"},
+  {id:3, ev:"paypal", chain:"salmon", ci:2, title:"Flash-chill + pack, cover", who:"Knox",  urg:"soon",  lkl:"Blast chiller 1", status:"blocked",allergen:null, peri:"cover only ≤40°F"},
+  {id:8, ev:"paypal", chain:null,     ci:0, title:"Greek salad prep — PayPal", who:"Bambi", urg:"normal",lkl:"Prep 2", status:"todo",     allergen:null,   peri:"dress à la minute", batch:"greek"},
+  {id:5, ev:"nguyen", chain:"ribs",   ci:0, title:"Sear short ribs, rest",     who:"Orlando",urg:"soon", lkl:"Hot line", status:"active",   allergen:null,   peri:"rest 8 min"},
+  {id:6, ev:"nguyen", chain:"ribs",   ci:1, title:"Slice against grain, hold",  who:"Orlando",urg:"normal",lkl:"Hot line · board 2", status:"blocked",allergen:null, peri:"hold >140°F"},
+  {id:9, ev:"nguyen", chain:null,     ci:0, title:"Greek salad prep — Nguyen",  who:"Bambi", urg:"normal",lkl:"Prep 2", status:"todo",     allergen:null,   peri:"dress à la minute", batch:"greek"},
+];
+const CHAINS={salmon:{ev:"paypal",label:"Salmon",ids:[1,2,3]}, ribs:{ev:"nguyen",label:"Short ribs",ids:[5,6]}};
+const BATCH={greek:{ids:[8,9],label:"Greek salad — same mise for both events; perishability allows same-day batch",bonus:20}};
+const CREW=[
+  {name:"Edgar",   pair:"cook", role:"Cook pair"},
+  {name:"Orlando", pair:"cook", role:"Cook pair"},
+  {name:"Knox",    pair:"pack", role:"Pack / logistics pair"},
+  {name:"Bambi",   pair:"pack", role:"Pack / logistics pair"},
+];
+let indiv={Edgar:120,Orlando:90,Knox:60,Bambi:45};
+let gmTarget=null, gmAmt=10;
+
+/* ---------- render event lanes + dependency graph ---------- */
+function statusClass(s){return s;}
+function nodeHTML(t){
+  const blocked=t.status==="blocked", bn=blocked&&isBottleneck(t);
+  const stTxt={todo:"To do",active:"In play",done:"Done",blocked:"Blocked"}[t.status];
+  return `<div class="node u-${t.urg} ${t.status}${bn?' bottleneck':''}">
+    ${t.allergen?`<span class="allerg" title="${t.allergen}">⚠️</span>`:""}
+    <div class="ntop"><span>#${t.id}</span><span class="st ${t.status}">${stTxt}</span></div>
+    <div class="ntitle">${t.title}</div>
+    <span class="nwho">${t.who}</span>
+    <div class="nlkl">◎ ${t.lkl}</div>
+    ${t.peri?`<div class="peri">⏱ ${t.peri}</div>`:""}
+  </div>`;
+}
+function isBottleneck(t){
+  // a blocked card whose predecessor is a rush/active card = the pinch point
+  if(!t.chain) return false;
+  const seq=CHAINS[t.chain].ids, idx=seq.indexOf(t.id);
+  if(idx<=0) return false;
+  const prev=TASKS.find(x=>x.id===seq[idx-1]);
+  return prev && prev.status==="active" && prev.urg==="rush";
+}
+function render(){
+  // lanes
+  const lanes=document.getElementById("lanes");
+  let html="";
+  EVENTS.forEach(ev=>{
+    const evTasks=TASKS.filter(t=>t.ev===ev.key);
+    const doneN=evTasks.filter(t=>t.status==="done").length;
+    html+=`<div class="event"><div class="ehead">
+      <div class="ename">${ev.name}</div><div class="emeta">${ev.meta}</div>
+      <div class="prog"><b>${doneN}</b>/${evTasks.length} tasks laid down</div></div>`;
+    // chains
+    Object.entries(CHAINS).filter(([,c])=>c.ev===ev.key).forEach(([key,c])=>{
+      html+=`<div class="chain"><span class="clabel">${c.label} chain</span>`;
+      c.ids.forEach((id,i)=>{
+        const t=TASKS.find(x=>x.id===id);
+        html+=nodeHTML(t);
+        if(i<c.ids.length-1){ const doneLink=t.status==="done"; html+=`<span class="link ${doneLink?'done':''}">${doneLink?'✓→':'→'}</span>`; }
+      });
+      html+=`</div>`;
+    });
+    // standalone (non-chain) tasks for this event
+    const solo=evTasks.filter(t=>!t.chain);
+    if(solo.length){ html+=`<div class="chain"><span class="clabel">Prep</span>`+solo.map(nodeHTML).join("")+`</div>`; }
+    html+=`</div>`;
+  });
+  // batch banner (spans events)
+  Object.entries(BATCH).forEach(([key,b])=>{
+    const nodes=b.ids.map(id=>TASKS.find(t=>t.id===id));
+    const anyDone=nodes.some(n=>n.status==="done");
+    html+=`<div class="batchrow"><span class="zap">⚡</span>
+      <div class="btxt"><b>PARALLELIZE:</b> ${b.label}. One setup, one breakdown, two outputs — <b>+${b.bonus} batch bonus</b>.</div>
+      <div class="bnodes">${nodes.map(n=>`<div class="bnode">#${n.id} ${n.who} · ${EVENTS.find(e=>e.key===n.ev).name.split(" ")[0]}</div>`).join("")}</div>
+      <button class="act" onclick="callBatch('${key}')">Call the batch ▸</button></div>`;
+  });
+  lanes.innerHTML=html;
+
+  // scoreboard
+  const team=Object.values(indiv).reduce((a,b)=>a+b,0);
+  document.getElementById("teamScore").textContent=team;
+  const pairTotals={cook:0,pack:0};
+  CREW.forEach(c=>pairTotals[c.pair]+=indiv[c.name]);
+  const max=Math.max(pairTotals.cook,pairTotals.pack,1);
+  document.getElementById("pairbars").innerHTML=`
+    <div class="pairbar cook"><div class="pb-top"><span>Cook pair · Edgar + Orlando</span><b>${pairTotals.cook}</b></div><div class="track"><div class="fill" style="width:${pairTotals.cook/max*100}%"></div></div></div>
+    <div class="pairbar pack"><div class="pb-top"><span>Pack pair · Knox + Bambi</span><b>${pairTotals.pack}</b></div><div class="track"><div class="fill" style="width:${pairTotals.pack/max*100}%"></div></div></div>`;
+  document.getElementById("indiv").innerHTML=CREW.slice().sort((a,b)=>indiv[b.name]-indiv[a.name]).map(c=>`
+    <div class="prow">
+      <div class="av">${c.name[0]}</div>
+      <div><div class="pn">${c.name}</div><div class="pp">${c.role}</div></div>
+      <div class="psc">${indiv[c.name]}</div>
+      <div class="gm"><button class="plus" title="award bonus" onclick="openGm('${c.name}')">＋</button></div>
+    </div>`).join("");
+
+  // bottlenecks
+  const bl=TASKS.filter(t=>t.status==="blocked");
+  const rush=TASKS.filter(t=>t.status==="active"&&t.urg==="rush");
+  let bns="";
+  rush.forEach(t=>{ bns+=`<div class="bn"><span class="dot"></span><b>RUSH in play:</b>&nbsp;${t.title} (${t.who}) — ${t.peri||""}</div>`; });
+  bl.forEach(t=>{ const b=isBottleneck(t); bns+=`<div class="bn"><span class="dot"></span>${b?'<b>PINCH:</b>&nbsp;':''}${t.title} waiting on chain (${t.who})</div>`; });
+  if(!bns) bns=`<div class="bn ok"><span class="dot"></span>All chains flowing — no blocks.</div>`;
+  document.getElementById("bottlenecks").innerHTML=bns;
+
+  updateHeat();
+}
+function updateHeat(){
+  const rush=TASKS.filter(t=>t.status==="active"&&t.urg==="rush").length;
+  const blocked=TASKS.filter(t=>t.status==="blocked").length;
+  const pill=document.getElementById("heatPill");
+  document.body.classList.remove("heat-amber","heat-red");
+  if(rush>=2||blocked>=3){document.body.classList.add("heat-red");pill.className="heatpill r";pill.textContent="RED";}
+  else if(rush>=1||blocked>=1){document.body.classList.add("heat-amber");pill.className="heatpill a";pill.textContent="AMBER";}
+  else{pill.className="heatpill g";pill.textContent="CALM";}
+}
+
+/* ---------- game-master actions (Uno-style, per-individual) ---------- */
+function openGm(name){
+  gmTarget=name; gmAmt=10;
+  const c=CREW.find(x=>x.name===name);
+  document.getElementById("gmName").textContent=name;
+  document.getElementById("gmRole").textContent=c.role+" · currently "+indiv[name]+" pts";
+  document.getElementById("gmReason").value="";
+  const amts=[5,10,15,25];
+  document.getElementById("gmAmts").innerHTML=amts.map(a=>`<button data-a="${a}" class="${a===10?'sel':''}" onclick="pickAmt(${a})">${a}</button>`).join("");
+  document.getElementById("gmov").classList.add("show");
+}
+function pickAmt(a){ gmAmt=a; [...document.querySelectorAll("#gmAmts button")].forEach(b=>b.classList.toggle("sel",+b.dataset.a===a)); }
+function closeGm(){ document.getElementById("gmov").classList.remove("show"); gmTarget=null; }
+function doGm(kind){
+  if(!gmTarget) return;
+  const reason=document.getElementById("gmReason").value||(kind==="bonus"?"Nice work.":"Watch that next time.");
+  indiv[gmTarget]+=(kind==="bonus"?gmAmt:-gmAmt);
+  if(kind==="bonus") happySound(); else sadSound();
+  toast(`${kind==="bonus"?"◆ +":"🫤 −"}${gmAmt} → ${gmTarget}: ${reason}`);
+  // NOTE: in production this POSTs to the scoring engine, which fans the toast
+  //       out over SSE to that crew member's kiosk (see crew-view gmAward()).
+  closeGm(); render();
+}
+function callBatch(key){
+  const b=BATCH[key];
+  b.ids.forEach(id=>{ const t=TASKS.find(x=>x.id===id); if(t.status==="todo") t.status="active"; });
+  toast(`⚡ Batch called — ${b.label.split(";")[0]}. Bambi runs both; +${b.bonus} on completion.`);
+  happySound(); render();
+}
+function toast(msg){ const t=document.getElementById("toastw"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2800); }
+
+/* ---------- sounds (shared feel with crew view) ---------- */
+function happySound(){ try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;const ctx=new AC();
+  [523.25,659.25,783.99].forEach((f,i)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.type="triangle";o.frequency.value=f;o.connect(g);g.connect(ctx.destination);
+  const t=ctx.currentTime+i*0.08;g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.2,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+0.3);o.start(t);o.stop(t+0.35);});}catch(e){} }
+function sadSound(){ try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;const ctx=new AC();
+  [440,392,311.13].forEach((f,i)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.type="sine";o.frequency.value=f;o.connect(g);g.connect(ctx.destination);
+  const t=ctx.currentTime+i*0.16;g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.18,t+0.03);g.gain.exponentialRampToValueAtTime(0.0001,t+0.4);o.start(t);o.stop(t+0.45);});}catch(e){} }
+
+/* clock (static-ish; no Date in some sandboxes — fake a service time) */
+(function(){ let m=11*60+42; const el=document.getElementById("clock");
+  function tick(){ const h=Math.floor(m/60), mm=String(m%60).padStart(2,"0"); el.textContent=`${h}:${mm}`; m++; }
+  tick(); setInterval(tick,60000); })();
+
+render();
+</script>
+</body>
+</html>

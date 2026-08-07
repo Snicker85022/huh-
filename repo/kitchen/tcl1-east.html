@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TCL1 EAST — Command Center</title>
+<style>
+  :root {
+    --bg: #070e1a;
+    --bg2: #0d1828;
+    --felt: #0a1a2a;
+    --gold: #c7ae59;
+    --gold-dim: #8a7534;
+    --slate: #426a9f;
+    --slate-dim: #2d4d78;
+    --red: #c0392b;
+    --amber: #e67e22;
+    --green: #27ae60;
+    --text: #e8e0d0;
+    --text-dim: #9a9080;
+    --panel-border: rgba(199,174,89,0.25);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--panel-border);
+    padding: 6px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .header-logo {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .brand-diamond {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 4px rgba(199,174,89,0.45));
+  }
+  .header-right {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+  .main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    gap: 0;
+  }
+
+  /* ── LEFT THIRD: Find It Fast ── */
+  .find-it {
+    width: 33.33%;
+    background: var(--bg2);
+    border-right: 1px solid var(--panel-border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .panel-title {
+    background: var(--felt);
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--panel-border);
+    flex-shrink: 0;
+  }
+  .find-legend {
+    padding: 5px 10px;
+    display: flex;
+    gap: 14px;
+    font-size: 9px;
+    color: var(--text-dim);
+    border-bottom: 1px solid rgba(199,174,89,0.1);
+    flex-shrink: 0;
+  }
+  .find-legend span { display: flex; align-items: center; gap: 4px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+  .dot-green { background: var(--green); }
+  .dot-amber { background: var(--amber); }
+  .dot-red { background: var(--red); }
+  .inv-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--gold-dim) transparent;
+  }
+  .inv-row {
+    display: grid;
+    grid-template-columns: 14px 1fr auto auto;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: background 0.15s;
+  }
+  .inv-row:hover { background: rgba(199,174,89,0.05); }
+  .inv-name {
+    font-size: 10.5px;
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .inv-loc {
+    font-size: 8.5px;
+    color: var(--text-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    grid-column: 2;
+  }
+  .inv-name-group { display: flex; flex-direction: column; min-width: 0; }
+  .inv-qty {
+    font-size: 9px;
+    color: var(--gold);
+    font-weight: 600;
+    white-space: nowrap;
+    text-align: right;
+  }
+  .inv-time {
+    font-size: 8px;
+    color: var(--text-dim);
+    white-space: nowrap;
+    text-align: right;
+  }
+
+  /* ── RIGHT TWO-THIRDS: Big Picture ── */
+  .big-pic {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0;
+  }
+
+  /* TOP ROW — stats bar */
+  .stats-bar {
+    display: flex;
+    gap: 10px;
+    padding: 10px 16px;
+    background: var(--felt);
+    border-bottom: 1px solid var(--panel-border);
+    flex-shrink: 0;
+    align-items: stretch;
+  }
+  .stat-card {
+    background: var(--bg2);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 8px 14px;
+    min-width: 90px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .stat-num {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--gold);
+  }
+  .stat-label {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-top: 3px;
+  }
+  .allergen-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    align-items: center;
+    flex: 2;
+  }
+  .allergen-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .allergen-critical {
+    background: rgba(192,57,43,0.25);
+    border: 1px solid var(--red);
+    color: #ff7b6b;
+    animation: pulse-red 2s infinite;
+  }
+  .allergen-warning {
+    background: rgba(230,126,34,0.2);
+    border: 1px solid var(--amber);
+    color: #f0a060;
+  }
+  @keyframes pulse-red {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(192,57,43,0); }
+    50% { box-shadow: 0 0 8px 3px rgba(192,57,43,0.4); }
+  }
+
+  /* MIDDLE — ring + performance */
+  .middle-row {
+    display: flex;
+    gap: 10px;
+    padding: 10px 16px;
+    flex: 1;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  /* Pacing ring */
+  .ring-card {
+    background: var(--bg2);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1.4;
+    min-height: 0;
+  }
+  .ring-title {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .ring-wrap {
+    position: relative;
+    width: min(160px, 100%);
+    aspect-ratio: 1;
+    flex-shrink: 0;
+  }
+  .ring-svg {
+    width: 100%; height: 100%;
+    transform: rotate(-90deg);
+  }
+  .ring-track { fill: none; stroke: rgba(199,174,89,0.12); stroke-width: 10; }
+  .ring-fill {
+    fill: none;
+    stroke: var(--gold);
+    stroke-width: 10;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s ease;
+    filter: drop-shadow(0 0 6px rgba(199,174,89,0.5));
+  }
+  .ring-pulse {
+    animation: ring-glow 2.5s ease-in-out infinite;
+  }
+  @keyframes ring-glow {
+    0%, 100% { filter: drop-shadow(0 0 6px rgba(199,174,89,0.5)); }
+    50% { filter: drop-shadow(0 0 14px rgba(199,174,89,0.9)); }
+  }
+  .ring-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+  .ring-pct { font-size: 30px; font-weight: 700; color: var(--gold); line-height: 1; }
+  .ring-sub { font-size: 9px; color: var(--text-dim); letter-spacing: 1px; }
+  .ring-task-count {
+    margin-top: 8px;
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+  .ring-task-count strong { color: var(--text); }
+
+  /* Performance + crew cards */
+  .perf-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .perf-card {
+    background: var(--bg2);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .perf-card-title {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .score-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .score-big { font-size: 26px; font-weight: 700; color: var(--gold); }
+  .score-label { font-size: 9px; color: var(--text-dim); }
+  .score-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .score-item { font-size: 10px; }
+  .score-item-val { font-size: 16px; font-weight: 600; color: var(--slate); display: block; }
+  .crew-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .crew-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+  }
+  .crew-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .status-on_deck { background: var(--green); }
+  .status-en_route { background: var(--amber); }
+  .status-off { background: rgba(255,255,255,0.2); }
+  .crew-name { font-weight: 600; flex: 1; }
+  .crew-role { color: var(--text-dim); font-size: 9px; }
+  .crew-status-label { font-size: 8px; letter-spacing: 1px; }
+  .sl-on_deck { color: var(--green); }
+  .sl-en_route { color: var(--amber); }
+
+  /* BOTTOM — timeline */
+  .timeline-row {
+    padding: 10px 16px;
+    background: var(--felt);
+    border-top: 1px solid var(--panel-border);
+    flex-shrink: 0;
+  }
+  .tl-title {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .tl-bar-wrap {
+    position: relative;
+    height: 22px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .tl-segment {
+    position: absolute;
+    top: 0; bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .tl-prep { background: rgba(66,106,159,0.5); color: #9ab5dd; }
+  .tl-service { background: rgba(199,174,89,0.35); color: var(--gold); }
+  .tl-breakdown { background: rgba(39,174,96,0.25); color: #70c990; }
+  .tl-now-marker {
+    position: absolute;
+    top: -2px; bottom: -2px;
+    width: 2px;
+    background: white;
+    opacity: 0.7;
+    border-radius: 1px;
+  }
+  .tl-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 8px;
+    color: var(--text-dim);
+    margin-top: 3px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">
+    <svg class="brand-diamond" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="50,5 95,50 50,95 5,50" fill="none" stroke="#c7ae59" stroke-width="6"/>
+      <polygon points="50,22 78,50 50,78 22,50" fill="none" stroke="#c7ae59" stroke-width="3" opacity="0.55"/>
+      <circle cx="50" cy="50" r="5" fill="#c7ae59" opacity="0.85"/>
+    </svg>
+    <span>TAZA CATERING — EAST STATION</span>
+  </div>
+  <div class="header-right" id="clock">--:-- --</div>
+</div>
+
+<div class="main">
+  <!-- LEFT: Find It Fast -->
+  <div class="find-it">
+    <div class="panel-title">◈ Find It Fast</div>
+    <div class="find-legend">
+      <span><span class="dot dot-green"></span> &lt;24h</span>
+      <span><span class="dot dot-amber"></span> 24-72h</span>
+      <span><span class="dot dot-red"></span> &gt;72h</span>
+    </div>
+    <div class="inv-list" id="inv-list">
+      <div style="padding:20px;color:var(--text-dim);font-size:11px;text-align:center;">Loading inventory…</div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Big Picture -->
+  <div class="big-pic">
+    <!-- Stats bar -->
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-num" id="gig-count">—</div>
+        <div class="stat-label">Gigs Today</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="crew-count">—</div>
+        <div class="stat-label">Crew On Deck</div>
+      </div>
+      <div class="allergen-badges" id="allergen-badges">
+        <div style="font-size:9px;color:var(--text-dim);letter-spacing:2px;text-transform:uppercase;">Allergens</div>
+      </div>
+    </div>
+
+    <!-- Middle -->
+    <div class="middle-row">
+      <!-- Pacing ring -->
+      <div class="ring-card">
+        <div class="ring-title">◎ Crew Pacing</div>
+        <div class="ring-wrap">
+          <svg class="ring-svg" viewBox="0 0 100 100">
+            <circle class="ring-track" cx="50" cy="50" r="40"/>
+            <circle class="ring-fill ring-pulse" cx="50" cy="50" r="40"
+              id="ring-circle"
+              stroke-dasharray="251.2"
+              stroke-dashoffset="251.2"/>
+          </svg>
+          <div class="ring-center">
+            <div class="ring-pct" id="ring-pct">0%</div>
+            <div class="ring-sub">PREP</div>
+          </div>
+        </div>
+        <div class="ring-task-count" id="ring-tasks">— of — tasks complete</div>
+      </div>
+
+      <!-- Performance + Crew -->
+      <div class="perf-col">
+        <div class="perf-card">
+          <div class="perf-card-title">◈ Group Performance</div>
+          <div class="score-row">
+            <span class="score-big" id="score-pts">—</span>
+            <span class="score-label">pts today</span>
+          </div>
+          <div class="score-grid">
+            <div class="score-item">
+              <span class="score-item-val" id="score-cards">—</span>
+              Cards Done
+            </div>
+            <div class="score-item">
+              <span class="score-item-val" id="score-streak">—</span>
+              Day Streak
+            </div>
+          </div>
+        </div>
+        <div class="perf-card">
+          <div class="perf-card-title">◈ Crew On Deck</div>
+          <div class="crew-list" id="crew-list">
+            <div style="font-size:10px;color:var(--text-dim);">Loading…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="timeline-row">
+      <div class="tl-title">◎ Today's Timeline</div>
+      <div class="tl-bar-wrap" id="tl-bar">
+        <div style="padding:3px 8px;font-size:9px;color:var(--text-dim);">Loading timeline…</div>
+      </div>
+      <div class="tl-labels" id="tl-labels"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DATA_URL = '/situational.json';
+const INV_URL = '/inventory.json';
+
+function fmtTime(iso) {
+  const d = new Date(iso);
+  const h = d.getHours(), m = d.getMinutes();
+  return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+}
+
+function ageHours(isoStr) {
+  return (Date.now() - new Date(isoStr).getTime()) / 3600000;
+}
+
+function ageColor(isoStr) {
+  const h = ageHours(isoStr);
+  if (h < 24) return 'var(--green)';
+  if (h < 72) return 'var(--amber)';
+  return 'var(--red)';
+}
+
+function buildInventory(data) {
+  const list = document.getElementById('inv-list');
+  list.innerHTML = '';
+  data.items.forEach(item => {
+    const color = ageColor(item.last_verified);
+    const h = ageHours(item.last_verified);
+    const timeStr = h < 1 ? '<1h ago' : h < 24 ? `${Math.round(h)}h ago` : `${Math.round(h/24)}d ago`;
+    const row = document.createElement('div');
+    row.className = 'inv-row';
+    row.innerHTML = `
+      <div class="dot" style="background:${color};flex-shrink:0;width:7px;height:7px;border-radius:50%;"></div>
+      <div class="inv-name-group">
+        <div class="inv-name">${item.name}</div>
+        <div class="inv-loc">${item.location}</div>
+      </div>
+      <div class="inv-qty">${item.qty}</div>
+      <div class="inv-time">${timeStr}</div>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function buildSituational(data) {
+  const d = data.today;
+
+  // Stats
+  document.getElementById('gig-count').textContent = d.gig_count;
+  const onDeck = d.crew.filter(c => c.status === 'on_deck').length;
+  document.getElementById('crew-count').textContent = onDeck;
+
+  // Allergens
+  const ab = document.getElementById('allergen-badges');
+  if (d.allergens && d.allergens.length) {
+    ab.innerHTML = d.allergens.map(a => `
+      <span class="allergen-badge allergen-${a.severity}">${a.flag} ×${a.count}</span>
+    `).join('');
+  } else {
+    ab.innerHTML = '<span style="font-size:10px;color:var(--green);letter-spacing:1px;">NO ACTIVE ALLERGENS</span>';
+  }
+
+  // Ring
+  const pct = Math.round((d.prep_tasks.complete / d.prep_tasks.total) * 100);
+  const circum = 251.2;
+  const offset = circum - (pct / 100 * circum);
+  document.getElementById('ring-pct').textContent = pct + '%';
+  document.getElementById('ring-circle').style.strokeDashoffset = offset;
+  document.getElementById('ring-tasks').innerHTML = `<strong>${d.prep_tasks.complete}</strong> of <strong>${d.prep_tasks.total}</strong> tasks complete`;
+
+  // Performance
+  document.getElementById('score-pts').textContent = d.performance.points_earned.toLocaleString();
+  document.getElementById('score-cards').textContent = d.performance.cards_completed_today;
+  document.getElementById('score-streak').textContent = d.performance.streak + ' 🔥';
+
+  // Crew
+  const cl = document.getElementById('crew-list');
+  cl.innerHTML = d.crew.map(c => `
+    <div class="crew-row">
+      <div class="crew-dot status-${c.status}"></div>
+      <span class="crew-name">${c.name}</span>
+      <span class="crew-role">${c.role}</span>
+      <span class="crew-status-label sl-${c.status}">${c.status.replace('_',' ').toUpperCase()}</span>
+    </div>
+  `).join('');
+
+  // Timeline
+  buildTimeline(d.timeline);
+}
+
+function timeToMinutes(t) {
+  const [h, m] = t.split(':').map(Number);
+  return h * 60 + m;
+}
+
+function buildTimeline(tl) {
+  const dayStart = 6 * 60; // 06:00
+  const dayEnd = 17 * 60; // 17:00
+  const span = dayEnd - dayStart;
+
+  const prepStart = timeToMinutes(tl.prep_start);
+  const prepEnd = timeToMinutes(tl.prep_end);
+  const svcStart = timeToMinutes(tl.service_start);
+  const svcEnd = timeToMinutes(tl.service_end);
+  const brkEnd = timeToMinutes(tl.breakdown_end);
+
+  const bar = document.getElementById('tl-bar');
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+
+  const pct = (start, end) => ({
+    left: ((start - dayStart) / span * 100).toFixed(1) + '%',
+    width: ((end - start) / span * 100).toFixed(1) + '%'
+  });
+
+  const p = pct(prepStart, prepEnd);
+  const s = pct(svcStart, svcEnd);
+  const b = pct(svcEnd, brkEnd);
+  const nowPct = ((nowMin - dayStart) / span * 100).toFixed(1);
+
+  bar.innerHTML = `
+    <div class="tl-segment tl-prep" style="left:${p.left};width:${p.width}">PREP</div>
+    <div class="tl-segment tl-service" style="left:${s.left};width:${s.width}">SERVICE</div>
+    <div class="tl-segment tl-breakdown" style="left:${b.left};width:${b.width}">BREAKDOWN</div>
+    ${nowPct >= 0 && nowPct <= 100 ? `<div class="tl-now-marker" style="left:${nowPct}%"></div>` : ''}
+  `;
+
+  document.getElementById('tl-labels').innerHTML = `
+    <span>${tl.prep_start}</span>
+    <span>${tl.service_start}</span>
+    <span>${tl.service_end}</span>
+    <span>${tl.breakdown_end}</span>
+  `;
+}
+
+function updateClock() {
+  const now = new Date();
+  const h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const hh = (h % 12 || 12).toString().padStart(2, '0');
+  document.getElementById('clock').textContent =
+    `${hh}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')} ${ampm}`;
+}
+
+async function refresh() {
+  try {
+    const [sitRes, invRes] = await Promise.all([
+      fetch(DATA_URL + '?t=' + Date.now()),
+      fetch(INV_URL + '?t=' + Date.now())
+    ]);
+    if (sitRes.ok) buildSituational(await sitRes.json());
+    if (invRes.ok) buildInventory(await invRes.json());
+  } catch(e) {
+    console.warn('Refresh error:', e);
+  }
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+refresh();
+setInterval(refresh, 30000);
+</script>
+</body>
+</html>

@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Van Loadout — Taza</title>
+<style>
+  :root {
+    --bg: #070e1a;
+    --bg2: #0d1828;
+    --navy: #0a1520;
+    --gold: #c7ae59;
+    --gold-bright: #edd97a;
+    --gold-dim: #5a4e25;
+    --red: #c0392b;
+    --amber: #e67e22;
+    --green: #1e8449;
+    --green-bright: #2ecc71;
+    --slate: #426a9f;
+    --text: #d8d0c0;
+    --text-dim: #6a6050;
+    --panel-border: rgba(199,174,89,0.2);
+    --panel-glow: rgba(199,174,89,0.08);
+    /* Insignia unit has physical screen damage on right ~3in. Adjust --dead-zone-margin to tune. */
+    --dead-zone-margin: 56px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding-right: var(--dead-zone-margin);
+  }
+
+  /* Header */
+  .header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--panel-border);
+    padding: 6px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    gap: 10px;
+  }
+  .brand-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    padding-right: 10px;
+    border-right: 1px solid var(--panel-border);
+    margin-right: 4px;
+  }
+  .brand-diamond {
+    width: 22px;
+    height: 22px;
+    filter: drop-shadow(0 0 4px rgba(199,174,89,0.4));
+  }
+  .brand-word {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+  .header-event {
+    min-width: 0;
+    flex: 1;
+  }
+  .event-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gold);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .event-client {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+  .countdown-wrap {
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .countdown-val {
+    font-size: 24px;
+    font-weight: 200;
+    color: var(--gold-bright);
+    letter-spacing: 2px;
+    line-height: 1;
+  }
+  .countdown-label {
+    font-size: 8px;
+    color: var(--text-dim);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .header-clock { font-size: 12px; color: var(--text-dim); letter-spacing: 2px; flex-shrink: 0; }
+
+  /* Main layout */
+  .main {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+    padding: 8px 12px;
+    gap: 8px;
+    min-height: 0;
+  }
+
+  /* Van bay row */
+  .van-row {
+    display: flex;
+    gap: 12px;
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* Individual van bay */
+  .van-bay {
+    flex: 1;
+    background: var(--bg2);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: border-color 0.4s, box-shadow 0.4s;
+    position: relative;
+  }
+  .van-bay.fully-loaded {
+    border-color: var(--gold);
+    box-shadow: 0 0 20px rgba(199,174,89,0.25), inset 0 0 30px rgba(199,174,89,0.04);
+    animation: loaded-pulse 3s ease-in-out infinite;
+  }
+  .van-bay.has-missing {
+    border-color: var(--red);
+    box-shadow: 0 0 12px rgba(192,57,43,0.2);
+    animation: missing-pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes loaded-pulse {
+    0%, 100% { box-shadow: 0 0 15px rgba(199,174,89,0.2); }
+    50% { box-shadow: 0 0 30px rgba(199,174,89,0.45); }
+  }
+  @keyframes missing-pulse {
+    0%, 100% { box-shadow: 0 0 8px rgba(192,57,43,0.15); }
+    50% { box-shadow: 0 0 18px rgba(192,57,43,0.35); }
+  }
+
+  .van-header {
+    background: var(--navy);
+    border-bottom: 1px solid var(--panel-border);
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .van-name { font-size: 14px; font-weight: 700; color: var(--gold); letter-spacing: 2px; }
+  .van-type { font-size: 9px; color: var(--text-dim); letter-spacing: 1px; }
+  .van-driver { font-size: 10px; color: var(--slate); font-weight: 600; }
+
+  .van-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 10px;
+    gap: 8px;
+    min-height: 0;
+  }
+
+  /* SVG van silhouette area */
+  .van-svg-area {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+    min-height: 0;
+    position: relative;
+  }
+  .van-svg {
+    max-height: 100%;
+    max-width: 100%;
+    overflow: visible;
+  }
+
+  /* Progress / score */
+  .van-footer {
+    border-top: 1px solid var(--panel-border);
+    padding: 8px 12px;
+    flex-shrink: 0;
+  }
+  .progress-bar-wrap {
+    background: rgba(255,255,255,0.06);
+    border-radius: 4px;
+    height: 8px;
+    overflow: hidden;
+    margin-bottom: 5px;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+    transition: width 0.5s ease;
+  }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    color: var(--text-dim);
+  }
+  .score-display {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gold-bright);
+    text-align: right;
+  }
+  .score-pts-label { font-size: 8px; color: var(--text-dim); }
+
+  /* Missing items panel */
+  .missing-panel {
+    background: var(--bg2);
+    border: 1px solid rgba(230,126,34,0.3);
+    border-radius: 8px;
+    flex-shrink: 0;
+    height: 88px;
+    max-height: 88px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .missing-title {
+    background: rgba(192,57,43,0.15);
+    padding: 3px 12px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--red);
+    text-transform: uppercase;
+    border-bottom: 1px solid rgba(192,57,43,0.2);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .missing-badge {
+    background: var(--red);
+    color: white;
+    font-size: 8px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 3px;
+    animation: badge-blink 1s ease-in-out infinite;
+  }
+  @keyframes badge-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .missing-list {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--gold-dim) transparent;
+    padding: 2px 0;
+    min-height: 0;
+  }
+  .missing-list::-webkit-scrollbar { width: 4px; }
+  .missing-list::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 2px; }
+  .missing-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    font-size: 9px;
+    line-height: 1.3;
+  }
+  .missing-name { flex: 1; font-weight: 500; color: var(--amber); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .missing-who { color: var(--text-dim); font-size: 8px; flex-shrink: 0; }
+  .missing-van { font-size: 8px; color: var(--text-dim); flex-shrink: 0; }
+  .unloaded-badge {
+    font-size: 7px;
+    font-weight: 700;
+    background: rgba(192,57,43,0.2);
+    border: 1px solid rgba(192,57,43,0.5);
+    color: var(--red);
+    padding: 1px 4px;
+    border-radius: 2px;
+    letter-spacing: 1px;
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="brand-wrap">
+    <svg class="brand-diamond" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="50,5 95,50 50,95 5,50" fill="none" stroke="#c7ae59" stroke-width="6"/>
+      <polygon points="50,22 78,50 50,78 22,50" fill="none" stroke="#c7ae59" stroke-width="3" opacity="0.55"/>
+      <circle cx="50" cy="50" r="5" fill="#c7ae59" opacity="0.85"/>
+    </svg>
+    <div class="brand-word">TAZA</div>
+  </div>
+  <div class="header-event">
+    <div class="event-name" id="event-name">—</div>
+    <div class="event-client" id="event-client">—</div>
+  </div>
+  <div class="countdown-wrap">
+    <div class="countdown-val" id="countdown">--:--:--</div>
+    <div class="countdown-label">Until Departure</div>
+  </div>
+  <div class="header-clock" id="clock">--:--</div>
+</div>
+
+<div class="main">
+  <div class="van-row" id="van-row">
+    <div style="display:flex;align-items:center;justify-content:center;width:100%;font-size:12px;color:var(--text-dim);letter-spacing:2px;">Loading…</div>
+  </div>
+
+  <div class="missing-panel" id="missing-panel" style="display:none;">
+    <div class="missing-title">
+      <span>⚠ Missing / Unconfirmed</span>
+      <span class="missing-badge" id="missing-count">0 UNLOADED</span>
+    </div>
+    <div class="missing-list" id="missing-list"></div>
+  </div>
+</div>
+
+<script>
+const DATA_URL = '/van-loadout.json';
+let departureTime = null;
+let countdownInterval = null;
+
+function updateClock() {
+  const now = new Date();
+  const h = (now.getHours() % 12 || 12).toString().padStart(2, '0');
+  const m = now.getMinutes().toString().padStart(2, '0');
+  const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
+  document.getElementById('clock').textContent = `${h}:${m} ${ampm}`;
+}
+
+function updateCountdown() {
+  if (!departureTime) return;
+  const now = new Date();
+  const diff = departureTime - now;
+  const el = document.getElementById('countdown');
+  if (diff <= 0) {
+    el.textContent = 'DEPARTED';
+    el.style.color = 'var(--red)';
+    return;
+  }
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  el.textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+  if (diff < 1800000) el.style.color = 'var(--red)';
+  else if (diff < 3600000) el.style.color = 'var(--amber)';
+  else el.style.color = 'var(--gold-bright)';
+}
+
+function buildVanSVG(vanKey, items, isLarge) {
+  const confirmed = items.filter(i => i.confirmed);
+  const pct = items.length ? confirmed.length / items.length : 0;
+
+  const w = isLarge ? 320 : 220;
+  const h = isLarge ? 160 : 130;
+
+  const bodyColor = pct >= 1 ? 'rgba(199,174,89,0.15)' : 'rgba(66,106,159,0.08)';
+  const outlineColor = pct >= 1 ? '#c7ae59' : '#426a9f';
+
+  // 2500: 320×160, scale ~1.19px/in (236"L×103.6"H, 159"WB, 34"front/43"rear overhang)
+  // City: 220×130, scale ~1.07px/in (187.5"L×74"H, 122.4"WB, 34"front/31"rear overhang)
+  const cargoX = isLarge ? 72 : 74;
+  const cargoW = isLarge ? 214 : 82;
+  const cargoTop = isLarge ? 7 : 32;
+  const cargoBot = isLarge ? 108 : 90;
+  const cols = Math.floor(cargoW / 18);
+  const dots = confirmed.slice(0, 40).map((item, idx) => {
+    const row = Math.floor(idx / cols);
+    const col = idx % cols;
+    const x = cargoX + col * 18 + 9;
+    const y = cargoBot - row * 16 - 8;
+    if (y < cargoTop) return '';
+    const colorMap = {food:'#e8703a', equipment:'#426a9f', furniture:'#6a9a70', linens:'#9a6ab0', supplies:'#c7ae59', presentation:'#4da6d0', beverages:'#60b060', safety:'#e04040', admin:'#c7ae59', uniforms:'#8080c0'};
+    const color = colorMap[item.category] || '#888';
+    return `<circle cx="${x}" cy="${y}" r="5" fill="${color}" opacity="0.85"/>`;
+  }).join('');
+
+  if (isLarge) {
+    // 2017 Ram ProMaster 2500 High Roof — true cab-forward: no hood, single near-vertical front face
+    // windshield starts 35% up from bumper, sweeps steeply back; tall flat roof; square rear
+    // front axle x=53, rear axle x=247, wheelbase 194px=163" (159" target ✓)
+    const body = 'M 12,132 L 12,85 Q 13,79 17,73 L 52,5 L 288,5 Q 292,5 293,12 L 294,132 L 269,132 A 22,22 0 0,1 225,132 L 75,132 A 22,22 0 0,1 31,132 Z';
+    const glass = 'M 12,83 L 17,73 L 52,5 L 70,5 L 70,83 Z';
+    return `
+<svg class="van-svg" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:${w}px;height:${h}px">
+  <path d="${body}" fill="${bodyColor}" stroke="${outlineColor}" stroke-width="2"/>
+  <path d="${glass}" fill="rgba(77,120,166,0.25)" stroke="${outlineColor}" stroke-width="1"/>
+  <line x1="70" y1="5" x2="70" y2="132" stroke="${outlineColor}" stroke-width="1" opacity="0.4"/>
+  <line x1="288" y1="5" x2="288" y2="132" stroke="${outlineColor}" stroke-width="1" opacity="0.4"/>
+  <rect x="291" y="58" width="7" height="5" rx="2" fill="${outlineColor}" opacity="0.5"/>
+  <circle cx="53" cy="132" r="22" fill="rgba(0,0,0,0.4)" stroke="${outlineColor}" stroke-width="2"/>
+  <circle cx="53" cy="132" r="11" fill="rgba(30,30,30,0.8)" stroke="${outlineColor}" stroke-width="1"/>
+  <circle cx="247" cy="132" r="22" fill="rgba(0,0,0,0.4)" stroke="${outlineColor}" stroke-width="2"/>
+  <circle cx="247" cy="132" r="11" fill="rgba(30,30,30,0.8)" stroke="${outlineColor}" stroke-width="1"/>
+  <clipPath id="cargo-clip-${vanKey}">
+    <rect x="72" y="7" width="214" height="121"/>
+  </clipPath>
+  <g clip-path="url(#cargo-clip-${vanKey})">${dots}</g>
+  ${pct >= 1 ? `<path d="${body}" fill="none" stroke="var(--gold)" stroke-width="3" opacity="0.5" style="filter:drop-shadow(0 0 8px var(--gold))"/>` : ''}
+</svg>`;
+  } else {
+    // 2016 Ram ProMaster City — distinct sloped hood (~23° rise), steeper windshield (~36° from horiz)
+    // lower roofline, shorter cargo box; front axle x=44, rear axle x=175, wheelbase 131px=123" (122.4" ✓)
+    const body = 'M 8,110 L 8,72 Q 9,68 13,65 L 36,55 Q 38,51 42,48 L 65,31 Q 67,30 72,30 L 158,30 Q 164,30 168,36 L 180,68 Q 184,82 188,98 L 208,110 L 193,110 A 18,18 0 0,1 157,110 L 62,110 A 18,18 0 0,1 26,110 Z';
+    const glass = 'M 42,48 L 65,31 L 72,30 L 72,52 Z';
+    return `
+<svg class="van-svg" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:${w}px;height:${h}px">
+  <path d="${body}" fill="${bodyColor}" stroke="${outlineColor}" stroke-width="2"/>
+  <path d="${glass}" fill="rgba(77,120,166,0.25)" stroke="${outlineColor}" stroke-width="1"/>
+  <line x1="72" y1="30" x2="72" y2="110" stroke="${outlineColor}" stroke-width="1" opacity="0.4"/>
+  <line x1="158" y1="30" x2="158" y2="110" stroke="${outlineColor}" stroke-width="1" opacity="0.4"/>
+  <rect x="182" y="50" width="5" height="3" rx="1.5" fill="${outlineColor}" opacity="0.5"/>
+  <circle cx="44" cy="110" r="18" fill="rgba(0,0,0,0.4)" stroke="${outlineColor}" stroke-width="2"/>
+  <circle cx="44" cy="110" r="9" fill="rgba(30,30,30,0.8)" stroke="${outlineColor}" stroke-width="1"/>
+  <circle cx="175" cy="110" r="18" fill="rgba(0,0,0,0.4)" stroke="${outlineColor}" stroke-width="2"/>
+  <circle cx="175" cy="110" r="9" fill="rgba(30,30,30,0.8)" stroke="${outlineColor}" stroke-width="1"/>
+  <clipPath id="cargo-clip-${vanKey}">
+    <rect x="74" y="32" width="82" height="58"/>
+  </clipPath>
+  <g clip-path="url(#cargo-clip-${vanKey})">${dots}</g>
+  ${pct >= 1 ? `<path d="${body}" fill="none" stroke="var(--gold)" stroke-width="3" opacity="0.5" style="filter:drop-shadow(0 0 8px var(--gold))"/>` : ''}
+</svg>`;
+  }
+}
+
+function buildVanBay(vanKey, vanData, isLarge) {
+  const items = vanData.items;
+  const confirmed = items.filter(i => i.confirmed);
+  const missing = items.filter(i => !i.confirmed);
+  const pct = items.length ? confirmed.length / items.length : 0;
+  const pctStr = Math.round(pct * 100);
+
+  const pts = confirmed.reduce((sum, i) => sum + i.points, 0);
+  const totalPts = items.reduce((sum, i) => sum + i.points, 0);
+
+  const bayClass = pct >= 1 ? 'fully-loaded' : (missing.length > 0 ? 'has-missing' : '');
+
+  const bay = document.createElement('div');
+  bay.className = `van-bay ${bayClass}`;
+  bay.dataset.vanKey = vanKey;
+  bay.innerHTML = `
+    <div class="van-header">
+      <div>
+        <div class="van-name">${vanData.name}</div>
+        <div class="van-type">${vanData.type}</div>
+      </div>
+      <div class="van-driver">DRIVER: ${vanData.driver.toUpperCase()}</div>
+    </div>
+    <div class="van-body">
+      <div class="van-svg-area">
+        ${buildVanSVG(vanKey, items, isLarge)}
+      </div>
+      <div class="van-footer">
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:4px;">
+          <div>
+            <div class="score-display">${pts.toLocaleString()}<span class="score-pts-label"> / ${totalPts} pts</span></div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:12px;font-weight:700;color:${pct>=1?'var(--gold)':pct>=0.7?'var(--green-bright)':'var(--text-dim)'};">${pctStr}%</div>
+            <div style="font-size:8px;color:var(--text-dim);">${confirmed.length} / ${items.length} items</div>
+          </div>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" style="width:${pctStr}%;${pct>=1?'background:linear-gradient(90deg,var(--gold-dim),var(--gold-bright));':''}" ></div>
+        </div>
+        <div class="progress-label">
+          <span>${confirmed.length} loaded</span>
+          <span>${missing.length > 0 ? missing.length + ' missing' : '✓ All loaded'}</span>
+        </div>
+      </div>
+    </div>
+  `;
+  return bay;
+}
+
+function buildMissing(allVans) {
+  const missing = [];
+  Object.entries(allVans).forEach(([key, van]) => {
+    van.items.filter(i => !i.confirmed).forEach(i => missing.push({...i, vanName: van.name}));
+  });
+
+  const panel = document.getElementById('missing-panel');
+  const list = document.getElementById('missing-list');
+  const badge = document.getElementById('missing-count');
+
+  if (!missing.length) {
+    panel.style.display = 'none';
+    return;
+  }
+
+  panel.style.display = 'flex';
+  badge.textContent = `${missing.length} UNLOADED`;
+  list.innerHTML = missing.map(i => `
+    <div class="missing-row">
+      <span class="unloaded-badge">UNLOADED</span>
+      <span class="missing-name">${i.name}</span>
+      <span class="missing-who">${i.assigned_to}</span>
+      <span class="missing-van">${i.vanName}</span>
+    </div>
+  `).join('');
+}
+
+async function refresh() {
+  try {
+    const res = await fetch(DATA_URL + '?t=' + Date.now());
+    if (!res.ok) return;
+    const data = await res.json();
+
+    document.getElementById('event-name').textContent = data.event.name;
+    document.getElementById('event-client').textContent = data.event.client + ' · ' + data.event.location;
+
+    departureTime = new Date(data.event.departure);
+
+    const row = document.getElementById('van-row');
+    row.innerHTML = '';
+    row.appendChild(buildVanBay('van1', data.vans.van1, true));
+    row.appendChild(buildVanBay('van2', data.vans.van2, false));
+
+    buildMissing(data.vans);
+  } catch(e) {
+    console.warn('Refresh error:', e);
+  }
+}
+
+setInterval(updateClock, 1000);
+setInterval(updateCountdown, 1000);
+updateClock();
+refresh();
+setInterval(refresh, 20000);
+</script>
+</body>
+</html>

@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TCL2 WEST — PREP SCREEN</title>
+<style>
+:root {
+  --bg: #070e1a;
+  --bg-panel: #0d1828;
+  --bg-panel-alt: #12213a;
+  --border: rgba(199,174,89,0.14);
+  --green: #2ecc71;
+  --green-dim: rgba(46,204,113,0.15);
+  --amber: #f39c12;
+  --amber-dim: rgba(243,156,18,0.15);
+  --red: #e74c3c;
+  --red-dim: rgba(231,76,60,0.15);
+  --text: #f0e8d8;
+  --text-dim: #7a7060;
+  --text-muted: #3a3630;
+  --gold: #c7ae59;
+  --slate: #426a9f;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.header {
+  height: 80px;
+  background: var(--bg-panel);
+  border-bottom: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 48px;
+}
+.header-left { display: flex; align-items: center; gap: 20px; }
+.header-logo {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 6px;
+  color: var(--gold);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.brand-diamond {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 6px rgba(199,174,89,0.5));
+}
+.header-mode {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  padding: 6px 20px;
+  border-radius: 6px;
+  border: 2px solid;
+}
+.mode-event { color: var(--red); border-color: var(--red); background: var(--red-dim); }
+.mode-prep { color: var(--amber); border-color: var(--amber); background: var(--amber-dim); }
+.mode-deadday { color: var(--green); border-color: var(--green); background: var(--green-dim); }
+.mode-overnight { color: var(--text-dim); border-color: var(--text-muted); background: rgba(255,255,255,0.03); }
+
+.header-right { display: flex; align-items: center; gap: 40px; }
+.header-clock { font-size: 36px; font-weight: 300; color: var(--text); letter-spacing: 3px; }
+.header-updated { font-size: 14px; color: var(--text-dim); }
+
+.mode-view {
+  display: none;
+  height: calc(100vh - 80px);
+  padding: 32px 48px;
+  overflow: hidden;
+}
+.mode-view.active { display: flex; }
+
+/* ===== EVENT MODE ===== */
+.event-view { flex-direction: column; gap: 28px; }
+.event-top { display: flex; justify-content: space-between; align-items: flex-start; flex-shrink: 0; }
+.event-info { flex: 1; }
+.event-name { font-size: 48px; font-weight: 700; line-height: 1.1; margin-bottom: 8px; }
+.event-detail { font-size: 24px; color: var(--text-dim); display: flex; gap: 24px; flex-wrap: wrap; align-items: center; }
+.event-detail span { display: flex; align-items: center; gap: 8px; }
+
+.countdown-box { text-align: right; flex-shrink: 0; }
+.countdown-label { font-size: 16px; letter-spacing: 4px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 4px; }
+.countdown-val { font-size: 96px; font-weight: 200; line-height: 1; letter-spacing: -2px; }
+.countdown-past { color: var(--red); }
+.countdown-near { color: var(--amber); }
+.countdown-ok { color: var(--green); }
+
+.blocker-bar {
+  background: var(--red-dim);
+  border: 2px solid var(--red);
+  border-radius: 8px;
+  padding: 16px 32px;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--red);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+  animation: blocker-pulse 2s ease-in-out infinite;
+}
+.blocker-bar.hidden { display: none; }
+@keyframes blocker-pulse {
+  0%, 100% { border-color: var(--red); }
+  50% { border-color: rgba(231,76,60,0.4); }
+}
+
+.stations-grid { flex: 1; display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+.station-bar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 32px;
+  flex: 1;
+  min-height: 0;
+}
+.station-bar-name { width: 260px; flex-shrink: 0; }
+.station-bar-title { font-size: 28px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+.station-bar-crew { font-size: 18px; color: var(--text-dim); margin-top: 2px; }
+.station-bar-track {
+  flex: 1;
+  height: 36px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.station-bar-fill {
+  height: 100%;
+  border-radius: 8px;
+  transition: width 1s ease, background-color 0.5s;
+}
+.fill-green { background: var(--green); }
+.fill-amber { background: var(--amber); }
+.fill-red { background: var(--red); }
+.station-bar-pct { width: 90px; text-align: right; font-size: 36px; font-weight: 300; flex-shrink: 0; }
+
+/* ===== PREP MODE ===== */
+.prep-view { gap: 32px; }
+.prep-left { flex: 2; display: flex; flex-direction: column; gap: 24px; }
+.prep-right { flex: 1; display: flex; flex-direction: column; gap: 24px; max-width: 600px; }
+
+.prep-overall {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px 32px;
+  flex-shrink: 0;
+}
+.prep-overall-label { font-size: 18px; letter-spacing: 3px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 12px; }
+.prep-overall-bar { height: 28px; background: rgba(255,255,255,0.06); border-radius: 6px; overflow: hidden; }
+.prep-overall-fill { height: 100%; border-radius: 6px; transition: width 1s ease; }
+.prep-overall-stats { display: flex; justify-content: space-between; margin-top: 8px; font-size: 20px; color: var(--text-dim); }
+
+.panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.panel-header {
+  padding: 16px 32px;
+  background: var(--bg-panel-alt);
+  border-bottom: 1px solid var(--border);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+.panel-body { padding: 16px 32px; flex: 1; overflow-y: auto; scrollbar-width: none; }
+
+.location-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 22px;
+}
+.location-row:last-child { border-bottom: none; }
+.location-item { font-weight: 600; }
+.location-bin { color: var(--text-dim); }
+.location-status { font-size: 28px; }
+
+.next-event-preview {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px 32px;
+  flex-shrink: 0;
+}
+.next-event-label { font-size: 16px; letter-spacing: 3px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; }
+.next-event-name { font-size: 32px; font-weight: 700; }
+.next-event-meta { font-size: 20px; color: var(--text-dim); margin-top: 4px; }
+
+/* ===== DEAD DAY MODE ===== */
+.dead-view { gap: 48px; }
+.dead-left { flex: 2; display: flex; flex-direction: column; min-height: 0; }
+.dead-right { flex: 1; display: flex; flex-direction: column; min-height: 0; max-width: 600px; }
+
+.week-table { width: 100%; border-collapse: collapse; }
+.week-table th {
+  text-align: left;
+  font-size: 16px;
+  letter-spacing: 3px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  padding: 12px 16px;
+  border-bottom: 2px solid var(--border);
+}
+.week-table td {
+  padding: 20px 16px;
+  font-size: 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  vertical-align: middle;
+}
+.week-date { color: var(--text-dim); width: 180px; }
+.week-name { font-weight: 600; }
+.week-pax { width: 120px; text-align: center; color: var(--text-dim); }
+.allergen-chip {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin: 2px 4px;
+}
+.allergen-critical { background: var(--red-dim); border: 1px solid var(--red); color: var(--red); }
+.allergen-warning { background: var(--amber-dim); border: 1px solid var(--amber); color: var(--amber); }
+
+.notes-item {
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 22px;
+  line-height: 1.4;
+}
+.notes-item:last-child { border-bottom: none; }
+
+/* ===== OVERNIGHT MODE ===== */
+.overnight-view { align-items: center; justify-content: center; opacity: 0.4; }
+.overnight-content { text-align: center; }
+.overnight-diamond {
+  font-size: 80px;
+  color: var(--gold);
+  opacity: 0.3;
+  animation: breathe 4s ease-in-out infinite;
+  margin-bottom: 32px;
+}
+@keyframes breathe {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.5; }
+}
+.overnight-time { font-size: 72px; font-weight: 200; letter-spacing: 4px; margin-bottom: 16px; }
+.overnight-status { font-size: 20px; color: var(--text-dim); letter-spacing: 3px; text-transform: uppercase; }
+.overnight-health { margin-top: 40px; display: flex; gap: 48px; justify-content: center; }
+.health-item { text-align: center; }
+.health-val { font-size: 28px; font-weight: 300; }
+.health-label { font-size: 14px; color: var(--text-dim); letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
+
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 20px;
+  color: var(--text-muted);
+  letter-spacing: 2px;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="header-logo">
+      <svg class="brand-diamond" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="50,5 95,50 50,95 5,50" fill="none" stroke="#c7ae59" stroke-width="6"/>
+        <polygon points="50,22 78,50 50,78 22,50" fill="none" stroke="#c7ae59" stroke-width="3" opacity="0.55"/>
+        <circle cx="50" cy="50" r="5" fill="#c7ae59" opacity="0.85"/>
+      </svg>
+      <span>TAZA &mdash; PREP SCREEN</span>
+    </div>
+    <div class="header-mode" id="mode-badge">&mdash;</div>
+  </div>
+  <div class="header-right">
+    <div class="header-updated" id="last-updated">&mdash;</div>
+    <div class="header-clock" id="clock">--:--</div>
+  </div>
+</div>
+
+<div class="mode-view event-view" id="view-event">
+  <div class="event-top">
+    <div class="event-info">
+      <div class="event-name" id="event-name">&mdash;</div>
+      <div class="event-detail" id="event-detail"></div>
+    </div>
+    <div class="countdown-box">
+      <div class="countdown-label">Departure</div>
+      <div class="countdown-val countdown-ok" id="countdown">--:--</div>
+    </div>
+  </div>
+  <div class="blocker-bar hidden" id="blocker-bar">
+    <span>&#9888;</span>
+    <span id="blocker-text">&mdash;</span>
+  </div>
+  <div class="stations-grid" id="event-stations"></div>
+</div>
+
+<div class="mode-view prep-view" id="view-prep">
+  <div class="prep-left">
+    <div class="prep-overall">
+      <div class="prep-overall-label">Overall Prep Progress</div>
+      <div class="prep-overall-bar">
+        <div class="prep-overall-fill fill-green" id="prep-fill" style="width:0%"></div>
+      </div>
+      <div class="prep-overall-stats" id="prep-stats">&mdash;</div>
+    </div>
+    <div class="stations-grid" id="prep-stations" style="flex:1;min-height:0"></div>
+  </div>
+  <div class="prep-right">
+    <div class="panel" style="flex:1.2">
+      <div class="panel-header">Last Known Location</div>
+      <div class="panel-body" id="location-list">
+        <div class="empty-state">No tracking data</div>
+      </div>
+    </div>
+    <div class="next-event-preview" id="next-event-box">
+      <div class="next-event-label">Next Event</div>
+      <div class="next-event-name" id="next-event-name">&mdash;</div>
+      <div class="next-event-meta" id="next-event-meta">&mdash;</div>
+    </div>
+  </div>
+</div>
+
+<div class="mode-view dead-view" id="view-dead">
+  <div class="dead-left">
+    <div class="panel" style="flex:1">
+      <div class="panel-header">Upcoming Week</div>
+      <div class="panel-body" id="week-list">
+        <div class="empty-state">No upcoming events</div>
+      </div>
+    </div>
+  </div>
+  <div class="dead-right">
+    <div class="panel" style="flex:1">
+      <div class="panel-header">Standing Notes</div>
+      <div class="panel-body" id="notes-list">
+        <div class="empty-state">No standing notes</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mode-view overnight-view" id="view-overnight">
+  <div class="overnight-content">
+    <div class="overnight-diamond">&#9670;</div>
+    <div class="overnight-time" id="overnight-clock">--:--</div>
+    <div class="overnight-status">System Idle</div>
+    <div class="overnight-health" id="overnight-health">
+      <div class="health-item">
+        <div class="health-val" id="health-updated">&mdash;</div>
+        <div class="health-label">Last Data Update</div>
+      </div>
+      <div class="health-item">
+        <div class="health-val" style="color:var(--green)">&#9679;</div>
+        <div class="health-label">Display Online</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var DATA_URL = '/situational.json';
+var currentMode = null;
+var lastData = null;
+var pollTimer = null;
+
+function esc(s) {
+  if (!s) return '';
+  var d = document.createElement('div');
+  d.textContent = String(s);
+  return d.innerHTML;
+}
+
+function updateClock() {
+  var now = new Date();
+  var h = now.getHours() % 12 || 12;
+  var m = now.getMinutes().toString().padStart(2, '0');
+  var ap = now.getHours() >= 12 ? 'PM' : 'AM';
+  var str = h + ':' + m + ' ' + ap;
+  document.getElementById('clock').textContent = str;
+  document.getElementById('overnight-clock').textContent = str;
+}
+
+function detectMode(data) {
+  if (data && data.force_mode) {
+    var fgig = data.today && data.today.gigs && data.today.gigs[0] || null;
+    var fgigMins = fgig && fgig.time ? parseInt(fgig.time.split(':')[0])*60+parseInt(fgig.time.split(':')[1]) : 0;
+    return { mode: data.force_mode, gig: fgig, gigMins: fgigMins };
+  }
+  var now = new Date();
+  var hour = now.getHours();
+  var mins = hour * 60 + now.getMinutes();
+
+  if (data && data.today && data.today.gigs && data.today.gigs.length > 0) {
+    for (var i = 0; i < data.today.gigs.length; i++) {
+      var gig = data.today.gigs[i];
+      if (!gig.time) continue;
+      var parts = gig.time.split(':');
+      var gigMins = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+      var diff = gigMins - mins;
+
+      var closeMins = gigMins + 240;
+      if (data.today.timeline && data.today.timeline.breakdown_end) {
+        var bp = data.today.timeline.breakdown_end.split(':');
+        closeMins = parseInt(bp[0]) * 60 + parseInt(bp[1]);
+      }
+
+      if (diff <= 240 && mins <= closeMins) {
+        return { mode: 'event', gig: gig, gigMins: gigMins };
+      }
+    }
+  }
+
+  if (data && data.today && data.today.prep_tasks) {
+    var pt = data.today.prep_tasks;
+    if (pt.total > 0 && pt.complete < pt.total) {
+      return { mode: 'prep' };
+    }
+  }
+
+  if (hour >= 22 || hour < 6) {
+    return { mode: 'overnight' };
+  }
+
+  return { mode: 'dead' };
+}
+
+function switchMode(mode) {
+  var views = ['event', 'prep', 'dead', 'overnight'];
+  for (var i = 0; i < views.length; i++) {
+    var el = document.getElementById('view-' + views[i]);
+    if (views[i] === mode) el.classList.add('active');
+    else el.classList.remove('active');
+  }
+
+  var badge = document.getElementById('mode-badge');
+  badge.className = 'header-mode';
+  if (mode === 'event') { badge.textContent = 'EVENT'; badge.classList.add('mode-event'); }
+  else if (mode === 'prep') { badge.textContent = 'PREP'; badge.classList.add('mode-prep'); }
+  else if (mode === 'dead') { badge.textContent = 'DEAD DAY'; badge.classList.add('mode-deadday'); }
+  else { badge.textContent = 'OVERNIGHT'; badge.classList.add('mode-overnight'); }
+
+  if (pollTimer) clearInterval(pollTimer);
+  var interval = (mode === 'event') ? 5000 : 60000;
+  pollTimer = setInterval(refresh, interval);
+  currentMode = mode;
+}
+
+function pctColor(pct) {
+  if (pct >= 75) return 'var(--green)';
+  if (pct >= 40) return 'var(--amber)';
+  return 'var(--red)';
+}
+function pctFillClass(pct) {
+  if (pct >= 75) return 'fill-green';
+  if (pct >= 40) return 'fill-amber';
+  return 'fill-red';
+}
+
+function buildStationBars(containerId, data) {
+  var container = document.getElementById(containerId);
+
+  if (data.prep_stations && data.prep_stations.length > 0) {
+    var html = '';
+    for (var i = 0; i < data.prep_stations.length; i++) {
+      var s = data.prep_stations[i];
+      var pct = Math.round(s.pct_complete || 0);
+      var blocked = s.blocker
+        ? ' <span style="color:var(--red)">BLOCKED: ' + esc(s.blocker) + '</span>'
+        : '';
+      html += '<div class="station-bar">'
+        + '<div class="station-bar-name">'
+        +   '<div class="station-bar-title">' + esc(s.name) + '</div>'
+        +   '<div class="station-bar-crew">' + esc(s.assigned_crew || '—') + blocked + '</div>'
+        + '</div>'
+        + '<div class="station-bar-track">'
+        +   '<div class="station-bar-fill ' + pctFillClass(pct) + '" style="width:' + pct + '%"></div>'
+        + '</div>'
+        + '<div class="station-bar-pct" style="color:' + pctColor(pct) + '">' + pct + '%</div>'
+        + '</div>';
+    }
+    container.innerHTML = html;
+    return;
+  }
+
+  var stationMap = {
+    'HOT LINE': 'Hot Sides', 'SAUTÉ': 'Sauces', 'SAUTE': 'Sauces',
+    'COLD LINE': 'Cold Sides', 'PASTRY': 'Packing'
+  };
+  var defaultStations = ['Proteins', 'Cold Sides', 'Hot Sides', 'Sauces', 'Packing'];
+  var stationData = {};
+  for (var i = 0; i < defaultStations.length; i++) {
+    stationData[defaultStations[i]] = { total: 0, done: 0, active: 0, crew: null };
+  }
+
+  if (data.cook_queue) {
+    for (var i = 0; i < data.cook_queue.length; i++) {
+      var item = data.cook_queue[i];
+      var mapped = stationMap[item.station] || 'Proteins';
+      if (!stationData[mapped]) stationData[mapped] = { total: 0, done: 0, active: 0, crew: null };
+      stationData[mapped].total++;
+      if (item.status === 'done' || item.status === 'complete') stationData[mapped].done++;
+      if (item.status === 'active') stationData[mapped].active++;
+    }
+  }
+
+  if (data.today && data.today.crew) {
+    var roleMap = {
+      'Lead Cook': 'Hot Sides', 'Line Cook': 'Proteins',
+      'Event Lead': 'Packing', 'Pastry/Expo': 'Packing',
+      'Prep Cook': 'Cold Sides', 'Sauce Cook': 'Sauces'
+    };
+    for (var i = 0; i < data.today.crew.length; i++) {
+      var c = data.today.crew[i];
+      var station = roleMap[c.role];
+      if (station && stationData[station] && !stationData[station].crew) {
+        stationData[station].crew = c.name;
+      }
+    }
+  }
+
+  var pt = data.today && data.today.prep_tasks;
+  var overallPct = pt && pt.total > 0 ? Math.round((pt.complete / pt.total) * 100) : 0;
+
+  var html = '';
+  for (var i = 0; i < defaultStations.length; i++) {
+    var name = defaultStations[i];
+    var sd = stationData[name];
+    var pct;
+    if (sd.total > 0) {
+      pct = Math.round(((sd.done + sd.active * 0.5) / sd.total) * 100);
+    } else {
+      pct = overallPct;
+    }
+    html += '<div class="station-bar">'
+      + '<div class="station-bar-name">'
+      +   '<div class="station-bar-title">' + esc(name) + '</div>'
+      +   '<div class="station-bar-crew">' + esc(sd.crew || '—') + '</div>'
+      + '</div>'
+      + '<div class="station-bar-track">'
+      +   '<div class="station-bar-fill ' + pctFillClass(pct) + '" style="width:' + pct + '%"></div>'
+      + '</div>'
+      + '<div class="station-bar-pct" style="color:' + pctColor(pct) + '">' + pct + '%</div>'
+      + '</div>';
+  }
+  container.innerHTML = html;
+}
+
+function buildEventMode(data, modeInfo) {
+  var gig = modeInfo.gig;
+  document.getElementById('event-name').textContent = gig.name;
+
+  var detailEl = document.getElementById('event-detail');
+  var parts = '';
+  if (gig.client) parts += '<span>' + esc(gig.client) + '</span>';
+  if (gig.pax) parts += '<span>' + gig.pax + ' guests</span>';
+  if (gig.time) parts += '<span>' + esc(gig.time) + '</span>';
+  if (data.today && data.today.allergens) {
+    for (var i = 0; i < data.today.allergens.length; i++) {
+      var a = data.today.allergens[i];
+      var cls = a.severity === 'critical' ? 'allergen-critical' : 'allergen-warning';
+      parts += '<span class="allergen-chip ' + cls + '">' + esc(a.flag) + ' (' + a.count + ')</span>';
+    }
+  }
+  detailEl.innerHTML = parts;
+
+  var now = new Date();
+  var nowMins = now.getHours() * 60 + now.getMinutes();
+  var diff = modeInfo.gigMins - nowMins;
+  var countEl = document.getElementById('countdown');
+
+  if (diff <= 0) {
+    var pastH = Math.floor(Math.abs(diff) / 60);
+    var pastM = Math.abs(diff) % 60;
+    countEl.textContent = '+' + pastH + 'h ' + pastM.toString().padStart(2, '0') + 'm';
+    countEl.className = 'countdown-val countdown-past';
+  } else {
+    var h = Math.floor(diff / 60);
+    var m = diff % 60;
+    countEl.textContent = h + 'h ' + m.toString().padStart(2, '0') + 'm';
+    countEl.className = 'countdown-val ' + (diff <= 60 ? 'countdown-near' : 'countdown-ok');
+  }
+
+  var blockerBar = document.getElementById('blocker-bar');
+  if (data.blockers && data.blockers.length > 0) {
+    blockerBar.classList.remove('hidden');
+    var bText = '';
+    for (var i = 0; i < data.blockers.length; i++) {
+      if (i > 0) bText += ' | ';
+      bText += data.blockers[i].description || data.blockers[i];
+    }
+    document.getElementById('blocker-text').textContent = bText;
+  } else {
+    blockerBar.classList.add('hidden');
+  }
+
+  buildStationBars('event-stations', data);
+}
+
+function buildPrepMode(data) {
+  var pt = data.today && data.today.prep_tasks;
+  if (pt && pt.total > 0) {
+    var pct = Math.round((pt.complete / pt.total) * 100);
+    var fill = document.getElementById('prep-fill');
+    fill.style.width = pct + '%';
+    fill.className = 'prep-overall-fill ' + pctFillClass(pct);
+    document.getElementById('prep-stats').innerHTML =
+      '<span>' + pt.complete + ' / ' + pt.total + ' tasks</span>' +
+      '<span>' + pt.in_progress + ' in progress</span>' +
+      '<span style="color:' + pctColor(pct) + '">' + pct + '%</span>';
+  }
+
+  buildStationBars('prep-stations', data);
+
+  var locEl = document.getElementById('location-list');
+  if (data.location_tracking && data.location_tracking.length > 0) {
+    var html = '';
+    for (var i = 0; i < data.location_tracking.length; i++) {
+      var loc = data.location_tracking[i];
+      var icon, iconColor;
+      if (loc.status === 'ok') { icon = '✓'; iconColor = 'var(--green)'; }
+      else if (loc.status === 'missing') { icon = '✗'; iconColor = 'var(--red)'; }
+      else { icon = '?'; iconColor = 'var(--amber)'; }
+      html += '<div class="location-row">'
+        + '<span class="location-item">' + esc(loc.item) + '</span>'
+        + '<span class="location-bin">' + esc(loc.bin_id || '—') + '</span>'
+        + '<span class="location-status" style="color:' + iconColor + '">' + icon + '</span>'
+        + '</div>';
+    }
+    locEl.innerHTML = html;
+  } else {
+    locEl.innerHTML = '<div class="empty-state">No tracking data</div>';
+  }
+
+  var gigs = data.today && data.today.gigs;
+  if (gigs && gigs.length > 0) {
+    var now = new Date();
+    var nowMins = now.getHours() * 60 + now.getMinutes();
+    var next = gigs[0];
+    for (var i = 0; i < gigs.length; i++) {
+      if (!gigs[i].time) continue;
+      var gp = gigs[i].time.split(':');
+      if (parseInt(gp[0]) * 60 + parseInt(gp[1]) > nowMins) { next = gigs[i]; break; }
+    }
+    document.getElementById('next-event-name').textContent = next.name;
+    var meta = next.time || '';
+    if (next.pax) meta += ' · ' + next.pax + ' guests';
+    if (next.client) meta += ' · ' + next.client;
+    document.getElementById('next-event-meta').textContent = meta;
+  } else {
+    document.getElementById('next-event-name').textContent = 'None scheduled';
+    document.getElementById('next-event-meta').textContent = '';
+  }
+}
+
+function buildDeadDay(data) {
+  var weekEl = document.getElementById('week-list');
+
+  if (data.upcoming_events && data.upcoming_events.length > 0) {
+    var html = '<table class="week-table">'
+      + '<thead><tr><th>Date</th><th>Event</th><th>PAX</th><th>Allergens</th></tr></thead><tbody>';
+    for (var i = 0; i < data.upcoming_events.length; i++) {
+      var ev = data.upcoming_events[i];
+      var aller = '';
+      if (ev.allergens) {
+        for (var j = 0; j < ev.allergens.length; j++) {
+          var a = ev.allergens[j];
+          var cls = a.severity === 'critical' ? 'allergen-critical' : 'allergen-warning';
+          aller += '<span class="allergen-chip ' + cls + '">' + esc(a.flag) + '</span>';
+        }
+      }
+      html += '<tr>'
+        + '<td class="week-date">' + esc(ev.date) + '</td>'
+        + '<td class="week-name">' + esc(ev.name) + '</td>'
+        + '<td class="week-pax">' + (ev.pax || '—') + '</td>'
+        + '<td>' + (aller || '—') + '</td>'
+        + '</tr>';
+    }
+    html += '</tbody></table>';
+    weekEl.innerHTML = html;
+  } else if (data.today && data.today.gigs && data.today.gigs.length > 0) {
+    var html = '<table class="week-table">'
+      + '<thead><tr><th>Time</th><th>Event</th><th>PAX</th><th>Client</th></tr></thead><tbody>';
+    for (var i = 0; i < data.today.gigs.length; i++) {
+      var g = data.today.gigs[i];
+      html += '<tr>'
+        + '<td class="week-date">' + esc(g.time) + '</td>'
+        + '<td class="week-name">' + esc(g.name) + '</td>'
+        + '<td class="week-pax">' + (g.pax || '—') + '</td>'
+        + '<td>' + esc(g.client || '—') + '</td>'
+        + '</tr>';
+    }
+    html += '</tbody></table>';
+    weekEl.innerHTML = html;
+  } else {
+    weekEl.innerHTML = '<div class="empty-state">No upcoming events</div>';
+  }
+
+  var notesEl = document.getElementById('notes-list');
+  if (data.standing_notes && data.standing_notes.length > 0) {
+    var html = '';
+    for (var i = 0; i < data.standing_notes.length; i++) {
+      html += '<div class="notes-item">' + esc(data.standing_notes[i]) + '</div>';
+    }
+    notesEl.innerHTML = html;
+  } else {
+    notesEl.innerHTML = '<div class="empty-state">No standing notes</div>';
+  }
+}
+
+function buildOvernight(data) {
+  if (data && data.last_updated) {
+    try {
+      var d = new Date(data.last_updated);
+      document.getElementById('health-updated').textContent =
+        d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    } catch(e) {}
+  }
+}
+
+function refresh() {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', DATA_URL + '?t=' + Date.now(), true);
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState !== 4) return;
+    if (xhr.status !== 200) return;
+    try {
+      var data = JSON.parse(xhr.responseText);
+      lastData = data;
+
+      if (data.last_updated) {
+        try {
+          var d = new Date(data.last_updated);
+          document.getElementById('last-updated').textContent =
+            'Updated ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        } catch(e) {}
+      }
+
+      var modeInfo = detectMode(data);
+      if (modeInfo.mode !== currentMode) switchMode(modeInfo.mode);
+
+      if (modeInfo.mode === 'event') buildEventMode(data, modeInfo);
+      else if (modeInfo.mode === 'prep') buildPrepMode(data);
+      else if (modeInfo.mode === 'dead') buildDeadDay(data);
+      else buildOvernight(data);
+    } catch(e) {
+      console.warn('Parse error:', e);
+    }
+  };
+  xhr.send();
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+refresh();
+</script>
+</body>
+</html>
