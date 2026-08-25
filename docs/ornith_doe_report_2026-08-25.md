@@ -77,7 +77,7 @@ Weak/noise-level factor. QA accuracy (8 deterministic tasks): temp 0.2 → 44%, 
 | 4K–24K | PASS | PASS | PASS |
 | 32K | PASS | PASS* | PASS |
 
-Retrieval ~100% to 32K. **Generation speed flat 22.3 t/s at every length; prompt-eval ~243 t/s even at 32K.** (Two apparent fails were artifacts: `max_tokens=64` starved the reasoning model → empty output; and a scorer strictness false-negative: model answered "1.1" ratio for the "110%" threshold — correct.) Coding-consistency task (new endpoint matching established `/api/v1` conventions from 16K spec) requires `max_tokens ≥ 256` for this reasoning model.
+Retrieval = 18/18 (100%) at every length 4K-32K and every position (v2 re-run, max_tokens=256). The two apparent v1 fails were artifacts: (1) max_tokens=64 starved the reasoning model -> empty output; (2) a scorer strictness false-negative: model answered "1.1" (the correct ratio) for the "110%" threshold. **Generation speed flat 22.3 t/s at every context length; prompt-eval ~243 t/s even at a 4078-token 32K prompt.** Coding-consistency task (write a new /api/v1/venues endpoint matching established conventions from a 16K spec): **PASS** with max_tokens=256 (this reasoning model needs >=256 tokens to emit a final answer).
 
 ## Production configuration (now live)
 - llama-server: **radv / cmoe0 / np2 / ub512 / b2048 / t8 / c32768 / flash-attn on / temp 0.2 / top_p 0.95 / top_k 20 / --mmproj (vision)**
