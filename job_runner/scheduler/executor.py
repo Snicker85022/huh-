@@ -65,8 +65,12 @@ class OrnithClient:
         except Exception as e:  # noqa: BLE001
             return {"ok": False, "error": str(e)}
 
-    def chat(self, system: str, user: str) -> Dict[str, Any]:
-        """One non-streamed completion. Raises on timeout / transport error."""
+    def chat(self, system: str, user: str, temperature: Optional[float] = None) -> Dict[str, Any]:
+        """One non-streamed completion. Raises on timeout / transport error.
+
+        `temperature` (optional) is the Goal-6 control-loop override; when
+        None the DOE-locked config.TEMP is used. Never touches server config.
+        """
         body = {
             "model": self.model,
             "messages": [
@@ -74,7 +78,7 @@ class OrnithClient:
                 {"role": "user", "content": user},
             ],
             "max_tokens": config.MAX_TOKENS,
-            "temperature": config.TEMP,
+            "temperature": config.TEMP if temperature is None else temperature,
             "top_p": config.TOP_P,
             "top_k": config.TOP_K,
             "stream": False,
@@ -172,12 +176,13 @@ class Executor:
             return self._get_sandbox().run(cmd, ws, config.VERIFY_TIMEOUT_S)
         return run_verify(ws, cmd, config.VERIFY_TIMEOUT_S)
 
-    def execute_once(self, task: Dict[str, Any], system: str, user: str) -> AttemptResult:
+    def execute_once(self, task: Dict[str, Any], system: str, user: str,
+                     temperature: Optional[float] = None) -> AttemptResult:
         ws = self.make_workspace(task)
         target_file = task.get("target_file") or "solution.py"
         lang_hint = "python" if target_file.endswith(".py") else os.path.splitext(target_file)[1].lstrip(".")
         try:
-            resp = self.client.chat(system, user)
+            resp = self.client.chat(system, user, temperature=temperature)
         except (urllib.error.URLError, socket.timeout, TimeoutError, OSError) as e:
             return AttemptResult(
                 code="",

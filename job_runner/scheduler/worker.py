@@ -49,6 +49,8 @@ from .db import DataStore, init_db  # noqa: E402
 from .executor import Executor  # noqa: E402
 from .prompt import SYSTEM_PROMPT, assemble_prompt  # noqa: E402
 
+# Goal 3 / Goal 6 are lazy-imported inside the worker to keep module import light.
+
 STOP_REASON_TIME = "stopped: session time limit"
 STOP_REASON_TASKS = "stopped: task limit"
 STOP_REASON_MANUAL = "stopped: manual shutdown"
@@ -115,6 +117,11 @@ class Worker:
         self.session_started: float = 0.0
         self.success_walls: deque = deque(maxlen=config.STALL_MEDIAN_WINDOW)
         self._worker_active = False
+        # Goal 3 (error distillation) + Goal 6 (control loop) -- built lazily.
+        self._distiller: Optional[Any] = None
+        self._guidance = ""                 # cross-task guidance for the NEXT attempt
+        self._control: Optional[Any] = None
+        self.temperature_override: Optional[float] = None
 
     # -- session guard -----------------------------------------------------
 
@@ -168,6 +175,21 @@ class Worker:
         except Exception as e:  # noqa: BLE001 -- report write must never crash the loop
             print(f"[scheduler] WARNING: could not write session report: {e}")
 
+    # -- Goal 3 / Goal 6 lazy helpers ----------------------------------------
+    def _get_distiller(self):
+        """Error-distiller facade (known-fix cache + novel-error lessons)."""
+        if self._distiller is None:
+            from .error_distill import ErrorDistiller
+            self._distiller = ErrorDistiller(store=self.store)
+        return self._distiller
+
+    def _get_control(self):
+        """Meta-orchestration control loop (Goal 6)."""
+        if self._control is None:
+            from .controller import MetaController
+            self._control = MetaController()
+        return self._control
+
     # -- main loop ---------------------------------------------------------
 
     def run_forever(self) -> None:
@@ -204,6 +226,8 @@ class Worker:
         cb = cb_mod.CircuitBreaker(task["id"])
         attempts_log: list = list(self.store.list_attempts(task["id"]))
         note = "manual human-review retry (fresh cycle)" if task.get("fresh") else "auto"
+        # Reset stale cross-task guidance from any prior task before this one.
+        self._guidance = ""
 
         # Crash recovery: replay persisted attempts (guaranteed-exact, see module docstring).
         if not task.get("fresh"):
@@ -238,8 +262,14 @@ class Worker:
                 workspace=ws, target_file=task.get("target_file") or "solution.py",
                 negative_examples=negative,
             )
+            # Goal 3: inject cross-task/distilled knowledge (from a prior failure or
+            # a past task) into the prompt the model will actually see this attempt.
+            if self._guidance:
+                user = user + "\n\n## Cross-task knowledge\n" + self._guidance
+                self._guidance = ""
 
-            result = self.executor.execute_once(task, SYSTEM_PROMPT, user)
+            result = self.executor.execute_once(
+                task, SYSTEM_PROMPT, user, temperature=self.temperature_override)
 
             # Per-attempt stall check (the 190s-vs-1.2s thrash signature): an attempt
             # that completes under every timeout but blows past the median of recent
@@ -257,6 +287,30 @@ class Worker:
             code_hash = cb_mod.normalize_ast_hash(result.code)
             err_sig = (cb_mod.normalize_error_signature(result.error)
                        if (not result.passed and result.error) else None)
+
+            # Goal 3: if this attempt FAILED with a recognizable signature, resolve
+            # cross-task knowledge for the NEXT attempt (known fix or distilled
+            # novel-error lesson). Non-fatal: never let it break the worker loop.
+            if not result.passed and err_sig:
+                try:
+                    self._guidance = self._get_distiller().guidance_for(
+                        err_sig, result.error or "", result.code)
+                except Exception:  # noqa: BLE001
+                    self._guidance = ""
+
+            # Goal 6: feed each attempt to the control loop; apply any cooldown
+            # (throttle between retries) and temperature override for next call.
+            ctrl = self._get_control()
+            action = ctrl.record(attempt_wall, result.gen_tps, stall, result.passed)
+            if action.temperature is not None:
+                self.temperature_override = action.temperature
+            ctrl.persist(self.store, task["id"])
+            if action.cooldown_s > 0:
+                print(f"[scheduler] CONTROL: {action.reason} -- cooling down {action.cooldown_s:.0f}s "
+                      f"(sustained slow generation, not a code loop)")
+                # stop.wait returns immediately if a stop was requested (tests/ctrl-c)
+                self.stop.wait(action.cooldown_s)
+
             outcome = cb.record_attempt(
                 result.code,
                 None if result.passed else (result.error or "verify failed"),

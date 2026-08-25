@@ -42,7 +42,7 @@ class FakeExecutor:
     def make_workspace(self, task):
         return tempfile.mkdtemp(prefix="sched-test-")
 
-    def execute_once(self, task, system, user):
+    def execute_once(self, task, system, user, temperature=None, **kwargs):
         self.calls.append(task["id"])
         self.prompts.append(user)
         n = len(self.calls)

@@ -79,3 +79,26 @@ CANCEL_CHECK_INTERVAL = 1.0
 def ensure_dirs() -> None:
     for d in (DATA_DIR, REPORTS_DIR, WORKSPACE_ROOT):
         os.makedirs(d, exist_ok=True)
+
+# --- Goal 3: error distillation (known-fix cache + novel-error lessons) -----
+# The distilled-lesson cache persists across worker restarts / sessions.
+DISTILL_LESSONS_PATH = os.environ.get(
+    "SCHED_DISTILL_LESSONS",
+    os.path.join(DATA_DIR, "distill_lessons.json"),
+)
+# Default distiller: of the local locked Ornith endpoint on :8082. Set
+# SCHED_DISTILL_OFFLINE=1 to force the deterministic (no-model) fallback.
+DISTILL_OFFLINE = os.environ.get("SCHED_DISTILL_OFFLINE", "0") == "1"
+
+# --- Goal 6: meta-orchestration control loop -------------------------------
+# The loop watches a rolling window of per-attempt generation speeds and the
+# recent pass/fail ratio, and adjusts (a) temperature within [min,max] and
+# (b) a cooldown between tasks when a SUSTAINED collapse is detected. All
+# bounded; the loop never stops or kills -- the session outer guard does that.
+CONTROL_WINDOW = int(os.environ.get("SCHED_CONTROL_WINDOW", "32"))
+CONTROL_RESULT_WINDOW = int(os.environ.get("SCHED_CONTROL_RESULT_WINDOW", "12"))
+CONTROL_SLOW_TPS = float(os.environ.get("SCHED_CONTROL_SLOW_TPS", "5.0"))
+CONTROL_COLLAPSE_SAMPLES = int(os.environ.get("SCHED_CONTROL_COLLAPSE_SAMPLES", "4"))
+CONTROL_MIN_TEMP = float(os.environ.get("SCHED_CONTROL_MIN_TEMP", "0.1"))
+CONTROL_MAX_TEMP = float(os.environ.get("SCHED_CONTROL_MAX_TEMP", "0.6"))
+CONTROL_COOLDOWN_S = float(os.environ.get("SCHED_CONTROL_COOLDOWN_S", "30.0"))
