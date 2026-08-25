@@ -421,7 +421,7 @@ length,pos,ok,pp_tps,gen_tps,prompt_n,wall,expected,got,consistency_ok,consisten
     shared); with --no-mmap the weights are copied into GTT (gtt_used ~27GB). No speed difference measured.
 
 ## Production settings applied (2026-08-25)
-radv / --n-cpu-moe 0 / -np 2 / -ub 512 / -b 2048 / -t 8 / -c 32768 / --flash-attn on
+radv / --n-cpu-moe 0 / -np 4 / -ub 512 / -b 2048 / -t 8 / -c 32768 / --flash-attn on
 --temp 0.2 --top-p 0.95 --top-k 20 / --mmproj / default power (STAPM45/Fast54/Slow45) / perf auto / GTT 50GiB
 LibreChat Ornith addParams: temperature 0.2, top_p 0.95, top_k 20. Smoke: PROD-OK @ 23.1 gen t/s.
 
