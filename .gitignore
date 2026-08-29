@@ -1,7 +1,11 @@
-job_runner/.venv/
+*.db
 job_runner/__pycache__/
-job_runner/scheduler/__pycache__/
-job_runner/scheduler/tests/__pycache__/
 job_runner/scheduler/data/
+job_runner/scheduler/__pycache__/
 job_runner/scheduler/scheduler.env
+job_runner/scheduler/tests/__pycache__/
+job_runner/.venv/
+*.pyc
 __pycache__/
+.pytest_cache/
+.venv/

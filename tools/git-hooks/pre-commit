@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# .git/hooks/pre-commit — gates on the real tests, not a linter
+set -euo pipefail
+cd /home/taza/repo
+
+echo "pre-commit: syntax check..."
+git diff --cached --name-only --diff-filter=ACM -- '*.py' | xargs -r -I{} python3 -m py_compile {}
+
+echo "pre-commit: running the real test suite..."
+cd job_runner
+.venv/bin/python -m pytest scheduler/ -q
