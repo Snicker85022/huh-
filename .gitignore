@@ -1,3 +1,4 @@
+.aider*
 *.db
 job_runner/__pycache__/
 job_runner/scheduler/data/
