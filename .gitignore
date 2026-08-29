@@ -4,3 +4,4 @@ job_runner/scheduler/__pycache__/
 job_runner/scheduler/tests/__pycache__/
 job_runner/scheduler/data/
 job_runner/scheduler/scheduler.env
+__pycache__/

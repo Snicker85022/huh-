@@ -19,3 +19,12 @@
 - Coding tasks: /home/taza/cc-aider-exec.sh (SwiftServe :8080 local, or deepseek tier).
 - n100 lane: /home/taza/cc-aider-exec-n100.sh (Eggplant :8081, or deepseek).
 - Local (Notion-free) queue already exists: /opt/taza/inbox + aider-watcher-n100.service.
+
+## Code consistency check (mandatory before running any .py file you wrote/rewrote)
+Before running pytest, python -c, or starting a service against any .py file you
+just wrote or edited, run:
+  python3 /home/taza/repo/tools/code-consistency-check/scripts/audit_refs.py <file.py>
+Fix every finding before testing. This catches rename-drift bugs (renamed function/
+dataclass field/self.attr with a stale call site) that have repeatedly cost turns
+and hit recursion limits on this project. Full rationale:
+/home/taza/repo/tools/code-consistency-check/SKILL.md
