@@ -1,0 +1,108 @@
+# Taza OS URS — EMERGENCY-PRINT cluster
+_Exported: 2026-09-19 21:35 | 5 rows_
+_Source: Notion Master URS & Specification Registry_
+
+---
+## EPR-001 — Emergency print path
+**Status:**  | **Priority:** P1 | **Release:** V1.0
+
+**Record Type:**  
+Atomic Requirement
+
+**Domain:**  
+Operational Monitoring
+
+**User Requirement Statement:**  
+Need: if power goes out, the kitchen still gets a printed copy of what's left to do — no dependency on screens or network.
+
+**Functional Requirement Specification:**  
+Emergency print path. The N100 must be able to print the current operational truth (remaining packout items + open tasks) to the owned Star TSP143IIIU (USB) thermal printer during a power outage. Image path: StarTSPImage → native Star Graphic Mode raster → /dev/usb/lp1 directly (CUPS installed for LAN reachability only, not the image path — lp/lpr produces incorrect scaling). Print templates designed for 80mm width (~42 ch/line; checkbox per van/category; auto-cut).
+
+**Required for Release:**  
+NO
+
+_Notion: https://app.notion.com/p/Emergency-print-path-3cfe152fc199811c867afe4d366c99e8_
+
+---
+## EPR-002 — Phased screen-shed procedure
+**Status:**  | **Priority:** P1 | **Release:** V1.0
+
+**Record Type:**  
+Atomic Requirement
+
+**Domain:**  
+Operational Monitoring
+
+**User Requirement Statement:**  
+Need: when power fails, crew finishes what's already cooking safely, gets the printed status, and the important stuff stays powered — no scramble, no guessing what to do.
+
+**Functional Requirement Specification:**  
+Phased screen-shed procedure. On outage: (1) finish in-progress cooking/packing task safely (~8 min); (2) print ops truth from N100; (3) shed TVs; (4) preserve N100 + ER605 + switch + z33 + one MicroTouch as long as feasible. Convenience Wi-Fi AP unplugged at T+0 (phone keeps broadcasting if needed).
+
+**Required for Release:**  
+NO
+
+_Notion: https://app.notion.com/p/Phased-screen-shed-procedure-3cfe152fc19981f5b456cbe93d2077f2_
+
+---
+## EPR-003 — N100-priority power
+**Status:**  | **Priority:** P1 | **Release:** V1.0
+
+**Record Type:**  
+Atomic Requirement
+
+**Domain:**  
+Operational Monitoring
+
+**User Requirement Statement:**  
+Need: whatever else goes dark in an outage, the brain (N100 + router + switch) stays up longest — everything else depends on it.
+
+**Functional Requirement Specification:**  
+N100-priority power. The N100 + ER605 router + 8-port switch (the 'brain') must remain powered longest. A stronger UPS for this group is under evaluation (sizing TBD).
+
+**Required for Release:**  
+NO
+
+_Notion: https://app.notion.com/p/N100-priority-power-3cfe152fc19981e089a9e25facd2a4b8_
+
+---
+## EPR-004 — West Wall MicroTouch + West Google TV accept no backup power
+**Status:**  | **Priority:** P1 | **Release:** V1.0
+
+**Record Type:**  
+Atomic Requirement
+
+**Domain:**  
+Operational Monitoring
+
+**User Requirement Statement:**  
+Need: don't overspend on backup power for screens that can afford to go dark during a rare outage.
+
+**Functional Requirement Specification:**  
+West Wall MicroTouch + West Google TV are accepted to go dark with no backup power during an outage. Do not spec UPS capacity for them. Rationale: rare event; avoid over-buying UPS units.
+
+**Required for Release:**  
+NO
+
+_Notion: https://app.notion.com/p/West-Wall-MicroTouch-West-Google-TV-accept-no-backup-power-3cfe152fc19981e5863afa19fbb9a0db_
+
+---
+## EPR-007 — Final UPS allocation map
+**Status:**  | **Priority:** P2 | **Release:** V1.0
+
+**Record Type:**  
+Atomic Requirement
+
+**Domain:**  
+Operational Monitoring
+
+**User Requirement Statement:**  
+Need: a final, settled answer for which device is backed up by which UPS — not an open question during an actual outage.
+
+**Functional Requirement Specification:**  
+Final UPS allocation map (which devices on which of the existing two 600VA APCs vs. a possible third/stronger unit). Blocked on EPR-006.
+
+**Required for Release:**  
+NO
+
+_Notion: https://app.notion.com/p/Final-UPS-allocation-map-3cfe152fc1998124807cf28bbb812c8e_
