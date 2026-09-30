@@ -22,7 +22,7 @@ Wix form payload, Gmail inbox
 NocoDB Leads table row; Task; SMS notification. Feeds W2
 
 **Trigger:**  
-Gmail (new Wix form submission email) + Wix webhook
+Gmail (new Wix form submission email) — V1.0 email-only per D1; Wix webhook = V1.1 stub
 
 **Open Questions:**  
 A Wix API may be usable to pull inquiry data directly instead of relying on email parsing — evaluate.
@@ -34,7 +34,7 @@ _Notion: https://app.notion.com/p/Lead-Capture-3b5e152fc1998148923fff8bddd2d81b_
 
 ---
 ## W10 — Google Calendar Sync
-**Status:** Deployed | **Priority:**  | **Release:** 
+**Status:** Superseded (D15 — replaced by Taza Calendar Web App, reads/writes `events` table directly) | **Priority:**  | **Release:** 
 
 **Domain:**  
 System Infrastructure
@@ -232,7 +232,7 @@ Lead Acquisition
 As Sandra, I need a quick refresher on who I'm calling and why, texted to me right before a scheduled follow-up call, so I'm not walking into it cold.
 
 **Functional Requirement Specification:**  
-When a Task of type 'follow-up call' is assigned to Sandra and is due within 60 minutes, the system shall fetch the customer profile + recent touchpoints, pass them to AI with the pre-call brief prompt, and deliver a 3-paragraph brief (≤300 chars) via Twilio SMS to Sandra. SLA: delivered <60 seconds before the task due time.
+When a Task of type 'follow-up call' is assigned to Sandra and is due within 60 minutes, the system shall fetch the customer profile + recent touchpoints, pass them to AI with the pre-call brief prompt, and deliver a 3-paragraph brief (3 paragraphs, ≤900 chars, ~150 words — phone-readable on the go) via Twilio SMS to Sandra. SLA: delivered per D9: fire at 60-min window entry, 5-min floor before due, poll 5 min, delivery SLA ≤2 min.
 
 **Inputs:**  
 NocoDB Customer profile from W2/W4
@@ -295,7 +295,7 @@ Customer Intelligence
 As Sandra, I need to just talk and have my words show up as editable text, instead of typing everything myself.
 
 **Functional Requirement Specification:**  
-When Sandra clicks 'Record' in the CRM session UI, the browser captures audio from the device microphone, sends the audio blob to the Whisper API, receives the transcript, and presents it in the CRM session as Sandra's text input for her to review/edit before sending. SLA: <1 second transcription.
+When Sandra clicks 'Record' in the CRM session UI, the browser captures audio from the device microphone, sends the audio blob to the Whisper API, receives the transcript, and presents it in the CRM session as Sandra's text input for her to review/edit before sending. SLA (D13): ≤15s audio → <1s, 16–60s → <3s, >60s → rejected at capture. Measured clip-end to transcript in browser.
 
 **Inputs:**  
 Browser mic audio blob
@@ -307,7 +307,7 @@ Transcribed text feeds into W4 as Sandra's message
 Sandra clicks Record on CRM Session page
 
 **Failure Behavior:**  
-Fallback: type instead if Whisper down.
+Whisper down → fail visibly: 'transcription unavailable, please type' (D13).
 
 **Maintenance Requirements:**  
 ~$1.80/mo at 10min/day.
@@ -385,7 +385,7 @@ Need: menu changes made in Square (price, new item, updated attributes) show up 
 On a Square catalog.version.updated webhook (primary trigger) or a 6-hour fallback schedule, the system shall fetch all active Catering items including all 12 Catalog Intelligence custom attributes via SearchCatalogItems (NOT SearchCatalogObjects — only SearchCatalogItems returns custom attribute values), and upsert the canonical NocoDB Menu Items table. The catalog_version cursor is stored in NocoDB for incremental sync; on webhook miss, the Square Events API replay path is used before falling back to a full re-fetch. Fallback: manual NocoDB edit as last resort.
 
 **Inputs:**  
-Square Catalog (12 Catalog Intelligence attributes: 7 visible + 5 hidden)
+Square Catalog (11 Catalog Intelligence attributes: 6 visible + 5 hidden, per D18)
 
 **Outputs:**  
 NocoDB Menu Items table (incremental upsert), catalog_version cursor. Feeds W7 (RAG lookups), V2-FEAT-006 Backward Scheduler
