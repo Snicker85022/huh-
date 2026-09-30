@@ -1356,7 +1356,7 @@ Event Execution
 Need: crew can set a timer or get a trip-hazard warning hands-free — no tapping a screen mid-task.
 
 **Functional Requirement Specification:**  
-The system shall deploy three V1.x NPU capabilities on the MT8390 via MediaTek NeuroPilot SDK (TF/PyTorch/ONNX → MDLA 3.0 INT8, ADB sideloaded, 100% offline): (1) V1.1 — Voice Timer: crew speaks a timer, NPU classifies and starts it on-device; (2) V1.2 — Trip Hazard Detection: ambient floor-area camera monitoring via TFLite; (3) V1.1/V1.2 shared infrastructure — the voice/camera close infrastructure from NPU 5. V1.0 NPU scope is passive mood-ring logging only (already decided). V2.0 capabilities are in [[SPEC:PROD-35]].
+The system shall deploy three V1.x NPU capabilities on the MT8390 via MediaTek NeuroPilot SDK (TF/PyTorch/ONNX → MDLA 3.0 INT8, ADB sideloaded, 100% offline): (1) V1.1 — Voice Timer: crew speaks a timer, NPU classifies and starts it on-device; (2) V1.2 — Trip Hazard Detection: ambient floor-area camera monitoring via TFLite; (3) V1.1/V1.2 shared infrastructure — the voice/camera close infrastructure from NPU 5. V1.0 NPU scope is passive mood-ring logging only (already decided). V2.0 capabilities are in [[SPEC:PROD-35]] [DANGLING — no PROD-35 in the registry; create a stub or repoint].
 
 **Inputs:**  
 MT1/MT2 MicroTouch NPU (MDLA 3.0 Deep Learning Accelerator + Tensilica VP6 Vision Processor, confirmed hardware per 2026-07-13 research), mic array, front camera
@@ -1371,7 +1371,7 @@ Continuous passive monitoring during kitchen operation
 Kitchen stress signals and hands-full moments (need a timer, spot a trip hazard) currently require either nothing happening or interrupting someone — the NPU sits unused hardware capable of catching these passively.
 
 **Dependency Notes:**  
-Shares NPU 5's NPU authority boundary (verifies/assists, humans authoritative) — same code guard should gate V1.1/V1.2, not a separate one. See [[SPEC:PROD-35]] for V2.0 tier (6 capabilities, hardware-gated).
+Shares NPU 5's NPU authority boundary (verifies/assists, humans authoritative) — same code guard should gate V1.1/V1.2, not a separate one. See [[SPEC:PROD-35]] for V2.0 tier (6 capabilities, hardware-gated) [DANGLING — not in registry].
 
 **Rationale:**  
 10-capability MT8390 NPU roadmap locked 2026-07-13 (confidence 0.85), split V1.0/V1.x/V2.0.

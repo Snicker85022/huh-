@@ -24,6 +24,15 @@
 | 2026-09-25 | Live DB inspection (Cortex) | Four-DB inventory added (§2.9). NocoDB already pointed at tazaos (MIGRATION-001 step 4 mostly done; steps 1/2/3/5 open). WireGuard refs in security.md/health.md flagged for retirement. |
 | 2026-09-30 | Nick decision (Pass 1, W11) | **D21 LOCKED — W11 folded into PROD-22.** `changelog` = alert queue only (W12 writes, W13 reads). Raw before/after history lives in `audit_log` (PROD-22). W11 becomes a read-only changelog view over `audit_log` — removes the duplicated raw-diff capture path. |
 
+## 0.1 Two numbering systems — do not conflate
+
+- **D1–D23 (no dash)** = THIS file's living decisions. Authoritative.
+- **D-XXX (dash + 3 digits)** = legacy Notion decision IDs scattered through the
+  cluster FRS prose (D-004, D-019, D-021, D-025, D-060, D-061...). Unmapped,
+  frozen with Notion. They are NOT this file's D-numbers. When a spec says
+  "Implements D-019", it does NOT mean the D19 deposit decision above.
+  See `urs/alias-map.tsv` class `legacy-decision-ref`.
+
 ## Status legend
 
 - **LOCKED** — decided explicitly by Nick in this review cycle; normative.
