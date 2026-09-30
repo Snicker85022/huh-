@@ -97,3 +97,15 @@ Every Verification Method line tagged [AUTO] / [NICK] / [NICK+AUTO]. AUTO =
 deterministic/backend (queries, code-search, arithmetic, boundaries, idempotency).
 NICK = human judgment or physical observation (SMS on phone, document quality,
 real-world effect). Critical-things-that-make-life-hell → NICK. See urs/acvm-standard.md.
+
+## D24 — Rename project cancelled; unique-ID + alias map instead (Nick 2026-10-01)
+
+- **Spec IDs are frozen as-is.** The existing `Spec ID` (287 unique, 0 collisions)
+  is the tracking and cross-referencing key. Inputs/Outputs/Dependencies point at it.
+- **D20 rename (strip URS-/KITL/SCREEN padding) is DEFERRED INDEFINITELY** — it was
+  cosmetic and consumed attention. Revisit as a mechanical find-replace only after
+  the alias map is complete.
+- **The real artifact is `urs/alias-map.tsv`**: one row per prose alias mapping to
+  its canonical ID. Classes: CLOSE N / SHOP N / INVOICE N / CATALOG N / PACK N /
+  short-forms (KIT-101→URS-KIT-101) / legacy D-XXX decision refs / dangling IDs.
+- Pass 1 per-cluster audits ADD ROWS to this map; they do not rename prose.
