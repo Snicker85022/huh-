@@ -152,6 +152,21 @@ Parent→child lot lineage across thaw/repack/portion/refreeze/consume/waste/ove
 - Tier-2 (PROD-09): `item_packing_profiles` (GN pan footprint/depth/fill qty per service mode), `item_components` (BOM explosion), `item_equipment` (occupancy), `procedure_link` (SOP). Deterministic retrieval only — LLM never computes geometry (ground rule).
 - `pack_rate_config` — deterministic pack rates (min/unit) by item/service mode; lookup for W15 pack_start computation (open item §7-3). Named by Nick 2026-09-20.
 
+- `ingredient_master` — canonical ingredient facts for shopping + BOM (PROD-05-V2 / CAT-003). One row per ingredient. **Schema defined 2026-10-01 (Nick "fix the ingredient master schema now").**
+  - `id` (PK, generated)
+  - `name` TEXT UNIQUE NOT NULL — canonical ingredient name
+  - `category` TEXT — protein / produce / dairy / dry_good / frozen / spice / other
+  - `vendor` TEXT — preferred vendor (vendor grouping + reliability tracking, PROD-05-V2/KIT-106)
+  - `vendor_alt` TEXT — backup vendor
+  - `unit` TEXT NOT NULL — lb / oz / each / cup / gal / count
+  - `frost_risk` BOOLEAN NOT NULL DEFAULT FALSE — must stay chilled/frozen; pulled last within vendor group in-car (PROD-05-V2)
+  - `safety_stock_qty` NUMERIC NOT NULL DEFAULT 0 — below this → FLAG task, never silent Buy
+  - `thaw_lead_hours` NUMERIC — how far ahead dense frozen items must start thawing (prep planning)
+  - `shelf_life_days` NUMERIC — perishability horizon for batching windows
+  - `notes` TEXT
+  - `created_at` / `updated_at` per §5.0
+  - Populated from the RAG transfer (219 rows, `rag_operations_content` recipe/portion metadata) + Sandra's portion notes.
+
 
 ### 2.7 CRM / sales tables — MIGRATION-001 targets (DRAFT; schema derived from the NocoDB export)
 

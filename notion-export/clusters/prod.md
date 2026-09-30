@@ -187,7 +187,7 @@ Addresses: crew interrupting each other to ask 'where is X / what's next'; stale
 All wall displays update from pushed state with <4s lag; each TV shows its correct per-screen mode (EVENT/PREP/DEAD DAY/OVERNIGHT); completed items persist with visual suppression ([[SPEC:SSB-003]]); CRITICAL allergen updates reach displays fast; TV→content mapping matches the intended role split (repoint pass needed — see Notes); voice gating (display-persistence.js) wired to the live frontends.
 
 **Open Questions:**  
-TCL West=prep, TCL East=situational, Insignia=van loadout mode assignment mismatched vs 07-14 audit — needs repoint. Voice gated by display-persistence.js (built+tested, NOT wired to live TV — see DISPLAY 26). square-catalog-sync/square-menu-sync/taza-git-sync were FAILED on N100 — verify status, feeds [[SPEC:PROD-06]]/[[SPEC:SW-011]].
+RESOLVED 2026-10-01 (Nick): screen assignment is correct — TCL West=prep, TCL East=situational, Insignia=van loadout. The 07-14 'needs repoint' note was mislabeled; the real (V1.x) idea is SLOW-TIME DYNAMIC CONTENT: during slow prep times, show upcoming-days/events situational review data; at crunch time, revert to the assigned purposes above. Voice gated by display-persistence.js (built+tested, NOT wired to live TV — see DISPLAY 26). square-catalog-sync/square-menu-sync/taza-git-sync were FAILED on N100 — verify status, feeds [[SPEC:PROD-06]]/[[SPEC:SW-011]].
 
 **Rationale:**  
 D-INF-001: reduce inference demand, don't speed it up.
@@ -260,7 +260,7 @@ Need: shopping for multiple events gets combined into one smart list — grouped
 The system shall aggregate shopping needs across all events in the planning window, group items by preferred vendor (frost-risk items pulled last within each vendor group to minimise temperature exposure in-car), apply Task Verb Library governance (Buy / Pull / FLAG) so every line is a real task-engine task, enforce safety-stock thresholds, capture substitutions at check-off ([[SPEC:URS-KIT-105]]), and write all updates through the canonical backend with optimistic-update + conflict-revert on the mobile client. CAUTION: do not use an earlier draft sketch as a code reference — its frost-risk ternary is a no-op bug (both branches return 'Buy').
 
 **Inputs:**  
-Paid-deposit events in shopping window; [[SPEC:PROD-09]] item_components BOM; ingredient master (vendor, frost_risk, safety_stock_qty - schema incomplete, see Open Items)
+Paid-deposit events in shopping window; [[SPEC:PROD-09]] item_components BOM; `ingredient_master` table (vendor, frost_risk, safety_stock_qty — schema defined, see postgres-spec §2.6)
 
 **Outputs:**  
 Buy/Pull tasks written to PostgreSQL tasks table, vendor-tagged; FLAG tasks for any quantity the system can't determine with confidence; vendor-grouped view in staff app
@@ -1356,7 +1356,7 @@ Event Execution
 Need: crew can set a timer or get a trip-hazard warning hands-free — no tapping a screen mid-task.
 
 **Functional Requirement Specification:**  
-The system shall deploy three V1.x NPU capabilities on the MT8390 via MediaTek NeuroPilot SDK (TF/PyTorch/ONNX → MDLA 3.0 INT8, ADB sideloaded, 100% offline): (1) V1.1 — Voice Timer: crew speaks a timer, NPU classifies and starts it on-device; (2) V1.2 — Trip Hazard Detection: ambient floor-area camera monitoring via TFLite; (3) V1.1/V1.2 shared infrastructure — the voice/camera close infrastructure from NPU 5. V1.0 NPU scope is passive mood-ring logging only (already decided). V2.0 capabilities are in [[SPEC:PROD-35]] [DANGLING — no PROD-35 in the registry; create a stub or repoint].
+The system shall deploy three V1.x NPU capabilities on the MT8390 via MediaTek NeuroPilot SDK (TF/PyTorch/ONNX → MDLA 3.0 INT8, ADB sideloaded, 100% offline): (1) V1.1 — Voice Timer: crew speaks a timer, NPU classifies and starts it on-device; (2) V1.2 — Trip Hazard Detection: ambient floor-area camera monitoring via TFLite; (3) V1.1/V1.2 shared infrastructure — the voice/camera close infrastructure from NPU 5. V1.0 NPU scope is passive mood-ring logging only (already decided). V2.0 NPU capability tier deferred to V1.x (Nick 2026-10-01) — will be added as a new spec then, not PROD-35.
 
 **Inputs:**  
 MT1/MT2 MicroTouch NPU (MDLA 3.0 Deep Learning Accelerator + Tensilica VP6 Vision Processor, confirmed hardware per 2026-07-13 research), mic array, front camera
@@ -1371,7 +1371,7 @@ Continuous passive monitoring during kitchen operation
 Kitchen stress signals and hands-full moments (need a timer, spot a trip hazard) currently require either nothing happening or interrupting someone — the NPU sits unused hardware capable of catching these passively.
 
 **Dependency Notes:**  
-Shares NPU 5's NPU authority boundary (verifies/assists, humans authoritative) — same code guard should gate V1.1/V1.2, not a separate one. See [[SPEC:PROD-35]] for V2.0 tier (6 capabilities, hardware-gated) [DANGLING — not in registry].
+Shares NPU 5's NPU authority boundary (verifies/assists, humans authoritative) — same code guard should gate V1.1/V1.2, not a separate one. V2.0 NPU tier (6 capabilities, hardware-gated) is deferred to V1.x per Nick 2026-10-01.
 
 **Rationale:**  
 10-capability MT8390 NPU roadmap locked 2026-07-13 (confidence 0.85), split V1.0/V1.x/V2.0.
@@ -1466,7 +1466,7 @@ CONFORMS TO [[SPEC:PROD-38]].
 RESOLVED 2026-09-02 (Nick, agnostic — prefers local NPU edge compute for intent classification but doesn't need it for V1.0): this spec's Chrome Web Speech API + N100 approach ships for V1.0. [[SPEC:KIT-017]]'s NPU wake-word approach is Nick's preferred long-term direction — treat it as the V1.x/V2 upgrade path once tested and proven, not a launch blocker.
 
 **Rationale:**  
-Cites D-051 OVERTURNED (2026-07-09, NPU confirmed accessible via NNAPI/NeuroPilot) as technical foundation; confirms NPU 1/[[SPEC:PROD-35]]'s NeuroPilot assumption.
+Cites D-051 OVERTURNED (2026-07-09, NPU confirmed accessible via NNAPI/NeuroPilot) as technical foundation; confirms NPU 1's NeuroPilot assumption (see V1.x NPU tier note).
 
 **Acceptance Criteria:**  
 Deferred — V2.0 ask. No AC/VM until promoted.
