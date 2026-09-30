@@ -83,3 +83,10 @@ W11's raw before/after capture duplicated PROD-22's `audit_log`. Resolution (opt
 - `audit_log` (PROD-22, trigger-fired, append-only) = sole history-of-record.
 - `changelog` = alert queue only (W12 writes alerts, W13 reads).
 - W11 = read-only changelog view over `audit_log` for Leads/Customers/Invoices/Tasks.
+
+## D22 — AC/VM drafting standard (Nick 2026-09-30)
+
+Cortex drafts AC/VM for all specs. Mandatory: normal + edge + negative +
+silent-failure + challenge-test classes. VM must name the evidence artifact
+(query/screenshot/photo/observation log/code-search/hands-on). Nick is reviewer.
+Standard in `urs/acvm-standard.md`.
