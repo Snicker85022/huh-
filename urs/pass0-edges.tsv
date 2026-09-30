@@ -1,0 +1,122 @@
+source	target	status	source_cluster	target_cluster	evidence
+CAT-001	CAT-002	ONE_WAY_OUT	catalog	catalog	timing), SW-011 (local menu cache), and the CAT-002..006 / PROD-16-V2 packing & scheduling layer
+CAT-001	PROD-16-V2	ONE_WAY_OUT	catalog	prod	1 (local menu cache), and the CAT-002..006 / PROD-16-V2 packing & scheduling layer.
+CAT-001	SW-011	ONE_WAY_OUT	catalog	software	nfidence), W9 (menu sync), W15 (BEO timing), SW-011 (local menu cache), and the CAT-002..006 / P
+CAT-001	URS-KIT-102	ONE_WAY_IN	catalog	kit	
+CAT-001	W15	ONE_WAY_OUT	catalog	workflows	oice pre-fill + confidence), W9 (menu sync), W15 (BEO timing), SW-011 (local menu cache), and
+CAT-001	W7	ONE_WAY_OUT	catalog	workflows	on layer via SearchCatalogItems; consumed by W7 (invoice pre-fill + confidence), W9 (menu sy
+CAT-001	W9	ONE_WAY_OUT	catalog	workflows	sumed by W7 (invoice pre-fill + confidence), W9 (menu sync), W15 (BEO timing), SW-011 (local
+KIT-001	URS-LKL-001	ONE_WAY_IN	kit-legacy	lkl	
+PROD-01	PROD-24	ONE_WAY_IN	prod	prod	
+PROD-01	PROD-25	ONE_WAY_IN	prod	prod	
+PROD-01	URS-DISP-002	ONE_WAY_IN	prod	display	
+PROD-01	URS-KANBAN-001	ONE_WAY_IN	prod	kanban	
+PROD-01	URS-KIT-103	ONE_WAY_IN	prod	kit	
+PROD-02	PROD-24	ONE_WAY_IN	prod	prod	
+PROD-02	PROD-36	ONE_WAY_IN	prod	prod	
+PROD-02	PROD-37	ONE_WAY_IN	prod	prod	
+PROD-03	PROD-01	ONE_WAY_OUT	prod	prod	Card state changes → task status updates → PROD-01 trigger; card-closing captures LKL data (inv
+PROD-04	URS-DISP-003	ONE_WAY_IN	prod	display	
+PROD-04	URS-DISP-004	ONE_WAY_IN	prod	display	
+PROD-05-V2	URS-MOB-002	ONE_WAY_IN	prod	mobile	
+PROD-06	PROD-05	ONE_WAY_IN	prod	prod	
+PROD-09	PROD-05-V2	ONE_WAY_IN	prod	prod	
+PROD-09	PROD-16	ONE_WAY_IN	prod	prod	
+PROD-09	PROD-16-V2	ONE_WAY_IN	prod	prod	
+PROD-10	PROD-18	ONE_WAY_IN	prod	prod	
+PROD-14	PROD-02	ONE_WAY_OUT	prod	prod	Structured allergen flags → feeds PROD-02 task queue automatically (no staff interpret
+PROD-14	PROD-04	ONE_WAY_OUT	prod	prod	grate with allergen display logic already on PROD-04 KDS
+PROD-14	PROD-07	ONE_WAY_OUT	prod	prod	ff interpretation step); upsell selections → PROD-07 invoice draft; could integrate with allergen
+PROD-15	PROD-03	ONE_WAY_OUT	prod	prod	catalog tables; Taza Method distinctions -> PROD-03 gamification content
+PROD-15	PROD-09	ONE_WAY_OUT	prod	prod	explosion, equipment occupancy, SOP text -> PROD-09 catalog tables; Taza Method distinctions ->
+PROD-16	PROD-16-V2	ONE_WAY_IN	prod	prod	
+PROD-16-V2	PROD-02	ONE_WAY_OUT	prod	prod	Named carrier manifests -> PROD-02 task generation (Pack tasks); item lifecycle
+PROD-17	PROD-06	ONE_WAY_OUT	prod	prod	s PROD-07 invoice dashboard (labor cost) and PROD-06 task scheduling (crew availability)
+PROD-17	PROD-07	ONE_WAY_OUT	prod	prod	ts by service type; arrival/lead-time; feeds PROD-07 invoice dashboard (labor cost) and PROD-06 t
+PROD-18	PROD-07	ONE_WAY_OUT	prod	prod	materialized view of a graph subset); feeds PROD-07 RAG lookups; feeds PROD-16 Pan Tetris as fir
+PROD-18	PROD-09	ONE_WAY_OUT	prod	prod	Feeds PROD-09 Tier 2 tables (proposed: materialized view o
+PROD-18	PROD-16	ONE_WAY_OUT	prod	prod	ph subset); feeds PROD-07 RAG lookups; feeds PROD-16 Pan Tetris as first real use case
+PROD-19	PROD-04	ONE_WAY_OUT	prod	prod	spection ready); allergen_flags rows feeding PROD-04's persistent banner; van load manifest (depa
+PROD-20	PROD-04	ONE_WAY_OUT	prod	prod	PROD-23 exception router, PROD-25 notifier, PROD-04 dashboard state (all subscribe)
+PROD-20	PROD-22	MIRRORED	prod	prod	system_events rows -> PROD-22 audit log, PROD-23 exception router, PROD-25
+PROD-20	PROD-23	MIRRORED	prod	prod	system_events rows -> PROD-22 audit log, PROD-23 exception router, PROD-25 notifier, PROD-04
+PROD-20	PROD-24	ONE_WAY_IN	prod	prod	
+PROD-20	PROD-25	MIRRORED	prod	prod	PROD-22 audit log, PROD-23 exception router, PROD-25 notifier, PROD-04 dashboard state (all subsc
+PROD-21	PROD-07	ONE_WAY_OUT	prod	prod	cords -> W1/W2 lead capture, W6 CRM nightly, PROD-07 invoice prefill; invalid rows -> PROD-23 exc
+PROD-21	PROD-22	ONE_WAY_OUT	prod	prod	l; invalid rows -> PROD-23 exceptions queue; PROD-22 audit log
+PROD-21	PROD-23	MIRRORED	prod	prod	ly, PROD-07 invoice prefill; invalid rows -> PROD-23 exceptions queue; PROD-22 audit log
+PROD-21	W1	ONE_WAY_OUT	prod	workflows	Promoted canonical records -> W1/W2 lead capture, W6 CRM nightly, PROD-07 inv
+PROD-21	W2	ONE_WAY_OUT	prod	workflows	Promoted canonical records -> W1/W2 lead capture, W6 CRM nightly, PROD-07 invoic
+PROD-21	W6	ONE_WAY_OUT	prod	workflows	ted canonical records -> W1/W2 lead capture, W6 CRM nightly, PROD-07 invoice prefill; invali
+PROD-22	PROD-04	ONE_WAY_OUT	prod	prod	audit_log rows -> PROD-04 dashboard state, health monitoring, W6 night
+PROD-22	W6	ONE_WAY_OUT	prod	workflows	PROD-04 dashboard state, health monitoring, W6 nightly brief (change-history context)
+PROD-23	PROD-04	ONE_WAY_OUT	prod	prod	eue rows -> PROD-25 notifier (alerts owner), PROD-04 dashboard state, PROD-22 audit log
+PROD-23	PROD-22	ONE_WAY_OUT	prod	prod	ier (alerts owner), PROD-04 dashboard state, PROD-22 audit log
+PROD-23	PROD-25	MIRRORED	prod	prod	exceptions_queue rows -> PROD-25 notifier (alerts owner), PROD-04 dashboard s
+PROD-23	URS-MOB-003	ONE_WAY_IN	prod	mobile	
+PROD-24	PROD-10	ONE_WAY_OUT	prod	prod	ashboard/browser; only cache-miss queries -> PROD-10 inference layer
+PROD-25	PROD-04	ONE_WAY_OUT	prod	prod	Sandra), ntfy (Nick/ops), PROD-22 audit log, PROD-04 dashboard state
+PROD-25	PROD-22	ONE_WAY_OUT	prod	prod	Twilio SMS (Sandra), ntfy (Nick/ops), PROD-22 audit log, PROD-04 dashboard state
+PROD-25	URS-EVENT-002	ONE_WAY_IN	prod	event	
+PROD-26	PROD-10	ONE_WAY_OUT	prod	prod	layer connection string, PROD-20 event bus, PROD-10 LLM client endpoint (reconciles legacy OLLAM
+PROD-26	PROD-20	ONE_WAY_OUT	prod	prod	module: PROD-27 DB layer connection string, PROD-20 event bus, PROD-10 LLM client endpoint (reco
+PROD-26	PROD-24	ONE_WAY_OUT	prod	prod	r (ZEBRA_HOST/PORT), cache path settings for PROD-24
+PROD-26	PROD-25	ONE_WAY_OUT	prod	prod	(reconciles legacy OLLAMA_BASE_URL naming), PROD-25 notifier (ZEBRA_HOST/PORT), cache path setti
+PROD-26	PROD-27	MIRRORED	prod	prod	(SW-001 mandatory) consumed by every module: PROD-27 DB layer connection string, PROD-20 event bu
+PROD-26	PROD-28	ONE_WAY_IN	prod	prod	
+PROD-26	SW-001	ONE_WAY_OUT	prod	software	Env-var-driven endpoints (SW-001 mandatory) consumed by every module: PROD-27
+PROD-27	PROD-01	ONE_WAY_OUT	prod	prod	DB connections/queries -> PROD-01 task engine, PROD-20 event bus, PROD-22 audi
+PROD-27	PROD-20	ONE_WAY_OUT	prod	prod	connections/queries -> PROD-01 task engine, PROD-20 event bus, PROD-22 audit log, and every othe
+PROD-27	PROD-22	ONE_WAY_OUT	prod	prod	s -> PROD-01 task engine, PROD-20 event bus, PROD-22 audit log, and every other module reading/wr
+PROD-28	PROD-04	ONE_WAY_OUT	prod	prod	otifier (alert on failure/threshold breach), PROD-04 dashboard state (status tile)
+PROD-28	PROD-25	ONE_WAY_OUT	prod	prod	Health status -> PROD-25 notifier (alert on failure/threshold breach)
+PROD-34	PROD-04	ONE_WAY_OUT	prod	prod	Vibe/timer/hazard signals -> PROD-04 kitchen displays (alert overlay), PROD-25 no
+PROD-34	PROD-25	ONE_WAY_OUT	prod	prod	-> PROD-04 kitchen displays (alert overlay), PROD-25 notifier (hazard alerts)
+PROD-34	PROD-37	ONE_WAY_IN	prod	prod	
+PROD-37	PROD-02	ONE_WAY_OUT	prod	prod	Card close events -> PROD-02 (alternate close modality alongside tap/PIN)
+PROD-37	PROD-36	ONE_WAY_OUT	prod	prod	ernate close modality alongside tap/PIN) and PROD-36 (voice/camera as a lot-transaction input pat
+PROD-38	PROD-02	ONE_WAY_OUT	prod	prod	TaskCloseEvent consumed by: PROD-02 (LKL), PROD-19 (equipment/allergen/van/porti
+PROD-38	PROD-19	ONE_WAY_OUT	prod	prod	TaskCloseEvent consumed by: PROD-02 (LKL), PROD-19 (equipment/allergen/van/portion), PROD-36 (i
+PROD-38	PROD-20	ONE_WAY_OUT	prod	prod	OD-37 (voice/camera close), PROD-22 (audit), PROD-20 (event bus emit)
+PROD-38	PROD-22	ONE_WAY_OUT	prod	prod	ventory lots), PROD-37 (voice/camera close), PROD-22 (audit), PROD-20 (event bus emit)
+PROD-38	PROD-36	ONE_WAY_OUT	prod	prod	), PROD-19 (equipment/allergen/van/portion), PROD-36 (inventory lots), PROD-37 (voice/camera clos
+PROD-38	PROD-37	ONE_WAY_OUT	prod	prod	rgen/van/portion), PROD-36 (inventory lots), PROD-37 (voice/camera close), PROD-22 (audit), PROD-
+URS-CREW-002	URS-CREW-001	ONE_WAY_IN	crew	crew	
+URS-CREW-002	URS-CREW-003	MIRRORED	crew	crew	dated, persisted event configuration used by URS-CREW-003 and URS-CREW-004 for the active service sess
+URS-CREW-002	URS-CREW-004	MIRRORED	crew	crew	event configuration used by URS-CREW-003 and URS-CREW-004 for the active service session.
+URS-DISP-002	PROD-04	ONE_WAY_OUT	display	prod	oadcast to all displays via the push fabric (PROD-04).
+URS-DISP-002	URS-DISP-003	ONE_WAY_IN	display	display	
+URS-DISP-002	URS-DISP-004	ONE_WAY_IN	display	display	
+URS-DISP-002	URS-DISP-005	ONE_WAY_IN	display	display	
+URS-EVENT-001	URS-EVENT-002	ONE_WAY_IN	event	event	
+URS-EVENT-001	URS-KANBAN-005	ONE_WAY_IN	event	kanban	
+URS-EVENT-001	URS-LKL-004	ONE_WAY_IN	event	lkl	
+URS-HEALTH-001	URS-HEALTH-005	ONE_WAY_OUT	health	health	+ Tailscale; the same signals available for URS-HEALTH-005 staleness logic and for alerting.
+URS-INV-001	URS-INV-005	ONE_WAY_IN	inventory	inventory	
+URS-INV-003	URS-INV-004	ONE_WAY_IN	inventory	inventory	
+URS-INV-003	URS-LABEL-001	ONE_WAY_IN	inventory	label	
+URS-KANBAN-002	URS-KANBAN-005	MIRRORED	kanban	kanban	ation; the trigger for the downstream event (URS-KANBAN-005).
+URS-KIT-101	PROD-22	ONE_WAY_OUT	kit	prod	quipment, crew, timestamp) in the audit log (PROD-22).
+URS-KIT-102	PROD-22	ONE_WAY_OUT	kit	prod	ce record (who, when, how) in the audit log (PROD-22).
+URS-KIT-105	URS-KIT-106	ONE_WAY_IN	kit	kit	
+URS-LABEL-001	URS-LABEL-006	ONE_WAY_IN	label	label	
+URS-LABEL-006	URS-LABEL-005	ONE_WAY_OUT	label	label	m: one logged print attempt + one ZPL job to URS-LABEL-005. On cancel: nothing. On offline: one queued/
+URS-LKL-001	URS-LKL-002	MIRRORED	lkl	lkl	A valid LKL/bin captured at close, handed to URS-LKL-002 for persistence.
+URS-LKL-002	URS-LKL-004	ONE_WAY_IN	lkl	lkl	
+V1.0-IG	W7	ONE_WAY_OUT	uncategorized	workflows	Input Grammar nudge on low confidence; feeds W7 extraction.
+W1	W2	MIRRORED	workflows	workflows	ads table row; Task; SMS notification. Feeds W2
+W1	W6	ONE_WAY_IN	workflows	workflows	
+W12	W13	MIRRORED	workflows	workflows	Alert written to Change Log, triggers W13
+W15	PROD-04	ONE_WAY_IN	workflows	prod	
+W15	URS-KIT-103	ONE_WAY_IN	workflows	kit	
+W2	PROD-25	ONE_WAY_IN	workflows	prod	
+W2	W3	ONE_WAY_IN	workflows	workflows	
+W2	W6	MIRRORED	workflows	workflows	red_flags. Hot to SMS Sandra; Warm to digest W6; Low/Pass to weekly review
+W4	W3	ONE_WAY_IN	workflows	workflows	
+W4	W6	ONE_WAY_IN	workflows	workflows	
+W4	W7	ONE_WAY_IN	workflows	workflows	
+W5	W4	MIRRORED	workflows	workflows	Transcribed text feeds into W4 as Sandra's message
+W6	W13	MIRRORED	workflows	workflows	ion candidates; morning digest SMS 7am feeds W13
+W7	W15	MIRRORED	workflows	workflows	items; approval Task for Nick/Sandra. Feeds W15
+W9	W15	ONE_WAY_IN	workflows	workflows	
+W9	W7	MIRRORED	workflows	workflows	ental upsert), catalog_version cursor. Feeds W7 (RAG lookups), V2-FEAT-006 Backward Schedule
