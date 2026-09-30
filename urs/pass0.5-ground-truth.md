@@ -76,3 +76,10 @@ Four mechanical rules, applied to 287 specs → 113 renamed, 174 unchanged, 0 co
 **Numbering gaps are Pass 1 findings, not rename targets:** INT-002, LABEL-002, TV-008/009/010, PROD-30/31/32/33/35 missing. Do not renumber; flag.
 
 Map artifact: `urs/canonical-id-map.tsv` (287 rows, source_id → final_id).
+
+## D21 — Changelog vs audit_log (Nick 2026-09-30, Pass 1)
+
+W11's raw before/after capture duplicated PROD-22's `audit_log`. Resolution (option B):
+- `audit_log` (PROD-22, trigger-fired, append-only) = sole history-of-record.
+- `changelog` = alert queue only (W12 writes alerts, W13 reads).
+- W11 = read-only changelog view over `audit_log` for Leads/Customers/Invoices/Tasks.

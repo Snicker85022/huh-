@@ -60,23 +60,23 @@ NO
 _Notion: https://app.notion.com/p/Google-Calendar-Sync-3b5e152fc1998151a06bd5b924a9f1de_
 
 ---
-## W11 — Change Log Writer
-**Status:** Deployed | **Priority:**  | **Release:** 
+## W11 — System Changelog View
+**Status:** In Development (revised — read view only, D21) | **Priority:**  | **Release:** 
 
 **Domain:**  
 System Infrastructure
 
 **Functional Requirement Specification:**  
-On NocoDB webhooks fired by key table changes (Leads, Customers, Invoices, Tasks status changes), the system shall capture before/after field values and write a timestamped entry to the System Changelog.
+The system shall provide a read-only changelog view over `audit_log` (PROD-22 — append-only, trigger-fired on every canonical write), filtered to the key tables: Leads, Customers, Invoices (= event records), Tasks. Nick/Sandra review field-level before/after history here. No separate capture path — PROD-22's audit trigger is the sole writer. Supersedes the earlier raw-diff design (duplicated PROD-22; folded in per D21).
 
 **Inputs:**  
-NocoDB webhook old/new value diffs
+audit_log (PROD-22 — actor, table, old/new, timestamp)
 
 **Outputs:**  
-System Changelog entries (audit trail)
+Read-only changelog view over audit_log, key tables (Leads, Customers, Invoices, Tasks)
 
 **Trigger:**  
-NocoDB webhooks on key tables (Leads, Customers, Customer Events, Tasks status changes)
+On-demand view query (no write path)
 
 **Failure Behavior:**  
 Fallback: manual changelog entries.
@@ -94,13 +94,13 @@ _Notion: https://app.notion.com/p/Change-Log-Writer-3b5e152fc19981bf89ecc9f66f2e
 Operational Monitoring
 
 **Functional Requirement Specification:**  
-On an hourly schedule, the system shall scan for: overdue Tasks, Leads with no response in >24 hours, and flagged Customer Events. Findings are written as alerts to the Change Log and trigger W13.
+On an hourly schedule, the system shall scan for: overdue Tasks, Leads with no response in >24 hours, and flagged Customer Events. Findings are written as alerts to the changelog (alert queue) and trigger W13.
 
 **Inputs:**  
 Overdue Tasks; unresponded Leads (>24h); flagged Customer Events
 
 **Outputs:**  
-Alert written to Change Log, triggers W13
+Alert written to changelog (alert queue), triggers W13
 
 **Trigger:**  
 Schedule every hour (or on-demand)

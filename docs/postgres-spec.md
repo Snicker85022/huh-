@@ -22,6 +22,7 @@
 | 2026-09-25 | Nick directive (mURS review) | **D18 LOCKED — Square attrs = 11 (6 visible + 5 hidden).** "12/7-visible" retired; §2.6 corrected. CAT-001 export still says 12 (flagged for mURS pass 1). |
 | 2026-09-25 | Nick directive (mURS review) | **D19 LOCKED — deposit = fixed dollar.** `deposit_basis_cents` frozen at first publish; % is form-only default (50%). §2.7 updated. |
 | 2026-09-25 | Live DB inspection (Cortex) | Four-DB inventory added (§2.9). NocoDB already pointed at tazaos (MIGRATION-001 step 4 mostly done; steps 1/2/3/5 open). WireGuard refs in security.md/health.md flagged for retirement. |
+| 2026-09-30 | Nick decision (Pass 1, W11) | **D21 LOCKED — W11 folded into PROD-22.** `changelog` = alert queue only (W12 writes, W13 reads). Raw before/after history lives in `audit_log` (PROD-22). W11 becomes a read-only changelog view over `audit_log` — removes the duplicated raw-diff capture path. |
 
 ## Status legend
 
@@ -73,6 +74,7 @@
 - **D17 — PROD-30 direction confirmed (V1.1, parked).** Taza Invoice & Payment Orchestration System. Replaces Square invoicing partially (Square = last-resort fallback). Failover routing: Helcim (primary, ~2.5%) → Stripe (secondary, ~2.9%) → Square (fallback, ~3.3%). Own invoice generation + delivery via dedicated web app (`invoices.tazacateringphoenix.com`). Estimated savings ~$2,700+/yr at current volume. Not built until V1.0 review complete and MIGRATION-001 done.
 - **D18 — Square Catalog attributes = 11, not 12 (LOCKED, Nick 2026-09-25).** 6 visible (Sandra-editable): serves_min, serves_max, pricing_unit, dietary_flags, allergen_notes, station_type. 5 hidden (API/RAG only): hot_hold_max_min, cold_hold_max_min, prep_advance_max_hr, quality_risk, default_pan_footprint. "12 (7 visible + 5 hidden)" is retired; the CAT-001 count discrepancy resolves to 11. §2.6 corrected.
 - **D19 — Deposit = fixed dollar (LOCKED, Nick 2026-09-25).** `deposit_basis_cents` frozen at first publish. Sandra selects a % in the form (default 50%); the dollar amount is computed from the current subtotal at that moment; the DOLLAR figure is what locks. Later invoice changes never move the deposit. Reconciles PROD-08 ("fixed dollar") with the 50% default.
+- **D21 — Changelog vs audit_log (LOCKED, Nick 2026-09-30).** W11 no longer writes its own raw before/after changelog — that duplicated PROD-22's `audit_log`. `audit_log` (PROD-22, append-only, trigger-fired) is the sole history-of-record. `changelog` becomes the **alert queue** (W12 writes, W13 reads). W11 becomes a read-only changelog view over `audit_log` for the key tables (Leads, Customers, Invoices, Tasks).
 
 ---
 
@@ -155,7 +157,7 @@ Parent→child lot lineage across thaw/repack/portion/refreeze/consume/waste/ove
 - `payment_attempts` — **PROD-30 V1.1:** append-only attempt log: `invoice_id` FK, `processor` TEXT (helcim|stripe|square), `amount_cents`, `status` TEXT (success|failed|pending|timeout), `error` TEXT, `attempted_at` TIMESTAMPTZ.
 - `invoice_links` — **PROD-30 V1.1:** unique per-invoice customer link: `invoice_id` FK, `token` UUID UNIQUE, `expires_at` TIMESTAMPTZ (90 days), `used_at` TIMESTAMPTZ (nullable, set on payment page visit).
 - `communications` — outbound comms log (W13).
-- `changelog` — W11/W12 system changelog + alert log.
+- `changelog` — **alert queue only** (W12 writes alerts, W13 reads them). Raw before/after history lives in `audit_log` (PROD-22, trigger-fired). W11 is a read-only changelog view over `audit_log` (D21).
 
 ### 2.8 system infrastructure (DRAFT)
 
