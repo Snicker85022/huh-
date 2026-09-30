@@ -302,7 +302,7 @@ _Notion: https://app.notion.com/p/Shopping-Web-App-v2-Aggregated-Vendor-Grouped-
 Production Core
 
 **Functional Requirement Specification:**  
-The system shall watch for Square payment events (deposit received, payment completed, refund) via Square webhook, write to the payment_events ledger in NocoDB, update invoice status, and trigger the creation of event-prep task chains on confirmed deposit. Wix sync scope stripped (Wix retired — Square-only). Supersedes W8 Wix Payments Watcher.
+The system shall watch for Square payment events (deposit received, payment completed, refund) via email-then-fetch (D1/D16: the dedicated inbox parses Square payment emails, then one targeted Square API call confirms the event), write to the payment_events ledger in PostgreSQL (D4/D5), update invoice status, and trigger the creation of event-prep task chains on confirmed deposit. Webhook is a V1.1 extension point, not the V1.0 path. Wix sync scope stripped (Wix retired — Square-only). Supersedes W8 Wix Payments Watcher.
 
 **Inputs:**  
 Square payment webhooks, invoice updates, catalog data
@@ -343,7 +343,7 @@ Production Core
 As Sandra, I need to just brain-dump event details by voice or text and get a fully pre-filled invoice back, so I'm not manually retyping information I already gave a customer on the phone.
 
 **Functional Requirement Specification:**  
-The system shall provide an invoice-drafting interface where Sandra's voice/text brain-dump is processed by AI (via INFERENCE 1, endpoint env-var per D-061, composite confidence per D-060) into a structured pre-fill of all invoice fields, with per-field confidence display. Inference runs as a non-modal background worker so Sandra continues working during the draft. Fields flagged for pre-hand-off check: tables_required, linens_required, setup_type; kitchen_departure_time is computed, not Sandra-entered. Output format per CX-001..CX-007.
+The system shall provide an invoice-drafting interface where Sandra's voice/text brain-dump is processed by AI (via INFERENCE 1, endpoint env-var per D-061, composite confidence per D-060) into a structured pre-fill of all invoice fields, with per-field confidence display. Inference runs as a non-modal background worker so Sandra continues working during the draft. Fields flagged for pre-hand-off check: tables_required, linens_required, setup_type; kitchen_exit_time is computed, not Sandra-entered (D3). Output format per CX-001..CX-007.
 
 **Inputs:**  
 Sandra brain-dump; RAG: menu items, service templates, customer history, logistics rules; Tier 1 catalog attributes
@@ -360,14 +360,14 @@ THE SPINE of the system per architecture doc.
 **Acceptance Criteria:**
 NORMAL: Sandra's voice/text brain-dump → structured pre-fill of invoice fields, per-field confidence label.
 EDGE: Low-confidence field → flagged for pre-hand-off check, never silently accepted.
-NEGATIVE: AI computes kitchen_departure_time → BLOCKED (computed deterministically, not AI).
+NEGATIVE: AI computes kitchen_exit_time → BLOCKED (computed deterministically, not AI; D3).
 SILENT-FAILURE: Field populated from a record that doesn't exist → confidence audit catches phantom pull.
 CHALLENGE: Empty brain-dump → form still loads, all fields blank with honest confidence.
 
 **Verification Method:**
 1. [NICK] Live: Sandra dictates a real brain-dump → watch fields pre-fill with confidence labels. Evidence: screenshot + observation log.
 2. [AUTO] Confidence audit: every Pulled label traces to a real PostgreSQL row. Evidence: query.
-3. [AUTO] Arithmetic guard: kitchen_departure computed by deterministic function, LLM only narrates. Evidence: code-search.
+3. [AUTO] Arithmetic guard: kitchen_exit_time computed by deterministic function, LLM only narrates. Evidence: code-search.
 4. [NICK] Delta review: Nick reviews AI draft vs Sandra's edits. Evidence: before/after screenshots.
 
 **Required for Release:**  
@@ -392,7 +392,7 @@ The system shall generate the seven CX invoice blocks (EVENT DETAILS, VENUE & LO
 Confirmed invoice data + CRM decision history (WHY layer)
 
 **Outputs:**  
-Three $0 line items before food: EVENT DETAILS / VENUE & LOGISTICS / SETUP SPECIFICATION; Order attrs: setup_type, tables_count, linens_tier, kitchen_departure; WHY context inline (e.g. 'Based on your May 20 call…')
+Three $0 line items before food: EVENT DETAILS / VENUE & LOGISTICS / SETUP SPECIFICATION; Order attrs: setup_type, tables_count, linens_tier, venue_arrival_time (D3); WHY context inline (e.g. 'Based on your May 20 call…')
 
 **Trigger:**  
 Confirmed invoice ready for customer-facing generation
@@ -426,7 +426,7 @@ Production Core
 Need: the system has real, structured data about how each dish packs, what it's made of, what equipment it needs, and its SOP — not just a name and price — so invoices, packing, and scheduling can be generated correctly instead of guessed.
 
 **Functional Requirement Specification:**  
-The system shall build and populate the four Tier-2 NocoDB operational tables (item_packing_profiles, item_components/BOM, item_equipment, procedure_link) per the Catalog Operations Intelligence Design Spec. These tables feed INVOICE 1 RAG lookups (invoice pre-fill confidence) and will power the Tier-3 deterministic packing solver/backward scheduler (PACK 2) once built. The LLM retrieves parameters from these tables; it never computes pan geometry or hold-time arithmetic itself. V1.0 launch milestone (schema ref V2-FEAT-005).
+The system shall build and populate the four Tier-2 PostgreSQL operational tables (item_packing_profiles, item_components/BOM, item_equipment, procedure_link) per the Catalog Operations Intelligence Design Spec. These tables feed INVOICE 1 RAG lookups (invoice pre-fill confidence) and will power the Tier-3 deterministic packing solver/backward scheduler (PACK 2) once built. The LLM retrieves parameters from these tables; it never computes pan geometry or hold-time arithmetic itself. V1.0 launch milestone (schema ref V2-FEAT-005).
 
 **Inputs:**  
 Item definitions; GN Pan footprints/depths/fill qty per service mode; component explosions; equipment occupancy
@@ -702,10 +702,18 @@ This row has no FRS — needs real FRS text once enough of the recipe interview 
 This is the deterministic recipe backbone the system currently lacks — no dish-level ground truth exists yet.
 
 **Acceptance Criteria:**  
-KB framework exists on n100 at /home/taza/game-design/: 08-backend-schema.sql seeds kb_rules (11 technique rules), kb_perishability_rules (6 safety thresholds), kb_dishes (3 dishes: cypress salmon, short ribs, greek salad), kb_task_templates (salmon 3-step + ribs 2-step chains), kb_batching_rules (greek, 8h window). Recipe data incomplete — 3 dishes seeded, NOT 85%. 12 open items pending Sandra interview (02-taza-rules.md §8). NOT migrated to live tazaos DB (cooking_rules = 0 rows).
+NORMAL: every active menu item has a locked recipe/method record covering portion, prep method, cook temp, and BOM components (CAT-003).
+EDGE: a recipe Sandra has not verified stays draft/pending_approval — never locked.
+NEGATIVE: a BOM explosion runs against a draft recipe → flagged, never silently trusted.
+SILENT-FAILURE: an active menu item with no recipe record at all → caught by completeness scan.
+CHALLENGE: the Mediterranean Grill package explodes to its component tasks from locked recipes only.
 
 **Verification Method:**  
-KB framework exists on n100 at /home/taza/game-design/: 08-backend-schema.sql seeds kb_rules (11 technique rules), kb_perishability_rules (6 safety thresholds), kb_dishes (3 dishes: cypress salmon, short ribs, greek salad), kb_task_templates (salmon 3-step + ribs 2-step chains), kb_batching_rules (greek, 8h window). Recipe data incomplete — 3 dishes seeded, NOT 85%. 12 open items pending Sandra interview (02-taza-rules.md §8). NOT migrated to live tazaos DB (cooking_rules = 0 rows).
+1. [AUTO] Coverage: query % of active menu items with a locked recipe record; target >90% before V1 launch. Evidence: query.
+2. [AUTO] Gate: BOM explosion refuses draft recipes. Evidence: test log.
+3. [AUTO] Completeness: zero active menu items with no recipe record. Evidence: query.
+4. [NICK] Live: Sandra locks a recipe during an interview session → it shows locked. Evidence: observation log.
+NOTE: current state — 3 dishes seeded in the game-design KB (not 85%); 12 open items pending Sandra's interview (02-taza-rules.md §8); framework not yet migrated to live tazaos (cooking_rules = 0 rows).
 
 **Required for Release:**  
 NO
@@ -1139,7 +1147,7 @@ Production Core
 Need: one notification system for the whole app, not five modules each texting Nick and Sandra their own way.
 
 **Functional Requirement Specification:**  
-The system shall route all outbound notifications through a unified notifier: ntfy push to Nick's phone (proven, live) and Twilio SMS to Sandra (adapter present, stub in V1). All callers use a single notify(recipient, severity, message, correlation_id) interface — never direct Twilio or ntfy calls from business logic. Implements D-008.
+The system shall route all outbound notifications through a unified notifier: ntfy push to Nick's phone and Twilio SMS to Sandra as the PRIMARY channel for time-sensitive alerts (D10). All callers use a single notify(recipient, severity, message, correlation_id) interface — never direct Twilio or ntfy calls from business logic. All callers use a single notify(recipient, severity, message, correlation_id) interface — never direct Twilio or ntfy calls from business logic. Implements D-008.
 
 **Inputs:**  
 PROD-20 event bus; PROD-23 exception router; W2 lead scoring (hot lead alerts); PROD-01 task engine
