@@ -6378,7 +6378,7 @@ Event Execution
 Need: TV dashboard shows live event checklist — completed items muted w/ strikethrough + bin location, incomplete in full contrast, progress % prominent — updating automatically.
 
 **Functional Requirement Specification:**  
-TV dashboard event progress view: displays the active event checklist from real-time NocoDB state. Completed items remain visible with visual suppression (muted + strikethrough) and inline bin location; incomplete items shown in full contrast; progress % shown prominently. Updates automatically on state change, no human action required.
+TV dashboard event progress view: displays the active event checklist from real-time PostgreSQL state. Completed items remain visible with visual suppression (muted + strikethrough) and inline bin location; incomplete items shown in full contrast; progress % shown prominently. Updates automatically on state change, no human action required.
 
 **Failure Behavior:**  
 Fallback: paper checklist on clipboard.
