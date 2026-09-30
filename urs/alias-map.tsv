@@ -1,16 +1,27 @@
 alias	canonical_id	class	status
-alias	canonical_id	class	status
 CATALOG 1	CAT-001	family	proposed — verify at cluster audit
 CATALOG 10	SW-011	family	proposed — verify at cluster audit
-CATALOG 2	CAT-002	family	proposed — verify at cluster audit
+CATALOG 2	CAT-001	family	resolved 2026-10-01 (dietary_flags+allergen_notes = CAT-001 per D18)
+CATALOG 7		family	unresolved — TCS danger-zone constraints (likely CAT-006)
+CATALOG 8		family	unresolved — local PostgreSQL menu cache (likely SW-011)
 CLOSE 1	PROD-38	family	proposed — verify at cluster audit
+CLOSE 11		family	unresolved — canonical close pattern identifier (close-capture gate); likely PROD-38
+CLOSE 12		family	unresolved — commit-then-emit downstream events
 CLOSE 15	URS-KIT-103	family	proposed — verify at cluster audit
+CLOSE 18		family	unresolved — LKL close gate
+CLOSE 19		family	unresolved — LKL records table
 CLOSE 2	PROD-02	family	proposed — verify at cluster audit
+CLOSE 21		family	unresolved — downstream event after LKL write
+CLOSE 23		family	unresolved — bin master validation
 CLOSE 27	URS-KIT-METHOD-004	family	proposed — verify at cluster audit
-CLOSE 3	URS-KIT-METHOD-003	family	proposed — verify at cluster audit
+CLOSE 3	PROD-12	family	resolved 2026-10-01 (staff PIN = PROD-12)
+CLOSE 31		family	unresolved — MicroTouch local cache
 CLOSE 32	HAI-005	family	proposed — verify at cluster audit
+CLOSE 33		family	unresolved — Short Stop
 CLOSE 34	PROD-19	family	proposed — verify at cluster audit
 CLOSE 35	PROD-22	family	proposed — verify at cluster audit
+CLOSE 4		family	unresolved — Parent of KIT-101..104 (BUNDLE-KANBAN-EXECUTION); likely PROD-19 or PROD-38
+CLOSE 8		family	unresolved — inventory lot qty fields (lot record); likely PROD-36
 CREW-002	URS-CREW-002	short-form	resolved
 CREW-003	URS-CREW-003	short-form	resolved
 CREW-004	URS-CREW-004	short-form	resolved
@@ -28,6 +39,11 @@ D-062		legacy-decision-ref	old Notion decision numbering — resolve or drop
 DISP-002	URS-DISP-002	short-form	resolved
 EPR-006	EPR-007	family	resolved 2026-10-01 (allocation locked in EPR-007)
 EVENT-001	URS-EVENT-001	short-form	resolved
+EXCEPT 1		family	unresolved — Exception Router (likely PROD-23)
+EXCEPT 2		family	unresolved — Event Bus (likely PROD-20)
+EXCEPT 3		family	unresolved — Unified Notifier (likely PROD-25)
+EXCEPT 4		family	unresolved — event envelope
+EXCEPT 5		family	unresolved — persist-before-notify ordering
 HEALTH-005	URS-HEALTH-005	short-form	resolved
 INV-001	URS-INV-001	short-form	resolved
 INV-003	URS-INV-003	short-form	resolved
@@ -37,6 +53,13 @@ INVOICE 13	PROD-07	family	proposed — verify at cluster audit
 INVOICE 9	PROD-08	family	proposed — verify at cluster audit
 KANBAN-002	URS-KANBAN-002	short-form	resolved
 KANBAN-005	URS-KANBAN-005	short-form	resolved
+KIT-002		family	unresolved — task completion form gate (no KIT-002 in any cluster)
+KIT-003		family	unresolved — LKL table schema
+KIT-004		family	unresolved — LKL query interface
+KIT-006		family	unresolved — partial completion handling
+KIT-009		family	unresolved — Staff PIN (likely PROD-12)
+KIT-018		family	unresolved — inventory/label as side-effect
+KIT-021		family	unresolved — MT2 inventory dashboard
 KIT-101	URS-KIT-101	short-form	resolved
 KIT-102	URS-KIT-102	short-form	resolved
 KIT-103	URS-KIT-103	short-form	resolved
