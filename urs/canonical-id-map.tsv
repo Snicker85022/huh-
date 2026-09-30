@@ -1,0 +1,288 @@
+source_id	canonical_id	name	status
+AI-001	AI-001	Prompt Library	
+AI-002	AI-002	Lead Parser Prompt	
+AI-003	AI-003	Lead Scoring Prompt	
+AI-004	AI-004	Voice Note Parser Prompt	
+AI-005	AI-005	Invoice Postprocess Prompt	
+AI-006	AI-006	CRM Session Opener Prompt	
+AI-007	AI-007	Precall Brief Prompt	
+AI-008	AI-008	Voice Command Registry	
+ALC-001	ALC-001	N100 cache builder	
+ALC-002	ALC-002	Self-owned cache endpoint	
+ALC-003	ALC-003	Custom Alexa Skill	
+ALC-004	ALC-004	Alexa proactive outbound alerts	
+ALC-005	ALC-005	Alexa Guard passive monitoring	
+CAT-001	CAT-001	Catalog Intelligence: 12 Square Custom Attributes schema	
+CAT-002	CAT-002	item_packing_profiles table (mode-dependent pan geometry)	
+CAT-003	CAT-003	item_components table (Bill of Materials for composite items)	
+CAT-004	CAT-004	item_equipment table (equipment-contention detection)	
+CAT-005	CAT-005	procedure_link table (catalog item → Atomic SOP wiring)	
+CAT-006	CAT-006	TCS food-safety scheduling constraint (danger-zone hard limit)	
+CULT-001	CULT-001	Taza Lexicon	
+CULT-002	CULT-002	Instructional panel system	
+CULT-003	CULT-003	Kitchen culture poster	
+CULT-004	CULT-004	Visual design standard	
+CULT-005	CULT-005	Taza OS Brain as crew member	
+CULT-006	CULT-006	Post-event feedback loop	
+CULT-007	CULT-007	Sandra's decision capture (photo-inferred)	
+CULT-008	CULT-008	KB taza_way_notes field	
+CULT-009	CULT-009	TV dashboard Lexicon header rotation	
+CULT-010	CULT-010	Task card language standard	
+CULT-011	CULT-011	Event completion artifact	
+CULT-012	CULT-012	The Taza Way declaration	
+CX-001	CX-001	Three $0 custom line item blocks on every invoice	
+CX-002	CX-002	EVENT DETAILS block	
+CX-003	CX-003	VENUE & LOGISTICS block	
+CX-004	CX-004	SETUP SPECIFICATION block	
+CX-005	CX-005	WHY context (decision rationale on invoice)	
+CX-006	CX-006	Square Order Custom Attributes (backend)	
+CX-007	CX-007	invoice_blocks_generator prompt	
+DB-001	DB-001	PostgreSQL DDL from canonical schema definitions	
+DB-002	DB-002	NocoDB schema + core views imported	
+DB-003	DB-003	NocoDB user roles (Nick/Sandra/Edgar)	
+DB-004	DB-004	NocoDB accessible from all operating devices	
+DOC-001	DOC-001	Operations runbook	
+DOC-002	DOC-002	System README	
+DOC-003	DOC-003	Automation jobs exported as JSON for version control	
+DOC-004	DOC-004	Sandra 5-minute training script for Invoice Form PWA	
+EPR-001	EPR-001	Emergency print path	
+EPR-002	EPR-002	Phased screen-shed procedure	
+EPR-003	EPR-003	N100-priority power	
+EPR-004	EPR-004	West Wall MicroTouch + West Google TV accept no backup power	
+EPR-007	EPR-007	Final UPS allocation map	
+HAI-001	HAI-001	Sandra override path	
+HAI-002	HAI-002	Alert format standard	
+HAI-003	HAI-003	Event brief format	
+HAI-004	HAI-004	Single-source truth enforcement	
+HAI-005	HAI-005	Conflict authority hierarchy	
+HW-001	HW-001	N100 Core Server	
+HW-002	HW-002	21.5-inch Industrial Touchscreen	
+HW-003	HW-003	Dual MicroTouch Kitchen Displays	
+HW-004	HW-004	"Kitchen Display TV Cluster (2×75"" TCL ops + 55"" Fire TV + 50"" onboarding)"	
+HW-005	HW-005	Kitchen Ethernet Switching and Cabling	
+HW-006	HW-006	On-Site Crew Display Tablets	
+HW-007	HW-007	ER605 V2 Gateway Router (building MAC-binding solution)	
+HW-008	HW-008	UPS for Core Stack (APC BE600M1, graceful-shutdown + emergency-print trigger)	
+HW-009	HW-009	Star TSP143IIIU Thermal Receipt Printer (emergency print hardware)	
+INFRA-001	INFRA-001	Ubuntu Host Baseline	
+INFRA-002	INFRA-002	Core Services and Automation Runtime	
+INFRA-003	INFRA-003	Native llama.cpp Inference Service	
+INFRA-004	INFRA-004	CPU Throttle and Restore Controls	
+INFRA-005	INFRA-005	Self-Owned Remote Access and Reverse Proxy	
+INFRA-006	INFRA-006	Protected Environment Configuration	
+INFRA-007	INFRA-007	Dedicated WebSocket broadcast server	
+INFRA-008	INFRA-008	Delta push protocol	
+INFRA-009	INFRA-009	Shared push/pull hybrid client library	
+INT-001	INT-001	Square API integration	
+INT-003	INT-003	Twilio SMS integration	
+INT-004	INT-004	AI API Integration	
+INT-005	INT-005	Whisper API integration	
+INT-006	INT-006	On-device NPU voice inference (audio never leaves device)	
+INT-007	INT-007	Google Calendar + Places API integration	
+KIT-001	KIT-001	Bin master table	
+KIT-005	KIT-005	Downstream task input manifest	
+KIT-007	KIT-007	LKL staleness flag	
+KIT-008	KIT-008	Consumed/moved LKL tracking	
+KIT-010	KIT-010	Staff task experience table	
+KIT-012	KIT-012	Supervisor PIN photo override	
+KIT-013	KIT-013	Error logging against staff + task	
+KIT-014	KIT-014	Thumbnail library table	
+KIT-015	KIT-015	On-the-fly BOM modification routing	
+KIT-017	KIT-017	Voice card closing	
+KIT-020	KIT-020	Binary image verification on card close	
+KIT-022	KIT-022	Kitchen soundscape classification	
+KIT-023	KIT-023	Person detection for spaghetti diagrams	
+MT-001	MT-001	MicroTouch local LKL cache	
+MT-002	MT-002	MicroTouch wake word + on-device intent classification	
+OPS-001	OPS-001	PostgreSQL daily backup with tested restore	
+OPS-002	OPS-002	Health monitoring (services checked every 5min)	
+OPS-003	OPS-003	Disaster recovery procedure (<4h rebuild)	
+OPS-004	OPS-004	Thermal management	
+PROD-01	PROD-01	Task Engine Core (PostgreSQL Task Chains)	
+PROD-02	PROD-02	LKL Completion Gate + PARTIAL_COMPLETE Auto-Spawn	
+PROD-03	PROD-03	Mom's Table Kanban UI (Kitchen Task Boards)	
+PROD-04	PROD-04	SSE Push Fabric + Kitchen Display System	
+PROD-05	PROD-05	Shopping Web App (Staff App, Passkey Auth)	
+PROD-05-V2	PROD-05-V2	Shopping Web App v2 (Aggregated, Vendor-Grouped, Frost-Risk-First)	
+PROD-06	PROD-06	Square Watcher Service (Deposit → Tasks Trigger)	
+PROD-07	PROD-07	Invoice Drafting Dashboard (Brain-Dump → Confidence Pre-Fill)	
+PROD-08	PROD-08	Square CX Invoice Blocks + Order Attributes	
+PROD-09	PROD-09	Catalog Operational Tables (Tier 2 BOM/Packing/Equipment)	
+PROD-10	PROD-10	Inference Concurrency Infra (Confidence Routing + CPU Pinning)	
+PROD-11	PROD-11	Emergency Print Path (Power-Fail Ops Truth)	
+PROD-12	PROD-12	Staff PIN Auth + Experience-Gated Photo (Kitchen Accountability)	
+PROD-13	PROD-13	Zebra On-Demand Crew Labels (Type A, Kanban-Tied)	
+PROD-14	PROD-14	Square Nested Modifier Decision Tree (Upsell + Allergen Routing)	
+PROD-15	PROD-15	Cooking & Recipes Spec (Sandra Interview-Derived)	
+PROD-16	PROD-16	Packing & Carrier Logistics (Pan Geometry, 3-Zone Vehicle Load)	
+PROD-16-V2	PROD-16-V2	Deterministic Packing Solver + Backward Event Scheduler (Full Spec)	
+PROD-17	PROD-17	Staffing Model & Scheduling (Guest-Count Interpolation, Role Counts)	
+PROD-18	PROD-18	Business Logic Knowledge Graph (Temporal, Conditional, Self-Improving)	
+PROD-19	PROD-19	Structured Task-Close Capture (Equipment, Allergen, Van Load, Portion)	
+PROD-20	PROD-20	System Event Bus (Cross-Module Nervous System)	
+PROD-21	PROD-21	Inbox Promotion (Raw Input Staging + Validation)	
+PROD-22	PROD-22	Audit Log (Append-Only Write History)	
+PROD-23	PROD-23	Exception Router (Gentle Failure Handling)	
+PROD-24	PROD-24	Cache/Precompute Router (Inference Demand Reduction, INV-005 Target)	
+PROD-25	PROD-25	Unified Notifier (SMS/ntfy Routing)	
+PROD-26	PROD-26	Runtime Configuration (Env-Var Service Endpoints)	
+PROD-27	PROD-27	Database Access Layer (Connection + Query + Audit-Trigger Gate)	
+PROD-28	PROD-28	System Health Monitor (Service/Temp/UPS Status)	
+PROD-29	PROD-29	Crew Event Tablet / Hospitality Coaching Display (Taza OS Crew Display v1)	
+PROD-34	PROD-34	MT8390 NPU V1.x Capabilities (Kitchen Vibe Index, Voice Timer, Trip Hazard Detection)	
+PROD-36	PROD-36	Inventory Lot Tracking & MT2 Dashboard (Parent-Child Lots)	
+PROD-37	PROD-37	Voice/NPU Card Close Verification Layer	
+PROD-38	PROD-38	Canonical Task Close Contract (TaskCloseEvent)	
+REQ-CI-001	CI-001	External watchdog / dead-man's switch	RENAMED
+REQ-CI-002	CI-002	SPC health monitor over system_metrics	RENAMED
+REQ-CI-003	CI-003	Replay-DOE harness + TQAI scorer + human-gated Morning Brief	RENAMED
+REQ-TELE-001	TELE-001	Append-only telemetry capture tables	RENAMED
+REQ-TELE-002	TELE-002	Inference call + human correction logging	RENAMED
+SCREEN-01	SCREEN-01	Mom's Table Kanban Board (taza-card-table.html, MT1/MT2)	
+SCREEN-02	SCREEN-02	TCL East Situational Display (tcl1-east.html)	
+SCREEN-03	SCREEN-03	TCL West Prep Display (tcl2-west.html)	
+SCREEN-04	SCREEN-04	Van Loadout Scoreboard (van-loadout.html, Insignia/Alexa TV)	
+SCREEN-05	SCREEN-05	z33 Gamemaster Display (z33-gamemaster.html)	
+SCREEN-06	SCREEN-06	System Health Dashboard (dashboard.py, :9000)	
+SCREEN-07	SCREEN-07	Crew Service / Emergency Page (server_mini.py, :9001)	
+SCREEN-08	SCREEN-08	Crew Event Display v1 (taza-crew-display.html, Galaxy Tab)	
+SCREEN-09	SCREEN-09	Invoice Form PWA (:3002)	
+SCREEN-10	SCREEN-10	CRM Session PWA (:3001)	
+SCREEN-11	SCREEN-11	Shopping Staff Web App	
+SCREEN-12	SCREEN-12	"50"" Onboarding/Orientation Display (not yet networked)"	
+SEC-001	SEC-001	Voice audio encryption + PII handling + secrets hygiene	
+SEC-002	SEC-002	Zero public inbound ports; authenticated remote access tunnel	
+SEC-003	SEC-003	NocoDB authentication + session timeout	
+SEC-004	SEC-004	N100 host firewall (UFW) audit	
+SSB-001	SSB-001	TV dashboard event progress view	
+SSB-002	SSB-002	TV dashboard glanceability standard	
+SSB-003	SSB-003	Completed item persistence on TV display	
+SSB-004	SSB-004	Bin location shown inline on TV display	
+SSB-005	SSB-005	Partial completion visual indicator	
+SSB-006	SSB-006	Team member active task indicator	
+SSB-007	SSB-007	Event cadence indicator	
+SW-001	SW-001	Inference endpoint as environment variable	
+SW-002	SW-002	Model split: fast classifier vs extraction model	
+SW-003	SW-003	Context window right-sizing per task type	
+SW-004	SW-004	JSON parse retry loop with human-review fallback	
+SW-005	SW-005	Few-shot examples in extraction prompts	
+SW-006	SW-006	NocoDB Lookup-First Gate	
+SW-007	SW-007	Input-stress-aware routing pre-processor	
+SW-008	SW-008	Two-model routing architecture	
+SW-009	SW-009	Post-event feedback logging node	
+SW-010	SW-010	Pipelined Workflow Execution	
+SW-011	SW-011	Local Square Menu Cache (midnight sync to PostgreSQL)	
+SW-012	SW-012	Structured-Output Hardening (input isolation + output delimiters, prompt-injection mitigation)	
+SW-013	SW-013	Telemetry Capture Layer	
+TV-001	TV-001	Wake-on-LAN + auto dashboard launch	
+TV-002	TV-002	Network presence monitoring	
+TV-003	TV-003	Google Home voice navigation (content switching)	
+TV-004	TV-004	Emergency fallback static page	
+TV-005	TV-005	TTS audio alerts via TV speakers	
+TV-006	TV-006	Dynamic content mode switching	
+TV-007	TV-007	TV watchdog + Chrome auto-relaunch	
+TV-011	TV-011	Google Assistant Local Fulfillment	
+TV-012	TV-012	TV dashboard PWA via self-owned domain	
+UI-001	UI-001	CRM Session PWA	
+UI-002	UI-002	Invoice Form PWA	
+UI-003	UI-003	TV kiosk auto-boot views	
+UI-004	UI-004	"21.5"" touchscreen bookmarks and kiosk config"	
+UI-005	UI-005	MicroTouch kiosk configuration	
+URS-CALL-001	CALL-001	Consent-Gated Recording Trigger	RENAMED
+URS-CALL-002	CALL-002	Native iOS Call Recording Integration	RENAMED
+URS-CALL-003	CALL-003	Post-Call Transcript Review & Edit	RENAMED
+URS-CALL-004	CALL-004	Manual Brain-Dump Fallback	RENAMED
+URS-CALL-005	CALL-005	Submit-to-CRM Handoff	RENAMED
+URS-CALL-006	CALL-006	Consent Audit Trail	RENAMED
+URS-CREW-001	CREW-001	Crew display operates offline as a full-screen PWA	RENAMED
+URS-CREW-002	CREW-002	Crew display accepts complete event setup	RENAMED
+URS-CREW-003	CREW-003	Crew display presents client story before prompts	RENAMED
+URS-CREW-004	CREW-004	Crew display cycles hospitality prompts and stays awake	RENAMED
+URS-CRM-001	CRM-001	Prospect Intake & Central Record	RENAMED
+URS-CRM-002	CRM-002	Pipeline Stage Model	RENAMED
+URS-CRM-003	CRM-003	Follow-Up Task & Auto-Nag Engine	RENAMED
+URS-CRM-004	CRM-004	Stale/Ghosted Lead Detection & Resolution	RENAMED
+URS-CRM-005	CRM-005	Event/Opportunity Detail Record	RENAMED
+URS-CRM-006	CRM-006	Contact Activity Timeline	RENAMED
+URS-CRM-007	CRM-007	Cloudflare Zero Trust Hosting	RENAMED
+URS-CRM-008	CRM-008	Call Note Intake Bridge	RENAMED
+URS-CRM-009	CRM-009	Interruption-Safe Quick Capture	RENAMED
+URS-DISP-001	DISP-001	Each display has one canonical primary role	RENAMED
+URS-DISP-002	DISP-002	Display mode is resolved deterministically from operating state	RENAMED
+URS-DISP-003	DISP-003	TCL East presents situational awareness by mode	RENAMED
+URS-DISP-004	DISP-004	TCL West presents prep execution by mode	RENAMED
+URS-DISP-005	DISP-005	Van Scoreboard exposes loadout readiness by mode	RENAMED
+URS-DISP-006	DISP-006	Critical display state cannot be displaced by voice	RENAMED
+URS-DISP-PKG	DISP-PKG	Display Fleet Content & Mode Architecture	RENAMED
+URS-EVENT-001	EVENT-001	System event envelope preserves correlation and provenance	RENAMED
+URS-EVENT-002	EVENT-002	Exceptions are persisted before notification	RENAMED
+URS-HEALTH-001	HEALTH-001	Health dashboard covers event-critical infrastructure	RENAMED
+URS-HEALTH-002	HEALTH-002	Emergency status remains accessible from a phone	RENAMED
+URS-HEALTH-003	HEALTH-003	Emergency path prints essential operating packet	RENAMED
+URS-HEALTH-004	HEALTH-004	Health and emergency services survive reboot	RENAMED
+URS-HEALTH-005	HEALTH-005	Stale or missing health data fails visibly	RENAMED
+URS-INV-001	INV-001	Kanban closure creates inventory transaction	RENAMED
+URS-INV-002	INV-002	Inventory supports parent-child lot lineage	RENAMED
+URS-INV-003	INV-003	Inventory lot retains complete traceability fields	RENAMED
+URS-INV-004	INV-004	Inventory closures can propose labels	RENAMED
+URS-INV-005	INV-005	MT2 inventory dashboard shows drawdown, age, bins, and alerts	RENAMED
+URS-KANBAN-001	KANBAN-001	Kanban board uses hand, table, and done workflow states	RENAMED
+URS-KANBAN-002	KANBAN-002	Kanban close captures accountable handoff	RENAMED
+URS-KANBAN-003	KANBAN-003	Kanban cards expose urgency, allergen, and dependency signals	RENAMED
+URS-KANBAN-004	KANBAN-004	Short Stop preserves partial work and creates residual task	RENAMED
+URS-KANBAN-005	KANBAN-005	Kanban completion publishes downstream state changes	RENAMED
+URS-KIT-101	KIT-101	Equipment cleaning creates auditable closing cards	RENAMED
+URS-KIT-102	KIT-102	Receiving sets persistent allergen flags	RENAMED
+URS-KIT-103	KIT-103	Van-load card requires complete departure checklist	RENAMED
+URS-KIT-104	KIT-104	Prep close captures portion count and size	RENAMED
+URS-KIT-105	KIT-105	Shopping check-off captures actual substitution	RENAMED
+URS-KIT-106	KIT-106	Vendor substitution reliability triggers review	RENAMED
+URS-KIT-107	KIT-107	Random bonus cards collect food-safety temperatures	RENAMED
+URS-KIT-METHOD-001	KIT-METHOD-001	Taza Method cards use distinct visual identity	RENAMED
+URS-KIT-METHOD-002	KIT-METHOD-002	First encounter plays Taza Method animation	RENAMED
+URS-KIT-METHOD-003	KIT-METHOD-003	First encounter requires method acknowledgment	RENAMED
+URS-KIT-METHOD-004	KIT-METHOD-004	Method cards expose inline Show Me instruction	RENAMED
+URS-KIT-METHOD-005	KIT-METHOD-005	Questions reward both learner and teacher	RENAMED
+URS-KIT-METHOD-006	KIT-METHOD-006	Correct method closures produce streaks and leaderboard	RENAMED
+URS-KIT-METHOD-PKG	KIT-METHOD-PKG	Taza Method Card Experience	RENAMED
+URS-LABEL-001	LABEL-001	Type A label contains internal pedigree essentials	RENAMED
+URS-LABEL-003	LABEL-003	Label QR resolves to canonical batch details	RENAMED
+URS-LABEL-004	LABEL-004	FaviQR graphics use threshold-only monochrome conversion	RENAMED
+URS-LABEL-005	LABEL-005	Production labels print through Ethernet ZPL only	RENAMED
+URS-LABEL-006	LABEL-006	Label printing is confirmable, logged, reprintable, and failure-safe	RENAMED
+URS-LKL-001	LKL-001	Location capture gates location-changing task close	RENAMED
+URS-LKL-002	LKL-002	LKL record preserves operational provenance	RENAMED
+URS-LKL-003	LKL-003	LKL lookup returns results rapidly, ideally  in under one second	RENAMED
+URS-LKL-004	LKL-004	LKL updates publish to all consuming surfaces	RENAMED
+URS-LKL-PKG	LKL-PKG	Last Known Location Truth Capture & Lookup	RENAMED
+URS-MOB-001	MOB-001	Staff mobile access requires passkey authentication	RENAMED
+URS-MOB-002	MOB-002	Staff mobile shopping view is vendor-grouped	RENAMED
+URS-MOB-003	MOB-003	Staff mobile view provides current event awareness	RENAMED
+URS-MOB-004	MOB-004	Staff mobile updates preserve one source of truth	RENAMED
+URS-MOB-005	MOB-005	Mobile optimistic updates expose and recover conflicts	RENAMED
+URS-MOB-PKG	MOB-PKG	Staff Mobile Application Surface	RENAMED
+URS-PLAN-001	PLAN-001	Visibility the Fork Model	RENAMED
+URS-PLAN-002	PLAN-002	Per-Event Access Control Guest Attribution	RENAMED
+URS-PLAN-003	PLAN-003	Real-Time Collaborative Layout Editing	RENAMED
+URS-PLAN-004	PLAN-004	Draft/Locked Workflow	RENAMED
+URS-PLAN-005	PLAN-005	Room Capture AI Room Intelligence Capacity Check	RENAMED
+URS-PLAN-006	PLAN-006	Change Tracking Staff Notification	RENAMED
+URS-PLAN-007	PLAN-007	Offline-Tolerant Client	RENAMED
+URS-PLAN-008	PLAN-008	Tiered Billing Enforcement	RENAMED
+URS-PLAN-PKG	PLAN-PKG	Planner Portal: Seating Layout & Room Intelligence	RENAMED
+URS-SYS-INTENT-001	SYS-INTENT-001	Overall System Intent	RENAMED
+V1.0-IG	V1.0-IG	Taza Input Grammar + Clarification Nudging + Confidence Display	
+W1	W1	Lead Capture	
+W10	W10	Google Calendar Sync	
+W11	W11	Change Log Writer	
+W12	W12	Hourly Review Workflow	
+W13	W13	Reminder & Alert Workflow	
+W14	W14	Voice Feedback Processor (Four-Path Routing)	
+W15	W15	Day-of BEO & Event Timeline Generator	
+W2	W2	Lead Scoring	
+W3	W3	Pre-Call Brief SMS	
+W4	W4	CRM Interview Session	
+W5	W5	CRM Voice Input Handler	
+W6	W6	Nightly CRM Deep Analysis	
+W7	W7	Invoice Draft Workflow	
+W9	W9	Square Menu Sync	
