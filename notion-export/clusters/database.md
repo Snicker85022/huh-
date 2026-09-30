@@ -67,6 +67,11 @@ Fallback: rebuild NocoDB from DDL.
 **Acceptance Criteria:**  
 All views load; column types match; data entry works on all devices
 
+**Verification Method:**
+1. [AUTO] Views: all 6 views (Lead Scores, CRM Sessions, Customer Opps, Voice Notes, Comms, Invoices) load with correct column types. Evidence: screenshot + schema query.
+2. [NICK] Live: Sandra enters data from laptop and phone. Evidence: observation log.
+3. [AUTO] Fallback: DDL rebuild reproduces the schema cleanly. Evidence: rebuild test log.
+
 **Required for Release:**  
 NO
 
@@ -94,6 +99,11 @@ Fallback: single admin account (temp).
 **Acceptance Criteria:**  
 Each user logs in; table visibility matches role spec
 
+**Verification Method:**
+1. [AUTO] Role matrix: each role sees exactly its allowed tables (Nick=admin, Sandra=editor, Edgar=editor-limited). Evidence: per-role login test log.
+2. [NICK] Live: Nick logs in as each of the three roles and verifies visibility. Evidence: observation log + screenshots.
+3. [AUTO] Fallback: single admin account still works. Evidence: log.
+
 **Required for Release:**  
 NO
 
@@ -120,6 +130,12 @@ NocoDB loads on all device types; touch works on touchscreens
 
 **Open Questions:**  
 Per-role NocoDB permissions not yet defined: Edgar full write vs. view-only on sensitive tables? Sandra all-tables or event/recipe-only?
+
+**Verification Method:**
+1. [NICK] Live: Nick/Sandra/Edgar each open NocoDB on laptop + phone. Evidence: screenshots.
+2. [AUTO] z33: full NocoDB view loads. Evidence: screenshot.
+3. [AUTO] Exclusion: MicroTouch 1/2 and 21.5" do NOT load NocoDB — kanban/display surfaces only. Evidence: config check.
+4. [NICK] Live: touch input works on z33. Evidence: observation log.
 
 **Required for Release:**  
 NO

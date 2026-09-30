@@ -106,6 +106,13 @@ Table exists with the keyed schema; top-15 items populated; packing solver reads
 **Open Questions:**  
 Reconcile scope with CATALOG 1 during debate: break out as own table vs. keep as CATALOG 1 child.
 
+**Verification Method:**
+1. [AUTO] Schema: `item_packing_profiles` exists keyed (item_id, service_mode) with pan_footprint/pan_depth_in/fill_qty_per_pan. Evidence: psql \d.
+2. [AUTO] Coverage: top-15 frequency items populated with packing profiles. Evidence: query count.
+3. [AUTO] Mode-split: the same item has distinct rows for delivery vs. staffed-buffet. Evidence: query.
+4. [AUTO] LLM-free: packing solver reads pan geometry from this table, zero inference calls. Evidence: code-search.
+5. [NICK] Live: Sandra confirms broccoli packing profiles match reality (delivery vs. buffet). Evidence: observation log.
+
 **Required for Release:**  
 NO
 
@@ -133,6 +140,13 @@ BOM table exists; the ~6 composite parents populated; closing a parent order exp
 **Open Questions:**  
 Reconcile scope with CATALOG 1 during debate (this BOM table is currently listed under the CATALOG 1 package).
 
+**Verification Method:**
+1. [AUTO] Schema: `item_components` BOM table exists (parent_item_id, component_item_id, qty_per_parent). Evidence: psql \d.
+2. [AUTO] Coverage: ~6 composite parents populated (Mezza, Medi Grill, Charcuterie, Gyro Platter, Brunch/Dessert Packages). Evidence: query.
+3. [AUTO] Explosion: closing a parent order generates the correct component prep tasks. Evidence: psql + test log.
+4. [AUTO] LLM-free: no inference in the explosion path. Evidence: code-search.
+5. [NICK] Live: Nick verifies one composite explosion matches actual prep. Evidence: observation log.
+
 **Required for Release:**  
 NO
 
@@ -159,6 +173,12 @@ Table exists and joins to equipment_list; scheduler can detect oven/burner/carri
 
 **Open Questions:**  
 Reconcile scope with CATALOG 1 during debate (this equipment-contention table is currently listed under the CATALOG 1 package).
+
+**Verification Method:**
+1. [AUTO] Schema: `item_equipment` table exists and joins to equipment_list. Evidence: psql.
+2. [AUTO] Contention: scheduler detects two items competing for the same oven in one window. Evidence: test log.
+3. [AUTO] Branch: detected contention triggers a scheduling branch, never a silent double-book. Evidence: log.
+4. [NICK] Live: Nick confirms equipment_list seed data matches the real kitchen. Evidence: observation log.
 
 **Required for Release:**  
 NO
