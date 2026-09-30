@@ -678,7 +678,7 @@ _Notion: https://app.notion.com/p/Square-Nested-Modifier-Decision-Tree-Upsell-Al
 
 ---
 ## PROD-15 — Cooking & Recipes Spec (Sandra Interview-Derived)
-**Status:** Idea | **Priority:**  | **Release:** 
+**Status:** In Development (partly deployed — KB design on n100) | **Priority:**  | **Release:** 
 
 **Domain:**  
 Production Core
@@ -702,10 +702,10 @@ This row has no FRS — needs real FRS text once enough of the recipe interview 
 This is the deterministic recipe backbone the system currently lacks — no dish-level ground truth exists yet.
 
 **Acceptance Criteria:**  
-Deferred — Idea stage — no AC/VM until promoted to spec.
+KB framework exists on n100 at /home/taza/game-design/: 08-backend-schema.sql seeds kb_rules (11 technique rules), kb_perishability_rules (6 safety thresholds), kb_dishes (3 dishes: cypress salmon, short ribs, greek salad), kb_task_templates (salmon 3-step + ribs 2-step chains), kb_batching_rules (greek, 8h window). Recipe data incomplete — 3 dishes seeded, NOT 85%. 12 open items pending Sandra interview (02-taza-rules.md §8). NOT migrated to live tazaos DB (cooking_rules = 0 rows).
 
 **Verification Method:**  
-Deferred — Idea stage — no AC/VM until promoted to spec.
+KB framework exists on n100 at /home/taza/game-design/: 08-backend-schema.sql seeds kb_rules (11 technique rules), kb_perishability_rules (6 safety thresholds), kb_dishes (3 dishes: cypress salmon, short ribs, greek salad), kb_task_templates (salmon 3-step + ribs 2-step chains), kb_batching_rules (greek, 8h window). Recipe data incomplete — 3 dishes seeded, NOT 85%. 12 open items pending Sandra interview (02-taza-rules.md §8). NOT migrated to live tazaos DB (cooking_rules = 0 rows).
 
 **Required for Release:**  
 NO
@@ -1431,7 +1431,7 @@ _Notion: https://app.notion.com/p/Inventory-Lot-Tracking-MT2-Dashboard-Parent-Ch
 
 ---
 ## PROD-37 — Voice/NPU Card Close Verification Layer
-**Status:** Idea | **Priority:**  | **Release:** 
+**Status:** Idea | **Priority:**  | **Release:** V2.0
 
 **Domain:**  
 Production Core
@@ -1461,10 +1461,10 @@ RESOLVED 2026-09-02 (Nick, agnostic — prefers local NPU edge compute for inten
 Cites D-051 OVERTURNED (2026-07-09, NPU confirmed accessible via NNAPI/NeuroPilot) as technical foundation; confirms NPU 1/PROD-35's NeuroPilot assumption.
 
 **Acceptance Criteria:**  
-Deferred — Idea stage — no AC/VM until promoted to spec.
+Deferred — V2.0 ask. No AC/VM until promoted.
 
 **Verification Method:**  
-Deferred — Idea stage — no AC/VM until promoted to spec.
+Deferred — V2.0 ask. No AC/VM until promoted.
 
 **Required for Release:**  
 NO
