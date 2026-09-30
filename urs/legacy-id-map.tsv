@@ -1,0 +1,279 @@
+spec_id	id2	name	status
+AI-001	PROMPT 1	Prompt Library	
+AI-002	PROMPT 2	Lead Parser Prompt	
+AI-003	PROMPT 3	Lead Scoring Prompt	
+AI-004	PROMPT 4	Voice Note Parser Prompt	
+AI-005	PROMPT 5	Invoice Postprocess Prompt	
+AI-006	PROMPT 6	CRM Session Opener Prompt	
+AI-007	PROMPT 7	Precall Brief Prompt	
+AI-008	PROMPT 8	Voice Command Registry	
+ALC-001	ALEXA 1	N100 cache builder	
+ALC-002	ALEXA 2	Self-owned cache endpoint	
+ALC-003	ALEXA 3	Custom Alexa Skill	
+ALC-004	ALEXA 4	Alexa proactive outbound alerts	
+ALC-005	ALEXA 5	Alexa Guard passive monitoring	
+CAT-001	CATALOG 2	Catalog Intelligence: 12 Square Custom Attributes schema	
+CAT-002	CATALOG 3	item_packing_profiles table (mode-dependent pan geometry)	
+CAT-003	CATALOG 4	item_components table (Bill of Materials for composite items)	
+CAT-004	CATALOG 5	item_equipment table (equipment-contention detection)	
+CAT-005	CATALOG 6	procedure_link table (catalog item → Atomic SOP wiring)	
+CAT-006	CATALOG 7	TCS food-safety scheduling constraint (danger-zone hard limit)	
+CULT-001		Taza Lexicon	
+CULT-002	KANBAN 12	Instructional panel system	
+CULT-003		Kitchen culture poster	
+CULT-004		Visual design standard	
+CULT-005	CREW 7	Taza OS Brain as crew member	
+CULT-006	KB 1	Post-event feedback loop	
+CULT-007	KB 2	Sandra's decision capture (photo-inferred)	
+CULT-008	KB 3	KB taza_way_notes field	
+CULT-009	DISPLAY 31	TV dashboard Lexicon header rotation	
+CULT-010	KANBAN 13	Task card language standard	
+CULT-011	CREW 8	Event completion artifact	
+CULT-012	CREW 9	The Taza Way declaration	
+CX-001	INVOICE 4	Three $0 custom line item blocks on every invoice	
+CX-002	INVOICE 5	EVENT DETAILS block	
+CX-003	INVOICE 6	VENUE & LOGISTICS block	
+CX-004	INVOICE 7	SETUP SPECIFICATION block	
+CX-005	INVOICE 8	WHY context (decision rationale on invoice)	
+CX-006	INVOICE 9	Square Order Custom Attributes (backend)	
+CX-007	INVOICE 10	invoice_blocks_generator prompt	
+DB-001	INFRA 20	PostgreSQL DDL from canonical schema definitions	
+DB-002	NOCODB 1	NocoDB schema + core views imported	
+DB-003	NOCODB 2	NocoDB user roles (Nick/Sandra/Edgar)	
+DB-004	NOCODB 3	NocoDB accessible from all operating devices	
+DOC-001		Operations runbook	
+DOC-002		System README	
+DOC-003		Automation jobs exported as JSON for version control	
+DOC-004	INVOICE 11	Sandra 5-minute training script for Invoice Form PWA	
+EPR-001	HEALTH 10	Emergency print path	
+EPR-002	POWER 1	Phased screen-shed procedure	
+EPR-003	POWER 2	N100-priority power	
+EPR-004	POWER 3	West Wall MicroTouch + West Google TV accept no backup power	
+EPR-007	POWER 4	Final UPS allocation map	
+HAI-001	CLOSE 32	Sandra override path	
+HAI-002	EXCEPT 7	Alert format standard	
+HAI-003		Event brief format	
+HAI-004	EXCEPT 8	Single-source truth enforcement	
+HAI-005		Conflict authority hierarchy	
+HW-001	INFRA 2	N100 Core Server	Deployed
+HW-002	INFRA 3	21.5-inch Industrial Touchscreen	Deployed
+HW-003	INFRA 4	Dual MicroTouch Kitchen Displays	Deployed
+HW-004	INFRA 5	Kitchen Display TV Cluster (2×75" TCL ops + 55" Fire TV + 50" onboarding)	Deployed
+HW-005	INFRA 6	Kitchen Ethernet Switching and Cabling	Deployed
+HW-006	INFRA 7	On-Site Crew Display Tablets	Spec Drafted
+HW-007	INFRA 8	ER605 V2 Gateway Router (building MAC-binding solution)	Deployed
+HW-008	INFRA 9	UPS for Core Stack (APC BE600M1, graceful-shutdown + emergency-print trigger)	Deployed
+HW-009	LABEL 2	Star TSP143IIIU Thermal Receipt Printer (emergency print hardware)	Deployed
+INFRA-001	INFRA 10	Ubuntu Host Baseline	Deployed
+INFRA-002	INFRA 11	Core Services and Automation Runtime	In Development
+INFRA-003	INFRA 12	Native llama.cpp Inference Service	Deployed
+INFRA-004	INFRA 13	CPU Throttle and Restore Controls	Spec Drafted
+INFRA-005	INFRA 14	Self-Owned Remote Access and Reverse Proxy	In Development
+INFRA-006	INFRA 15	Protected Environment Configuration	In Development
+INFRA-007	INFRA 16	Dedicated WebSocket broadcast server	
+INFRA-008	INFRA 17	Delta push protocol	
+INFRA-009	INFRA 18	Shared push/pull hybrid client library	
+INT-001		Square API integration	
+INT-003		Twilio SMS integration	
+INT-004		AI API Integration	
+INT-005		Whisper API integration	
+INT-006	NPU 6	On-device NPU voice inference (audio never leaves device)	
+INT-007		Google Calendar + Places API integration	
+KIT-001	CLOSE 23	Bin master table	
+KIT-005	CLOSE 24	Downstream task input manifest	
+KIT-007	CLOSE 25	LKL staleness flag	
+KIT-008	CLOSE 26	Consumed/moved LKL tracking	
+KIT-010	CLOSE 27	Staff task experience table	
+KIT-012	CLOSE 28	Supervisor PIN photo override	
+KIT-013	CLOSE 29	Error logging against staff + task	
+KIT-014	CLOSE 30	Thumbnail library table	
+KIT-015		On-the-fly BOM modification routing	
+KIT-017		Voice card closing	
+KIT-020	NPU 2	Binary image verification on card close	
+KIT-022	NPU 3	Kitchen soundscape classification	
+KIT-023	NPU 4	Person detection for spaghetti diagrams	
+MT-001	CLOSE 31	MicroTouch local LKL cache	
+MT-002	PROMPT 9	MicroTouch wake word + on-device intent classification	
+OPS-001	INFRA 23	PostgreSQL daily backup with tested restore	
+OPS-002	HEALTH 11	Health monitoring (services checked every 5min)	
+OPS-003	INFRA 24	Disaster recovery procedure (<4h rebuild)	
+OPS-004	INFRA 25	Thermal management	
+PROD-01	CLOSE 34	Task Engine Core (PostgreSQL Task Chains)	Built (unverified live)
+PROD-02	CLOSE 2	LKL Completion Gate + PARTIAL_COMPLETE Auto-Spawn	Approved
+PROD-03	KANBAN 1	Mom's Table Kanban UI (Kitchen Task Boards)	Deployed
+PROD-04	DISPLAY 1	SSE Push Fabric + Kitchen Display System	In Development
+PROD-05	SHOP 11	Shopping Web App (Staff App, Passkey Auth)	Spec Drafted
+PROD-05-V2	SHOP 1	Shopping Web App v2 (Aggregated, Vendor-Grouped, Frost-Risk-First)	Spec Drafted
+PROD-06		Square Watcher Service (Deposit → Tasks Trigger)	Approved
+PROD-07	INVOICE 1	Invoice Drafting Dashboard (Brain-Dump → Confidence Pre-Fill)	Approved
+PROD-08	INVOICE 2	Square CX Invoice Blocks + Order Attributes	Approved
+PROD-09	CATALOG 1	Catalog Operational Tables (Tier 2 BOM/Packing/Equipment)	Approved
+PROD-10	INFERENCE 1	Inference Concurrency Infra (Confidence Routing + CPU Pinning)	Built (unverified live)
+PROD-11	HEALTH 2	Emergency Print Path (Power-Fail Ops Truth)	Deployed
+PROD-12	CLOSE 3	Staff PIN Auth + Experience-Gated Photo (Kitchen Accountability)	Approved
+PROD-13	LABEL 1	Zebra On-Demand Crew Labels (Type A, Kanban-Tied)	Approved
+PROD-14	CATALOG 9	Square Nested Modifier Decision Tree (Upsell + Allergen Routing)	Idea
+PROD-15		Cooking & Recipes Spec (Sandra Interview-Derived)	Idea
+PROD-16	PACK 1	Packing & Carrier Logistics (Pan Geometry, 3-Zone Vehicle Load)	Spec Drafted
+PROD-16-V2	PACK 2	Deterministic Packing Solver + Backward Event Scheduler (Full Spec)	Approved
+PROD-17		Staffing Model & Scheduling (Guest-Count Interpolation, Role Counts)	Spec Drafted
+PROD-18		Business Logic Knowledge Graph (Temporal, Conditional, Self-Improving)	Idea
+PROD-19	CLOSE 4	Structured Task-Close Capture (Equipment, Allergen, Van Load, Portion)	Approved
+PROD-20	EXCEPT 2	System Event Bus (Cross-Module Nervous System)	Spec Drafted
+PROD-21	EXCEPT 6	Inbox Promotion (Raw Input Staging + Validation)	Spec Drafted
+PROD-22	CLOSE 35	Audit Log (Append-Only Write History)	Spec Drafted
+PROD-23	EXCEPT 1	Exception Router (Gentle Failure Handling)	Spec Drafted
+PROD-24	INFERENCE 12	Cache/Precompute Router (Inference Demand Reduction, INV-005 Target)	Spec Drafted
+PROD-25	EXCEPT 3	Unified Notifier (SMS/ntfy Routing)	Spec Drafted
+PROD-26	INFRA 1	Runtime Configuration (Env-Var Service Endpoints)	Spec Drafted
+PROD-27	INFRA 19	Database Access Layer (Connection + Query + Audit-Trigger Gate)	Spec Drafted
+PROD-28	HEALTH 1	System Health Monitor (Service/Temp/UPS Status)	Deployed
+PROD-29	CREW 1	Crew Event Tablet / Hospitality Coaching Display (Taza OS Crew Display v1)	Built (unverified live)
+PROD-34	NPU 1	MT8390 NPU V1.x Capabilities (Kitchen Vibe Index, Voice Timer, Trip Hazard Detection)	Idea
+PROD-36	CLOSE 5	Inventory Lot Tracking & MT2 Dashboard (Parent-Child Lots)	Spec Drafted
+PROD-37	NPU 5	Voice/NPU Card Close Verification Layer	Idea
+PROD-38	CLOSE 1	Canonical Task Close Contract (TaskCloseEvent)	Spec Drafted
+REQ-CI-001		External watchdog / dead-man's switch	
+REQ-CI-002	TELEMETRY 3	SPC health monitor over system_metrics	
+REQ-CI-003	TELEMETRY 4	Replay-DOE harness + TQAI scorer + human-gated Morning Brief	
+REQ-TELE-001	TELEMETRY 1	Append-only telemetry capture tables	
+REQ-TELE-002	TELEMETRY 2	Inference call + human correction logging	
+SCREEN-01	KANBAN 2	Mom's Table Kanban Board (taza-card-table.html, MT1/MT2)	Deployed
+SCREEN-02	DISPLAY 2	TCL East Situational Display (tcl1-east.html)	Deployed
+SCREEN-03	DISPLAY 3	TCL West Prep Display (tcl2-west.html)	Deployed
+SCREEN-04	DISPLAY 4	Van Loadout Scoreboard (van-loadout.html, Insignia/Alexa TV)	Deployed
+SCREEN-05	DISPLAY 5	z33 Gamemaster Display (z33-gamemaster.html)	Deployed
+SCREEN-06	HEALTH 3	System Health Dashboard (dashboard.py, :9000)	Deployed
+SCREEN-07	HEALTH 4	Crew Service / Emergency Page (server_mini.py, :9001)	Deployed
+SCREEN-08	CREW 2	Crew Event Display v1 (taza-crew-display.html, Galaxy Tab)	Built (unverified live)
+SCREEN-09	INVOICE 3	Invoice Form PWA (:3002)	Approved
+SCREEN-10	CRM 2	CRM Session PWA (:3001)	Approved
+SCREEN-11	SHOP 2	Shopping Staff Web App	Spec Drafted
+SCREEN-12	DISPLAY 6	50" Onboarding/Orientation Display (not yet networked)	Idea
+SEC-001		Voice audio encryption + PII handling + secrets hygiene	
+SEC-002	INFRA 21	Zero public inbound ports; authenticated remote access tunnel	
+SEC-003	NOCODB 4	NocoDB authentication + session timeout	
+SEC-004	INFRA 22	N100 host firewall (UFW) audit	
+SSB-001	DISPLAY 7	TV dashboard event progress view	
+SSB-002	DISPLAY 8	TV dashboard glanceability standard	
+SSB-003	DISPLAY 9	Completed item persistence on TV display	
+SSB-004	DISPLAY 10	Bin location shown inline on TV display	
+SSB-005	DISPLAY 11	Partial completion visual indicator	
+SSB-006	DISPLAY 12	Team member active task indicator	
+SSB-007	DISPLAY 13	Event cadence indicator	
+SW-001	INFERENCE 2	Inference endpoint as environment variable	
+SW-002	INFERENCE 3	Model split: fast classifier vs extraction model	
+SW-003	INFERENCE 4	Context window right-sizing per task type	
+SW-004	INFERENCE 5	JSON parse retry loop with human-review fallback	
+SW-005	INFERENCE 6	Few-shot examples in extraction prompts	
+SW-006	TELEMETRY 5	NocoDB Lookup-First Gate	Idea
+SW-007	INFERENCE 7	Input-stress-aware routing pre-processor	
+SW-008	INFERENCE 8	Two-model routing architecture	
+SW-009	INFERENCE 9	Post-event feedback logging node	
+SW-010	INFERENCE 11	Pipelined Workflow Execution	Idea
+SW-011	CATALOG 8	Local Square Menu Cache (midnight sync to PostgreSQL)	
+SW-012	INFERENCE 10	Structured-Output Hardening (input isolation + output delimiters, prompt-injection mitigation)	
+SW-013	TELEMETRY 6	Telemetry Capture Layer	Idea
+TV-001	DISPLAY 14	Wake-on-LAN + auto dashboard launch	
+TV-002	DISPLAY 15	Network presence monitoring	
+TV-003	DISPLAY 16	Google Home voice navigation (content switching)	
+TV-004	DISPLAY 28	Emergency fallback static page	
+TV-005	DISPLAY 29	TTS audio alerts via TV speakers	
+TV-006	DISPLAY 17	Dynamic content mode switching	
+TV-007	DISPLAY 18	TV watchdog + Chrome auto-relaunch	
+TV-011	DISPLAY 19	Google Assistant Local Fulfillment	
+TV-012	DISPLAY 20	TV dashboard PWA via self-owned domain	
+UI-001	CRM 1	CRM Session PWA	
+UI-002	INVOICE 12	Invoice Form PWA	
+UI-003	DISPLAY 30	TV kiosk auto-boot views	
+UI-004		21.5" touchscreen bookmarks and kiosk config	
+UI-005	PROMPT 10	MicroTouch kiosk configuration	
+URS-CALL-001	CRM 15	Consent-Gated Recording Trigger	Spec Drafted
+URS-CALL-002	CRM 16	Native iOS Call Recording Integration	Spec Drafted
+URS-CALL-003	CRM 17	Post-Call Transcript Review & Edit	Spec Drafted
+URS-CALL-004	CRM 18	Manual Brain-Dump Fallback	Spec Drafted
+URS-CALL-005	CRM 19	Submit-to-CRM Handoff	Spec Drafted
+URS-CALL-006	CRM 20	Consent Audit Trail	Spec Drafted
+URS-CREW-001	CREW 3	Crew display operates offline as a full-screen PWA	Built (unverified live)
+URS-CREW-002	CREW 4	Crew display accepts complete event setup	Built (unverified live)
+URS-CREW-003	CREW 5	Crew display presents client story before prompts	Built (unverified live)
+URS-CREW-004	CREW 6	Crew display cycles hospitality prompts and stays awake	Built (unverified live)
+URS-CRM-001	CRM 6	Prospect Intake & Central Record	Spec Drafted
+URS-CRM-002	CRM 7	Pipeline Stage Model	Spec Drafted
+URS-CRM-003	CRM 8	Follow-Up Task & Auto-Nag Engine	Spec Drafted
+URS-CRM-004	CRM 9	Stale/Ghosted Lead Detection & Resolution	Spec Drafted
+URS-CRM-005	CRM 10	Event/Opportunity Detail Record	Spec Drafted
+URS-CRM-006	CRM 11	Contact Activity Timeline	Spec Drafted
+URS-CRM-007	CRM 12	Cloudflare Zero Trust Hosting	Spec Drafted
+URS-CRM-008	CRM 13	Call Note Intake Bridge	Spec Drafted
+URS-CRM-009	CRM 14	Interruption-Safe Quick Capture	Spec Drafted
+URS-DISP-001	DISPLAY 21	Each display has one canonical primary role	In Development
+URS-DISP-002	DISPLAY 22	Display mode is resolved deterministically from operating state	In Development
+URS-DISP-003	DISPLAY 23	TCL East presents situational awareness by mode	In Development
+URS-DISP-004	DISPLAY 24	TCL West presents prep execution by mode	In Development
+URS-DISP-005	DISPLAY 25	Van Scoreboard exposes loadout readiness by mode	In Development
+URS-DISP-006	DISPLAY 26	Critical display state cannot be displaced by voice	In Development
+URS-DISP-PKG	DISPLAY 27	Display Fleet Content & Mode Architecture	In Development
+URS-EVENT-001	EXCEPT 4	System event envelope preserves correlation and provenance	Spec Drafted
+URS-EVENT-002	EXCEPT 5	Exceptions are persisted before notification	Spec Drafted
+URS-HEALTH-001	HEALTH 5	Health dashboard covers event-critical infrastructure	Deployed
+URS-HEALTH-002	HEALTH 6	Emergency status remains accessible from a phone	Deployed
+URS-HEALTH-003	HEALTH 7	Emergency path prints essential operating packet	Deployed
+URS-HEALTH-004	HEALTH 8	Health and emergency services survive reboot	Deployed
+URS-HEALTH-005	HEALTH 9	Stale or missing health data fails visibly	In Development
+URS-INV-001	CLOSE 6	Kanban closure creates inventory transaction	Spec Drafted
+URS-INV-002	CLOSE 7	Inventory supports parent-child lot lineage	Spec Drafted
+URS-INV-003	CLOSE 8	Inventory lot retains complete traceability fields	Spec Drafted
+URS-INV-004	CLOSE 9	Inventory closures can propose labels	Spec Drafted
+URS-INV-005	CLOSE 10	MT2 inventory dashboard shows drawdown, age, bins, and alerts	Spec Drafted
+URS-KANBAN-001	KANBAN 3	Kanban board uses hand, table, and done workflow states	In Development
+URS-KANBAN-002	CLOSE 11	Kanban close captures accountable handoff	In Development
+URS-KANBAN-003	KANBAN 4	Kanban cards expose urgency, allergen, and dependency signals	In Development
+URS-KANBAN-004	CLOSE 33	Short Stop preserves partial work and creates residual task	In Development
+URS-KANBAN-005	CLOSE 12	Kanban completion publishes downstream state changes	Spec Drafted
+URS-KIT-101	CLOSE 13	Equipment cleaning creates auditable closing cards	Spec Drafted
+URS-KIT-102	CLOSE 14	Receiving sets persistent allergen flags	Spec Drafted
+URS-KIT-103	CLOSE 15	Van-load card requires complete departure checklist	Spec Drafted
+URS-KIT-104	CLOSE 16	Prep close captures portion count and size	Spec Drafted
+URS-KIT-105	SHOP 3	Shopping check-off captures actual substitution	Spec Drafted
+URS-KIT-106	SHOP 4	Vendor substitution reliability triggers review	Spec Drafted
+URS-KIT-107	CLOSE 17	Random bonus cards collect food-safety temperatures	Spec Drafted
+URS-KIT-METHOD-001	KANBAN 5	Taza Method cards use distinct visual identity	Spec Drafted
+URS-KIT-METHOD-002	KANBAN 6	First encounter plays Taza Method animation	Spec Drafted
+URS-KIT-METHOD-003	KANBAN 7	First encounter requires method acknowledgment	Spec Drafted
+URS-KIT-METHOD-004	KANBAN 8	Method cards expose inline Show Me instruction	Spec Drafted
+URS-KIT-METHOD-005	KANBAN 9	Questions reward both learner and teacher	Spec Drafted
+URS-KIT-METHOD-006	KANBAN 10	Correct method closures produce streaks and leaderboard	Spec Drafted
+URS-KIT-METHOD-PKG	KANBAN 11	Taza Method Card Experience	Spec Drafted
+URS-LABEL-001	LABEL 3	Type A label contains internal pedigree essentials	Spec Drafted
+URS-LABEL-003	LABEL 4	Label QR resolves to canonical batch details	Spec Drafted
+URS-LABEL-004	LABEL 5	FaviQR graphics use threshold-only monochrome conversion	Spec Drafted
+URS-LABEL-005	LABEL 6	Production labels print through Ethernet ZPL only	Spec Drafted
+URS-LABEL-006	LABEL 7	Label printing is confirmable, logged, reprintable, and failure-safe	Spec Drafted
+URS-LKL-001	CLOSE 18	Location capture gates location-changing task close	In Development
+URS-LKL-002	CLOSE 19	LKL record preserves operational provenance	In Development
+URS-LKL-003	CLOSE 20	LKL lookup returns results rapidly, ideally  in under one second	In Development
+URS-LKL-004	CLOSE 21	LKL updates publish to all consuming surfaces	Spec Drafted
+URS-LKL-PKG	CLOSE 22	Last Known Location Truth Capture & Lookup	In Development
+URS-MOB-001	SHOP 5	Staff mobile access requires passkey authentication	Spec Drafted
+URS-MOB-002	SHOP 6	Staff mobile shopping view is vendor-grouped	Spec Drafted
+URS-MOB-003	SHOP 7	Staff mobile view provides current event awareness	Spec Drafted
+URS-MOB-004	SHOP 8	Staff mobile updates preserve one source of truth	Spec Drafted
+URS-MOB-005	SHOP 9	Mobile optimistic updates expose and recover conflicts	Spec Drafted
+URS-MOB-PKG	SHOP 10	Staff Mobile Application Surface	Spec Drafted
+URS-SYS-INTENT-001		Overall System Intent	
+V1.0-IG		Taza Input Grammar + Clarification Nudging + Confidence Display	Spec Drafted
+W1	CRM 21	Lead Capture	Deployed
+W10		Google Calendar Sync	Deployed
+W11		Change Log Writer	Deployed
+W12		Hourly Review Workflow	Deployed
+W13		Reminder & Alert Workflow	Deployed
+W14		Voice Feedback Processor (Four-Path Routing)	Deployed
+W15		Day-of BEO & Event Timeline Generator	Deployed
+W2	CRM 22	Lead Scoring	Deployed
+W3	CRM 23	Pre-Call Brief SMS	Deployed
+W4	CRM 3	CRM Interview Session	Deployed
+W5	CRM 4	CRM Voice Input Handler	Deployed
+W6	CRM 5	Nightly CRM Deep Analysis	Deployed
+W7	INVOICE 13	Invoice Draft Workflow	Deployed
+W9	CATALOG 10	Square Menu Sync	Deployed

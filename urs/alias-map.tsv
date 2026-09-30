@@ -1,30 +1,89 @@
 alias	canonical_id	class	status
-CATALOG 1	CAT-001	family	proposed — verify at cluster audit
-CATALOG 10	SW-011	family	proposed — verify at cluster audit
-CATALOG 2	CAT-001	family	resolved 2026-10-01 (dietary_flags+allergen_notes = CAT-001 per D18)
-CATALOG 7		family	unresolved — TCS danger-zone constraints (likely CAT-006)
-CATALOG 8		family	unresolved — local PostgreSQL menu cache (likely SW-011)
-CLOSE 1	PROD-38	family	proposed — verify at cluster audit
-CLOSE 11		family	unresolved — canonical close pattern identifier (close-capture gate); likely PROD-38
-CLOSE 12		family	unresolved — commit-then-emit downstream events
-CLOSE 15	URS-KIT-103	family	proposed — verify at cluster audit
-CLOSE 18		family	unresolved — LKL close gate
-CLOSE 19		family	unresolved — LKL records table
-CLOSE 2	PROD-02	family	proposed — verify at cluster audit
-CLOSE 21		family	unresolved — downstream event after LKL write
-CLOSE 23		family	unresolved — bin master validation
-CLOSE 27	URS-KIT-METHOD-004	family	proposed — verify at cluster audit
-CLOSE 3	PROD-12	family	resolved 2026-10-01 (staff PIN = PROD-12)
-CLOSE 31		family	unresolved — MicroTouch local cache
-CLOSE 32	HAI-005	family	proposed — verify at cluster audit
-CLOSE 33		family	unresolved — Short Stop
-CLOSE 34	PROD-19	family	proposed — verify at cluster audit
-CLOSE 35	PROD-22	family	proposed — verify at cluster audit
-CLOSE 4		family	unresolved — Parent of KIT-101..104 (BUNDLE-KANBAN-EXECUTION); likely PROD-19 or PROD-38
-CLOSE 8		family	unresolved — inventory lot qty fields (lot record); likely PROD-36
+ALEXA 1	ALC-001	family	resolved 2026-10-01 (Notion ID.2)
+ALEXA 2	ALC-002	family	resolved 2026-10-01 (Notion ID.2)
+ALEXA 3	ALC-003	family	resolved 2026-10-01 (Notion ID.2)
+ALEXA 4	ALC-004	family	resolved 2026-10-01 (Notion ID.2)
+ALEXA 5	ALC-005	family	resolved 2026-10-01 (Notion ID.2)
+CATALOG 1	PROD-09	family	resolved 2026-10-01 (Notion ID.2)
+CATALOG 10	W9	family	resolved 2026-10-01 (Notion ID.2)
+CATALOG 2	CAT-001	family	resolved 2026-10-01 (Notion ID.2)
+CATALOG 3	CAT-002	family	resolved 2026-10-01 (Notion ID.2)
+CATALOG 4	CAT-003	family	resolved 2026-10-01 (Notion ID.2)
+CATALOG 5	CAT-004	family	resolved 2026-10-01 (Notion ID.2)
+CATALOG 6	CAT-005	family	resolved 2026-10-01 (Notion ID.2)
+CATALOG 7	CAT-006	family	resolved 2026-10-01 (Notion ID.2)
+CATALOG 8	SW-011	family	resolved 2026-10-01 (Notion ID.2)
+CATALOG 9	PROD-14	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 1	PROD-38	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 10	URS-INV-005	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 11	URS-KANBAN-002	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 12	URS-KANBAN-005	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 13	URS-KIT-101	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 14	URS-KIT-102	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 15	URS-KIT-103	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 16	URS-KIT-104	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 17	URS-KIT-107	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 18	URS-LKL-001	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 19	URS-LKL-002	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 2	PROD-02	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 20	URS-LKL-003	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 21	URS-LKL-004	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 22	URS-LKL-PKG	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 23	KIT-001	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 24	KIT-005	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 25	KIT-007	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 26	KIT-008	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 27	KIT-010	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 28	KIT-012	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 29	KIT-013	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 3	PROD-12	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 30	KIT-014	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 31	MT-001	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 32	HAI-001	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 33	URS-KANBAN-004	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 34	PROD-01	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 35	PROD-22	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 4	PROD-19	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 5	PROD-36	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 6	URS-INV-001	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 7	URS-INV-002	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 8	URS-INV-003	family	resolved 2026-10-01 (Notion ID.2)
+CLOSE 9	URS-INV-004	family	resolved 2026-10-01 (Notion ID.2)
+CREW 1	PROD-29	family	resolved 2026-10-01 (Notion ID.2)
+CREW 2	SCREEN-08	family	resolved 2026-10-01 (Notion ID.2)
+CREW 3	URS-CREW-001	family	resolved 2026-10-01 (Notion ID.2)
+CREW 4	URS-CREW-002	family	resolved 2026-10-01 (Notion ID.2)
+CREW 5	URS-CREW-003	family	resolved 2026-10-01 (Notion ID.2)
+CREW 6	URS-CREW-004	family	resolved 2026-10-01 (Notion ID.2)
+CREW 7	CULT-005	family	resolved 2026-10-01 (Notion ID.2)
+CREW 8	CULT-011	family	resolved 2026-10-01 (Notion ID.2)
+CREW 9	CULT-012	family	resolved 2026-10-01 (Notion ID.2)
 CREW-002	URS-CREW-002	short-form	resolved
 CREW-003	URS-CREW-003	short-form	resolved
 CREW-004	URS-CREW-004	short-form	resolved
+CRM 1	UI-001	family	resolved 2026-10-01 (Notion ID.2)
+CRM 10	URS-CRM-005	family	resolved 2026-10-01 (Notion ID.2)
+CRM 11	URS-CRM-006	family	resolved 2026-10-01 (Notion ID.2)
+CRM 12	URS-CRM-007	family	resolved 2026-10-01 (Notion ID.2)
+CRM 13	URS-CRM-008	family	resolved 2026-10-01 (Notion ID.2)
+CRM 14	URS-CRM-009	family	resolved 2026-10-01 (Notion ID.2)
+CRM 15	URS-CALL-001	family	resolved 2026-10-01 (Notion ID.2)
+CRM 16	URS-CALL-002	family	resolved 2026-10-01 (Notion ID.2)
+CRM 17	URS-CALL-003	family	resolved 2026-10-01 (Notion ID.2)
+CRM 18	URS-CALL-004	family	resolved 2026-10-01 (Notion ID.2)
+CRM 19	URS-CALL-005	family	resolved 2026-10-01 (Notion ID.2)
+CRM 2	SCREEN-10	family	resolved 2026-10-01 (Notion ID.2)
+CRM 20	URS-CALL-006	family	resolved 2026-10-01 (Notion ID.2)
+CRM 21	W1	family	resolved 2026-10-01 (Notion ID.2)
+CRM 22	W2	family	resolved 2026-10-01 (Notion ID.2)
+CRM 23	W3	family	resolved 2026-10-01 (Notion ID.2)
+CRM 3	W4	family	resolved 2026-10-01 (Notion ID.2)
+CRM 4	W5	family	resolved 2026-10-01 (Notion ID.2)
+CRM 5	W6	family	resolved 2026-10-01 (Notion ID.2)
+CRM 6	URS-CRM-001	family	resolved 2026-10-01 (Notion ID.2)
+CRM 7	URS-CRM-002	family	resolved 2026-10-01 (Notion ID.2)
+CRM 8	URS-CRM-003	family	resolved 2026-10-01 (Notion ID.2)
+CRM 9	URS-CRM-004	family	resolved 2026-10-01 (Notion ID.2)
 D-004		legacy-decision-ref	old Notion decision numbering — resolve or drop
 D-005		legacy-decision-ref	old Notion decision numbering — resolve or drop
 D-006		legacy-decision-ref	old Notion decision numbering — resolve or drop
@@ -32,49 +91,216 @@ D-007		legacy-decision-ref	old Notion decision numbering — resolve or drop
 D-008		legacy-decision-ref	old Notion decision numbering — resolve or drop
 D-019		legacy-decision-ref	old Notion decision numbering — resolve or drop
 D-021		legacy-decision-ref	old Notion decision numbering — resolve or drop
+D-025		legacy-decision-ref	old Notion decision numbering — resolve or drop
 D-027		legacy-decision-ref	old Notion decision numbering — resolve or drop
 D-028		legacy-decision-ref	old Notion decision numbering — resolve or drop
 D-057		legacy-decision-ref	old Notion decision numbering — resolve or drop
+D-060		legacy-decision-ref	old Notion decision numbering — resolve or drop
+D-061		legacy-decision-ref	old Notion decision numbering — resolve or drop
 D-062		legacy-decision-ref	old Notion decision numbering — resolve or drop
+D-KIT-001		legacy-decision-ref	old Notion decision numbering — resolve or drop
 DISP-002	URS-DISP-002	short-form	resolved
+DISPLAY 1	PROD-04	family	resolved 2026-10-01 (Notion ID.2)
+DISPLAY 10	SSB-004	family	resolved 2026-10-01 (Notion ID.2)
+DISPLAY 11	SSB-005	family	resolved 2026-10-01 (Notion ID.2)
+DISPLAY 12	SSB-006	family	resolved 2026-10-01 (Notion ID.2)
+DISPLAY 13	SSB-007	family	resolved 2026-10-01 (Notion ID.2)
+DISPLAY 14	TV-001	family	resolved 2026-10-01 (Notion ID.2)
+DISPLAY 15	TV-002	family	resolved 2026-10-01 (Notion ID.2)
+DISPLAY 16	TV-003	family	resolved 2026-10-01 (Notion ID.2)
+DISPLAY 17	TV-006	family	resolved 2026-10-01 (Notion ID.2)
+DISPLAY 18	TV-007	family	resolved 2026-10-01 (Notion ID.2)
+DISPLAY 19	TV-011	family	resolved 2026-10-01 (Notion ID.2)
+DISPLAY 2	SCREEN-02	family	resolved 2026-10-01 (Notion ID.2)
+DISPLAY 20	TV-012	family	resolved 2026-10-01 (Notion ID.2)
+DISPLAY 21	URS-DISP-001	family	resolved 2026-10-01 (Notion ID.2)
+DISPLAY 22	URS-DISP-002	family	resolved 2026-10-01 (Notion ID.2)
+DISPLAY 23	URS-DISP-003	family	resolved 2026-10-01 (Notion ID.2)
+DISPLAY 24	URS-DISP-004	family	resolved 2026-10-01 (Notion ID.2)
+DISPLAY 25	URS-DISP-005	family	resolved 2026-10-01 (Notion ID.2)
+DISPLAY 26	URS-DISP-006	family	resolved 2026-10-01 (Notion ID.2)
+DISPLAY 27	URS-DISP-PKG	family	resolved 2026-10-01 (Notion ID.2)
+DISPLAY 28	TV-004	family	resolved 2026-10-01 (Notion ID.2)
+DISPLAY 29	TV-005	family	resolved 2026-10-01 (Notion ID.2)
+DISPLAY 3	SCREEN-03	family	resolved 2026-10-01 (Notion ID.2)
+DISPLAY 30	UI-003	family	resolved 2026-10-01 (Notion ID.2)
+DISPLAY 31	CULT-009	family	resolved 2026-10-01 (Notion ID.2)
+DISPLAY 4	SCREEN-04	family	resolved 2026-10-01 (Notion ID.2)
+DISPLAY 5	SCREEN-05	family	resolved 2026-10-01 (Notion ID.2)
+DISPLAY 6	SCREEN-12	family	resolved 2026-10-01 (Notion ID.2)
+DISPLAY 7	SSB-001	family	resolved 2026-10-01 (Notion ID.2)
+DISPLAY 8	SSB-002	family	resolved 2026-10-01 (Notion ID.2)
+DISPLAY 9	SSB-003	family	resolved 2026-10-01 (Notion ID.2)
 EPR-006	EPR-007	family	resolved 2026-10-01 (allocation locked in EPR-007)
 EVENT-001	URS-EVENT-001	short-form	resolved
-EXCEPT 1		family	unresolved — Exception Router (likely PROD-23)
-EXCEPT 2		family	unresolved — Event Bus (likely PROD-20)
-EXCEPT 3		family	unresolved — Unified Notifier (likely PROD-25)
-EXCEPT 4		family	unresolved — event envelope
-EXCEPT 5		family	unresolved — persist-before-notify ordering
+EXCEPT 1	PROD-23	family	resolved 2026-10-01 (Notion ID.2)
+EXCEPT 2	PROD-20	family	resolved 2026-10-01 (Notion ID.2)
+EXCEPT 3	PROD-25	family	resolved 2026-10-01 (Notion ID.2)
+EXCEPT 4	URS-EVENT-001	family	resolved 2026-10-01 (Notion ID.2)
+EXCEPT 5	URS-EVENT-002	family	resolved 2026-10-01 (Notion ID.2)
+EXCEPT 6	PROD-21	family	resolved 2026-10-01 (Notion ID.2)
+EXCEPT 7	HAI-002	family	resolved 2026-10-01 (Notion ID.2)
+EXCEPT 8	HAI-004	family	resolved 2026-10-01 (Notion ID.2)
+HEALTH 1	PROD-28	family	resolved 2026-10-01 (Notion ID.2)
+HEALTH 10	EPR-001	family	resolved 2026-10-01 (Notion ID.2)
+HEALTH 11	OPS-002	family	resolved 2026-10-01 (Notion ID.2)
+HEALTH 2	PROD-11	family	resolved 2026-10-01 (Notion ID.2)
+HEALTH 3	SCREEN-06	family	resolved 2026-10-01 (Notion ID.2)
+HEALTH 4	SCREEN-07	family	resolved 2026-10-01 (Notion ID.2)
+HEALTH 5	URS-HEALTH-001	family	resolved 2026-10-01 (Notion ID.2)
+HEALTH 6	URS-HEALTH-002	family	resolved 2026-10-01 (Notion ID.2)
+HEALTH 7	URS-HEALTH-003	family	resolved 2026-10-01 (Notion ID.2)
+HEALTH 8	URS-HEALTH-004	family	resolved 2026-10-01 (Notion ID.2)
+HEALTH 9	URS-HEALTH-005	family	resolved 2026-10-01 (Notion ID.2)
 HEALTH-005	URS-HEALTH-005	short-form	resolved
+INFERENCE 1	PROD-10	family	resolved 2026-10-01 (Notion ID.2)
+INFERENCE 10	SW-012	family	resolved 2026-10-01 (Notion ID.2)
+INFERENCE 11	SW-010	family	resolved 2026-10-01 (Notion ID.2)
+INFERENCE 12	PROD-24	family	resolved 2026-10-01 (Notion ID.2)
+INFERENCE 2	SW-001	family	resolved 2026-10-01 (Notion ID.2)
+INFERENCE 3	SW-002	family	resolved 2026-10-01 (Notion ID.2)
+INFERENCE 4	SW-003	family	resolved 2026-10-01 (Notion ID.2)
+INFERENCE 5	SW-004	family	resolved 2026-10-01 (Notion ID.2)
+INFERENCE 6	SW-005	family	resolved 2026-10-01 (Notion ID.2)
+INFERENCE 7	SW-007	family	resolved 2026-10-01 (Notion ID.2)
+INFERENCE 8	SW-008	family	resolved 2026-10-01 (Notion ID.2)
+INFERENCE 9	SW-009	family	resolved 2026-10-01 (Notion ID.2)
+INFRA 1	PROD-26	family	resolved 2026-10-01 (Notion ID.2)
+INFRA 10	INFRA-001	family	resolved 2026-10-01 (Notion ID.2)
+INFRA 11	INFRA-002	family	resolved 2026-10-01 (Notion ID.2)
+INFRA 12	INFRA-003	family	resolved 2026-10-01 (Notion ID.2)
+INFRA 13	INFRA-004	family	resolved 2026-10-01 (Notion ID.2)
+INFRA 14	INFRA-005	family	resolved 2026-10-01 (Notion ID.2)
+INFRA 15	INFRA-006	family	resolved 2026-10-01 (Notion ID.2)
+INFRA 16	INFRA-007	family	resolved 2026-10-01 (Notion ID.2)
+INFRA 17	INFRA-008	family	resolved 2026-10-01 (Notion ID.2)
+INFRA 18	INFRA-009	family	resolved 2026-10-01 (Notion ID.2)
+INFRA 19	PROD-27	family	resolved 2026-10-01 (Notion ID.2)
+INFRA 2	HW-001	family	resolved 2026-10-01 (Notion ID.2)
+INFRA 20	DB-001	family	resolved 2026-10-01 (Notion ID.2)
+INFRA 21	SEC-002	family	resolved 2026-10-01 (Notion ID.2)
+INFRA 22	SEC-004	family	resolved 2026-10-01 (Notion ID.2)
+INFRA 23	OPS-001	family	resolved 2026-10-01 (Notion ID.2)
+INFRA 24	OPS-003	family	resolved 2026-10-01 (Notion ID.2)
+INFRA 25	OPS-004	family	resolved 2026-10-01 (Notion ID.2)
+INFRA 3	HW-002	family	resolved 2026-10-01 (Notion ID.2)
+INFRA 4	HW-003	family	resolved 2026-10-01 (Notion ID.2)
+INFRA 5	HW-004	family	resolved 2026-10-01 (Notion ID.2)
+INFRA 6	HW-005	family	resolved 2026-10-01 (Notion ID.2)
+INFRA 7	HW-006	family	resolved 2026-10-01 (Notion ID.2)
+INFRA 8	HW-007	family	resolved 2026-10-01 (Notion ID.2)
+INFRA 9	HW-008	family	resolved 2026-10-01 (Notion ID.2)
 INV-001	URS-INV-001	short-form	resolved
 INV-003	URS-INV-003	short-form	resolved
-INVOICE 1	PROD-07	family	proposed — verify at cluster audit
-INVOICE 12	SCREEN-09	family	proposed — verify at cluster audit
-INVOICE 13	PROD-07	family	proposed — verify at cluster audit
-INVOICE 9	PROD-08	family	proposed — verify at cluster audit
+INVOICE 1	PROD-07	family	resolved 2026-10-01 (Notion ID.2)
+INVOICE 10	CX-007	family	resolved 2026-10-01 (Notion ID.2)
+INVOICE 11	DOC-004	family	resolved 2026-10-01 (Notion ID.2)
+INVOICE 12	UI-002	family	resolved 2026-10-01 (Notion ID.2)
+INVOICE 13	W7	family	resolved 2026-10-01 (Notion ID.2)
+INVOICE 2	PROD-08	family	resolved 2026-10-01 (Notion ID.2)
+INVOICE 3	SCREEN-09	family	resolved 2026-10-01 (Notion ID.2)
+INVOICE 4	CX-001	family	resolved 2026-10-01 (Notion ID.2)
+INVOICE 5	CX-002	family	resolved 2026-10-01 (Notion ID.2)
+INVOICE 6	CX-003	family	resolved 2026-10-01 (Notion ID.2)
+INVOICE 7	CX-004	family	resolved 2026-10-01 (Notion ID.2)
+INVOICE 8	CX-005	family	resolved 2026-10-01 (Notion ID.2)
+INVOICE 9	CX-006	family	resolved 2026-10-01 (Notion ID.2)
+KANBAN 1	PROD-03	family	resolved 2026-10-01 (Notion ID.2)
+KANBAN 10	URS-KIT-METHOD-006	family	resolved 2026-10-01 (Notion ID.2)
+KANBAN 11	URS-KIT-METHOD-PKG	family	resolved 2026-10-01 (Notion ID.2)
+KANBAN 12	CULT-002	family	resolved 2026-10-01 (Notion ID.2)
+KANBAN 13	CULT-010	family	resolved 2026-10-01 (Notion ID.2)
+KANBAN 2	SCREEN-01	family	resolved 2026-10-01 (Notion ID.2)
+KANBAN 3	URS-KANBAN-001	family	resolved 2026-10-01 (Notion ID.2)
+KANBAN 4	URS-KANBAN-003	family	resolved 2026-10-01 (Notion ID.2)
+KANBAN 5	URS-KIT-METHOD-001	family	resolved 2026-10-01 (Notion ID.2)
+KANBAN 6	URS-KIT-METHOD-002	family	resolved 2026-10-01 (Notion ID.2)
+KANBAN 7	URS-KIT-METHOD-003	family	resolved 2026-10-01 (Notion ID.2)
+KANBAN 8	URS-KIT-METHOD-004	family	resolved 2026-10-01 (Notion ID.2)
+KANBAN 9	URS-KIT-METHOD-005	family	resolved 2026-10-01 (Notion ID.2)
 KANBAN-002	URS-KANBAN-002	short-form	resolved
 KANBAN-005	URS-KANBAN-005	short-form	resolved
-KIT-002		family	unresolved — task completion form gate (no KIT-002 in any cluster)
-KIT-003		family	unresolved — LKL table schema
-KIT-004		family	unresolved — LKL query interface
-KIT-006		family	unresolved — partial completion handling
-KIT-009		family	unresolved — Staff PIN (likely PROD-12)
-KIT-018		family	unresolved — inventory/label as side-effect
-KIT-021		family	unresolved — MT2 inventory dashboard
+KB 1	CULT-006	family	resolved 2026-10-01 (Notion ID.2)
+KB 2	CULT-007	family	resolved 2026-10-01 (Notion ID.2)
+KB 3	CULT-008	family	resolved 2026-10-01 (Notion ID.2)
+KIT-002		archived	archived 2026-09-02 (Nick)
+KIT-003		archived	archived 2026-09-02 (Nick)
+KIT-004		archived	archived 2026-09-02 (Nick)
+KIT-006		archived	archived 2026-09-02 (Nick)
+KIT-009		archived	archived 2026-09-02 (Nick)
+KIT-011		archived	archived 2026-09-02 (Nick)
+KIT-018		archived	archived 2026-09-02 (Nick)
+KIT-019		archived	archived 2026-09-02 (Nick)
+KIT-021		archived	archived 2026-09-02 (Nick)
 KIT-101	URS-KIT-101	short-form	resolved
 KIT-102	URS-KIT-102	short-form	resolved
 KIT-103	URS-KIT-103	short-form	resolved
 KIT-104	URS-KIT-104	short-form	resolved
 KIT-105	URS-KIT-105	short-form	resolved
+LABEL 1	PROD-13	family	resolved 2026-10-01 (Notion ID.2)
+LABEL 2	HW-009	family	resolved 2026-10-01 (Notion ID.2)
+LABEL 3	URS-LABEL-001	family	resolved 2026-10-01 (Notion ID.2)
+LABEL 4	URS-LABEL-003	family	resolved 2026-10-01 (Notion ID.2)
+LABEL 5	URS-LABEL-004	family	resolved 2026-10-01 (Notion ID.2)
+LABEL 6	URS-LABEL-005	family	resolved 2026-10-01 (Notion ID.2)
+LABEL 7	URS-LABEL-006	family	resolved 2026-10-01 (Notion ID.2)
 LABEL-001	URS-LABEL-001	short-form	resolved
 LABEL-005	URS-LABEL-005	short-form	resolved
 LKL-001	URS-LKL-001	short-form	resolved
 LKL-002	URS-LKL-002	short-form	resolved
-PACK 2	PROD-16-V2	family	proposed — verify at cluster audit
+META-001		archived	archived 2026-09-02 (Nick)
+META-002		archived	archived 2026-09-02 (Nick)
+MT-003		archived	archived 2026-09-02 (Nick)
+NOCODB 1	DB-002	family	resolved 2026-10-01 (Notion ID.2)
+NOCODB 2	DB-003	family	resolved 2026-10-01 (Notion ID.2)
+NOCODB 3	DB-004	family	resolved 2026-10-01 (Notion ID.2)
+NOCODB 4	SEC-003	family	resolved 2026-10-01 (Notion ID.2)
+NPU 1	PROD-34	family	resolved 2026-10-01 (Notion ID.2)
+NPU 2	KIT-020	family	resolved 2026-10-01 (Notion ID.2)
+NPU 3	KIT-022	family	resolved 2026-10-01 (Notion ID.2)
+NPU 4	KIT-023	family	resolved 2026-10-01 (Notion ID.2)
+NPU 5	PROD-37	family	resolved 2026-10-01 (Notion ID.2)
+NPU 6	INT-006	family	resolved 2026-10-01 (Notion ID.2)
+PACK 1	PROD-16	family	resolved 2026-10-01 (Notion ID.2)
+PACK 2	PROD-16-V2	family	resolved 2026-10-01 (Notion ID.2)
+POWER 1	EPR-002	family	resolved 2026-10-01 (Notion ID.2)
+POWER 2	EPR-003	family	resolved 2026-10-01 (Notion ID.2)
+POWER 3	EPR-004	family	resolved 2026-10-01 (Notion ID.2)
+POWER 4	EPR-007	family	resolved 2026-10-01 (Notion ID.2)
 PROD-33		deferred	deferred to V1.x (Nick 2026-10-01)
-PROD-35		dangling	referenced by PROD-34 (V2.0 NPU tier)
-SHOP 1	PROD-05-V2	family	proposed — verify at cluster audit
-SHOP 11	PROD-05-V2	family	proposed — verify at cluster audit
-SHOP 3	URS-KIT-105	family	proposed — verify at cluster audit
+PROD-35		deferred	deferred to V1.x (Nick 2026-10-01)
+PROMPT 1	AI-001	family	resolved 2026-10-01 (Notion ID.2)
+PROMPT 10	UI-005	family	resolved 2026-10-01 (Notion ID.2)
+PROMPT 2	AI-002	family	resolved 2026-10-01 (Notion ID.2)
+PROMPT 3	AI-003	family	resolved 2026-10-01 (Notion ID.2)
+PROMPT 4	AI-004	family	resolved 2026-10-01 (Notion ID.2)
+PROMPT 5	AI-005	family	resolved 2026-10-01 (Notion ID.2)
+PROMPT 6	AI-006	family	resolved 2026-10-01 (Notion ID.2)
+PROMPT 7	AI-007	family	resolved 2026-10-01 (Notion ID.2)
+PROMPT 8	AI-008	family	resolved 2026-10-01 (Notion ID.2)
+PROMPT 9	MT-002	family	resolved 2026-10-01 (Notion ID.2)
+SHOP 1	PROD-05-V2	family	resolved 2026-10-01 (Notion ID.2)
+SHOP 10	URS-MOB-PKG	family	resolved 2026-10-01 (Notion ID.2)
+SHOP 11	PROD-05	family	resolved 2026-10-01 (Notion ID.2)
+SHOP 2	SCREEN-11	family	resolved 2026-10-01 (Notion ID.2)
+SHOP 3	URS-KIT-105	family	resolved 2026-10-01 (Notion ID.2)
+SHOP 4	URS-KIT-106	family	resolved 2026-10-01 (Notion ID.2)
+SHOP 5	URS-MOB-001	family	resolved 2026-10-01 (Notion ID.2)
+SHOP 6	URS-MOB-002	family	resolved 2026-10-01 (Notion ID.2)
+SHOP 7	URS-MOB-003	family	resolved 2026-10-01 (Notion ID.2)
+SHOP 8	URS-MOB-004	family	resolved 2026-10-01 (Notion ID.2)
+SHOP 9	URS-MOB-005	family	resolved 2026-10-01 (Notion ID.2)
 SW-016	REQ-CI-003	family	resolved 2026-10-01 (replay-DOE + TQAI scorer)
 SW-019	REQ-CI-003	family	resolved 2026-10-01 (retrospective mining)
-V2-FEAT-006	PROD-16-V2	family	proposed — verify at cluster audit
+SW-020		archived	archived 2026-09-02 (Nick)
+TELEMETRY 1	REQ-TELE-001	family	resolved 2026-10-01 (Notion ID.2)
+TELEMETRY 2	REQ-TELE-002	family	resolved 2026-10-01 (Notion ID.2)
+TELEMETRY 3	REQ-CI-002	family	resolved 2026-10-01 (Notion ID.2)
+TELEMETRY 4	REQ-CI-003	family	resolved 2026-10-01 (Notion ID.2)
+TELEMETRY 5	SW-006	family	resolved 2026-10-01 (Notion ID.2)
+TELEMETRY 6	SW-013	family	resolved 2026-10-01 (Notion ID.2)
+TV-008		archived	archived 2026-09-02 (Nick)
+TV-009		archived	archived 2026-09-02 (Nick)
+TV-010		archived	archived 2026-09-02 (Nick)
+URS-CREW-005		archived	archived 2026-09-02 (Nick)
+URS-LABEL-002		archived	archived 2026-09-02 (Nick)
