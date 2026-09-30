@@ -110,6 +110,12 @@ Fallback: static 8h hardcoded threshold.
 **Acceptance Criteria:**  
 Records older than threshold show staleness warning; threshold configurable without code change; fresh records show no warning
 
+**Verification Method:**
+1. [AUTO] Age test: LKL record older than threshold → 'Placed Xh ago' warning on downstream card. Evidence: screenshot.
+2. [AUTO] Config test: change threshold via .env → warning fires at new value, zero code change. Evidence: config diff + log.
+3. [AUTO] Fresh test: record under threshold → no warning. Evidence: screenshot.
+4. [NICK] Live: Sandra sees the staleness warning on a real task card. Evidence: screenshot.
+
 **Required for Release:**  
 NO
 
@@ -136,6 +142,12 @@ Fallback: manual NocoDB status update.
 
 **Acceptance Criteria:**  
 LKL status updates to consumed within 5s of pull-task close; downstream tasks referencing the item show a 'pulled' indicator
+
+**Verification Method:**
+1. [AUTO] Update test: pull-task close → LKL status=consumed within 5s. Evidence: psql.
+2. [AUTO] Downstream: task referencing the item shows 'pulled' indicator. Evidence: screenshot.
+3. [AUTO] Stale-prevention: consumed record no longer returned as an active location. Evidence: query.
+4. [NICK] Live: Edgar pulls an item, closes card; next person sees 'pulled'. Evidence: screenshot + observation log.
 
 **Required for Release:**  
 NO
@@ -295,6 +307,13 @@ Fallback: manual photo folder with naming convention.
 **Acceptance Criteria:**  
 Images stored with correct metadata; Sandra's auto-approve; Nick/Sandra approve/error-tag functional; images queryable by task_type + quality_tag
 
+**Verification Method:**
+1. [AUTO] Metadata: photo stored with staff_id + task_type_id + quality_tag. Evidence: psql.
+2. [AUTO] Auto-approve: Sandra's upload → quality_tag=approved with zero manual step. Evidence: log.
+3. [AUTO] Error-tag: Nick/Sandra flag an image → error_notes + approved_by recorded. Evidence: log.
+4. [AUTO] Query: images filterable by task_type and quality_tag. Evidence: query result.
+5. [NICK] Live: Sandra uploads a photo; Nick error-tags another. Evidence: screenshots.
+
 **Required for Release:**  
 NO
 
@@ -321,6 +340,13 @@ Fallback: manual Sandra/Nick review; block task until resolved.
 
 **Acceptance Criteria:**  
 Structured changes commit within 5s with no AI call; substitution/unknown item routes to AI within 25s; no canonical write without PIN approval; audit log entry on every substitution
+
+**Verification Method:**
+1. [AUTO] Structured change: qty adjustment commits <5s with zero AI calls. Evidence: log + timing.
+2. [AUTO] Substitution: unknown item → AI structured proposal <25s, no direct write. Evidence: log.
+3. [AUTO] PIN gate: zero canonical writes without supervisor PIN. Evidence: audit log.
+4. [AUTO] Audit: every substitution has proposal + approving supervisor. Evidence: query.
+5. [NICK] Live: Sandra substitutes an ingredient, enters PIN, BOM updates. Evidence: screenshot + observation log.
 
 **Required for Release:**  
 NO
@@ -349,6 +375,19 @@ RESOLVED 2026-09-02: this is Nick's preferred long-term approach (local NPU edge
 **Rationale:**  
 Game mechanic IS the inventory capture.
 
+**Acceptance Criteria:**
+NORMAL: 'Hey Taza, [completion statement]' at MT1/MT2 → matched to the active card, confirmed, points awarded, card moves to done.
+EDGE: Wake word on NPU <100ms; on-device STT; no cloud round-trip.
+EDGE: Ambiguous match (two similar active cards) → confirm prompt, never auto-close the wrong card.
+NEGATIVE: No wake-word match → no close (false positive prevented).
+SILENT-FAILURE: Voice close recorded but card not moved → audit catches the orphan.
+CHALLENGE: Noisy kitchen, two crew talking → wake word fires only for the addressed command.
+
+**Verification Method:**
+1. [AUTO] Wake-word: latency <100ms on NPU. Evidence: benchmark log.
+2. [AUTO] Match: spoken completion matches the correct active card. Evidence: test log.
+3. [NICK] Live: crew closes a card by voice in a real kitchen. Evidence: observation log + screenshot.
+
 **Required for Release:**  
 NO
 
@@ -369,6 +408,18 @@ Need: a quick automated visual check on card close (e.g. is the poly wrap tight 
 
 **Functional Requirement Specification:**  
 Binary image verification on card close: NPU runs a MobileNet INT8 classifier (~30 training images/class) for yes/no checks like "Did the poly wrap look tight enough?" Camera is verification, not identification — the crew member is the authority. Thumbnail stored for audit trail.
+
+**Acceptance Criteria:**
+NORMAL: NPU MobileNet INT8 classifier returns a yes/no cue ('poly tight enough') on card close; thumbnail stored for audit.
+EDGE: Classifier uncertain → neutral cue; crew decision stands (camera verifies, never identifies).
+NEGATIVE: NPU unavailable → close proceeds without the cue, never blocks the close.
+SILENT-FAILURE: Thumbnail missing from audit trail → caught (thumbnail required on every verified close).
+CHALLENGE: ~30 training images/class → classifier reaches useful accuracy without overfitting.
+
+**Verification Method:**
+1. [AUTO] Classifier: yes/no output within the close flow. Evidence: test log.
+2. [AUTO] Thumbnail: stored with the close event. Evidence: psql.
+3. [NICK] Live: crew closes a card, sees the cue, crew judgment stands. Evidence: screenshot.
 
 **Required for Release:**  
 NO
@@ -391,6 +442,18 @@ Need: kitchen ambient sound classified during active service (alert if unusually
 **Functional Requirement Specification:**  
 Kitchen soundscape classification: YAMNet INT8 on NPU samples the mic every 5s, classifying laughter/silence/arguing/clanging. Dashboard shows a "quiet kitchen" alert during active service. Mood correlated with shift productivity in nightly N100 analysis. Anonymized, SPC control chart framing.
 
+**Acceptance Criteria:**
+NORMAL: YAMNet INT8 samples the mic every 5s, classifies laughter/silence/arguing/clanging; 'quiet kitchen' alert during active service.
+EDGE: No active service → no alert.
+NEGATIVE: Audio never leaves the device (anonymized; only class labels logged).
+SILENT-FAILURE: Mic fails → health monitor flags it, never silent.
+CHALLENGE: A quiet-but-productive kitchen → alert fires; mood/productivity correlation handled in nightly analysis, not real-time.
+
+**Verification Method:**
+1. [AUTO] Classification: class labels correct on a labeled test set. Evidence: test log.
+2. [AUTO] Privacy: no raw audio stored. Evidence: code-search.
+3. [NICK] Live: quiet-kitchen alert fires during a real service. Evidence: screenshot.
+
 **Required for Release:**  
 NO
 
@@ -411,6 +474,18 @@ Need: anonymized movement tracking generating heatmaps, station dwell-time, and 
 
 **Functional Requirement Specification:**  
 Person detection for spaghetti diagrams: SSD-MobileNet/YOLO-v5n INT8 on NPU at 5fps, bounding-box centroids logged to Postgres. Nightly analysis produces movement heatmaps, station dwell-time, and cross-traffic hotspots. All anonymized (Person A/B/C). Pre/post Taza OS comparison via SPC control chart.
+
+**Acceptance Criteria:**
+NORMAL: SSD-MobileNet/YOLO-v5n INT8 at 5fps → bounding-box centroids logged to Postgres; nightly heatmaps, dwell-time, cross-traffic hotspots.
+EDGE: All output anonymized (Person A/B/C) — no identity.
+NEGATIVE: No raw video stored, centroids only.
+SILENT-FAILURE: Detector stalls → health monitor flags it, never silent.
+CHALLENGE: Pre/post Taza OS comparison via SPC control chart shows a measurable layout change.
+
+**Verification Method:**
+1. [AUTO] Pipeline: centroids logged at 5fps. Evidence: psql count.
+2. [AUTO] Privacy: no raw frames persisted. Evidence: code-search.
+3. [NICK] Live: Nick reviews the heatmap + dwell-time dashboard. Evidence: screenshot.
 
 **Required for Release:**  
 NO
