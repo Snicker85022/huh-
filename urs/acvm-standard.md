@@ -39,3 +39,18 @@ Proof (screenshots, reports, photos) is captured and documented."
 - INF (AI inference): AC asserts no fabrication (confidence labels honest, missing →
   blank not guessed); VM = adversarial-input battery + delta review + code-search
   proving the LLM never does arithmetic/geometry.
+
+## Verification mode split (Nick, 2026-09-30)
+
+Every VM line is tagged with who checks it:
+
+- **[AUTO]** — deterministic assertion a machine verifies better than Nick:
+  query results, code-search zero-hits, row counts, arithmetic equality, boundary
+  behavior, append-only property, log presence. Run by harness/CI, zero Nick time.
+- **[NICK]** — human judgment or physical observation: the SMS actually hit the
+  phone, the document reads correctly, content quality, the real-world effect.
+- **[NICK+AUTO]** — machine verifies the fact (row/log exists), Nick confirms the
+  real-world effect (phone rang, BEO is right).
+
+Rule: critical things that make life hell if wrong → NICK. Backend logic that AI
+checks better than Nick → AUTO.

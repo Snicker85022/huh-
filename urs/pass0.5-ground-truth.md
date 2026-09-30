@@ -90,3 +90,10 @@ Cortex drafts AC/VM for all specs. Mandatory: normal + edge + negative +
 silent-failure + challenge-test classes. VM must name the evidence artifact
 (query/screenshot/photo/observation log/code-search/hands-on). Nick is reviewer.
 Standard in `urs/acvm-standard.md`.
+
+## D23 — VM verification-mode split (Nick 2026-09-30)
+
+Every Verification Method line tagged [AUTO] / [NICK] / [NICK+AUTO]. AUTO =
+deterministic/backend (queries, code-search, arithmetic, boundaries, idempotency).
+NICK = human judgment or physical observation (SMS on phone, document quality,
+real-world effect). Critical-things-that-make-life-hell → NICK. See urs/acvm-standard.md.

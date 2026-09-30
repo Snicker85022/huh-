@@ -30,6 +30,22 @@ A Wix API may be usable to pull inquiry data directly instead of relying on emai
 **Required for Release:**  
 NO
 
+**Acceptance Criteria:**  
+NORMAL: A Wix inquiry email arriving in the monitoring inbox creates a Lead (name/contact/event type/date/guest count/budget), creates a follow-up Task, and sends SMS to Sandra.
+EDGE: Duplicate email (same Message-ID) → skipped, no second Lead. Same sender + event date within 30-day window → flagged for dedupe, never silently merged.
+EDGE: Email missing guest count or budget → Lead still created, blank fields + FLAG for missing data; follow-up Task still fires.
+NEGATIVE: Email from a non-Wix/Square sender → classified DIRECT/AUTO, zero side effects on Leads.
+SILENT-FAILURE: A parse fails and drops the lead → impossible: unparseable email routes to exceptions_queue, never silently accepted.
+CHALLENGE: Feed a malformed Wix email (missing fields, HTML artifacts) → Lead created with what was extracted + FLAGs on gaps; no crash, no partial row.
+
+**Verification Method:**  
+1. [NICK+AUTO] Live test: send a real Wix form inquiry; confirm Lead + Task + SMS. Evidence: phone SMS screenshot + psql result.
+2. [AUTO] Dedupe test: resend the same Message-ID → zero new Leads. Evidence: row count before/after + log.
+3. [AUTO] Parse-failure drill: inject a malformed email → appears in exceptions_queue with reason. Evidence: psql query + screenshot.
+4. [AUTO] Wrong-sender test: send from a personal address → classified, no Lead row. Evidence: classification log.
+5. [NICK] Nick hands-on review of a real week of inbox processing. Evidence: observation log.
+
+
 _Notion: https://app.notion.com/p/Lead-Capture-3b5e152fc1998148923fff8bddd2d81b_
 
 ---
@@ -84,6 +100,20 @@ Fallback: manual changelog entries.
 **Required for Release:**  
 NO
 
+**Acceptance Criteria:**  
+NORMAL: Read-only view over audit_log shows before/after history for Leads/Customers/Invoices/Tasks.
+EDGE: Query on a table with zero changes → empty result, no error.
+NEGATIVE: Any write attempt through W11 → rejected (read-only view).
+SILENT-FAILURE: A canonical write missing from audit_log → caught by PROD-22 trigger coverage; the view shows nothing missing.
+CHALLENGE: 10k audit rows → view returns in reasonable time, filtered correctly.
+
+**Verification Method:**  
+1. [AUTO] Read test: change a Lead → appears in view with old/new. Evidence: psql + screenshot.
+2. [AUTO] Write-reject: attempt INSERT via view → permission denied. Evidence: error log.
+3. [AUTO] Filter test: view excludes non-key tables. Evidence: psql query.
+4. [AUTO] PROD-22 coverage: every canonical write produces an audit row. Evidence: query + count.
+
+
 _Notion: https://app.notion.com/p/Change-Log-Writer-3b5e152fc19981bf89ecc9f66f2ef5a0_
 
 ---
@@ -110,6 +140,20 @@ Fallback: manual review by Nick.
 
 **Required for Release:**  
 NO
+
+**Acceptance Criteria:**  
+NORMAL: Hourly scan finds overdue Tasks, Leads >24h no response, flagged Customer Events → alerts to changelog (alert queue), triggers W13.
+EDGE: Lead at exactly 24h → flagged; 23h59m → not flagged.
+NEGATIVE: Duplicate alert for the same item every hour → impossible: idempotent per item+state.
+SILENT-FAILURE: Scan runs but writes nothing on failure → alert to exceptions; never silent.
+CHALLENGE: 500 tasks + 300 leads scanned → completes within window, no missed items.
+
+**Verification Method:**  
+1. [AUTO] Live scan: create overdue task + 25h lead → both alert. Evidence: psql + screenshot.
+2. [AUTO] Boundary: lead at 23h59m → no alert. Evidence: log.
+3. [AUTO] Idempotency: two consecutive hours → no duplicate alert for the same item. Evidence: alert log.
+4. [AUTO] Volume: synthetic 500/300 → all caught. Evidence: count + log.
+
 
 _Notion: https://app.notion.com/p/Hourly-Review-Workflow-3b5e152fc19981f19281e119ab71a7e7_
 
@@ -138,6 +182,20 @@ Fallback: manual Slack/email check.
 **Required for Release:**  
 NO
 
+**Acceptance Criteria:**  
+NORMAL: W6 digest + W12 alerts delivered via canonical channels (Twilio SMS to Sandra for actionable; email to Nick), logged to Communications.
+EDGE: SMS delivery failure → retry, then fallback channel (email), logged.
+NEGATIVE: Delivery without logging → impossible: log write is part of the transaction.
+SILENT-FAILURE: A notification generated but never sent → surfaced by delivery-status tracking.
+CHALLENGE: 30 alerts at once → all delivered, none dropped, all logged.
+
+**Verification Method:**  
+1. [NICK+AUTO] Live: W12 alert → Sandra's phone receives SMS, Communications has a row. Evidence: screenshot + psql.
+2. [AUTO] Fail drill: block Twilio → fallback email + retry logged. Evidence: log.
+3. [AUTO] Volume: 30 alerts → 30 logs, zero drops. Evidence: count + log.
+4. [AUTO] Audit: sample 10 Communications rows → each traces to a real trigger. Evidence: query.
+
+
 _Notion: https://app.notion.com/p/Reminder-Alert-Workflow-3b5e152fc19981199794f5451401e071_
 
 ---
@@ -162,6 +220,20 @@ Voice feedback webhook from MicroTouch feedback page (Sherpa-ONNX transcribed te
 **Required for Release:**  
 NO
 
+**Acceptance Criteria:**  
+NORMAL: Voice feedback routes via 4 paths: registry match → D, simple → AI constrained, complex → AI multi-step, else → log.
+EDGE: Unknown command not in registry → routed to log, never guessed.
+NEGATIVE: AI path fails → command logged, no silent drop.
+SILENT-FAILURE: Empty/garbled transcription → routed to log for review, not treated as a valid command.
+CHALLENGE: 10 voice commands of mixed types → each routes to the correct path, no cross-contamination.
+
+**Verification Method:**  
+1. [AUTO] Registry-match test: known command → D path, direct update. Evidence: log.
+2. [AUTO] Unknown-command test → log path. Evidence: log.
+3. [AUTO] AI-fail drill: block AI → command logged. Evidence: log.
+4. [AUTO] Batch: 10 mixed commands → correct routing. Evidence: routing log.
+
+
 _Notion: https://app.notion.com/p/Voice-Feedback-Processor-Four-Path-Routing-3b5e152fc199818e9bf1de6c6396ef2c_
 
 ---
@@ -183,11 +255,24 @@ Formatted BEO timeline in NocoDB event record; SMS to Nick; MicroTouch dashboard
 **Trigger:**  
 Event status to Confirmed (auto) OR manual trigger
 
-**Verification Method:**  
-SMART 23/25, Impact 19/20 — approved 2026-05-29.
-
 **Required for Release:**  
 NO
+
+**Acceptance Criteria:**  
+NORMAL: On event Confirmed, timeline generated from kitchen_exit = crew_arrival − drive_time − pack_buffer, pack_start back-calculated, full timeline through breakdown; BEO stored + SMS to Nick <60s.
+EDGE: Missing venue zip → drive time flagged Medium confidence or blocked; never guessed.
+EDGE: Refund rescinds Confirmed → re-payment re-triggers one authorized W15 run (idempotent on invoice ID + Message-ID).
+NEGATIVE: LLM attempts arithmetic → blocked (AI formats only; deterministic math).
+SILENT-FAILURE: Hold-time attribute missing for an item → downstream flags low confidence, routes to review, never fabricates.
+CHALLENGE: 3 events confirmed within 5 min → three timelines generated correctly, no cross-event contamination.
+
+**Verification Method:**  
+1. [NICK] Live: confirm a real event → BEO + SMS within 60s. Evidence: SMS screenshot + BEO document.
+2. [AUTO] Math audit: verify kitchen_departure = crew_arrival − drive_time − pack_buffer for 5 events. Evidence: computed vs stored.
+3. [AUTO] Refund drill: rescind + re-pay → exactly one W15 run each, no duplicate BEO. Evidence: log.
+4. [AUTO] Missing-data test: event with missing hold time → flagged, not guessed. Evidence: flag + review queue.
+5. [NICK] Nick reviews a real BEO against the event. Evidence: observation log.
+
 
 _Notion: https://app.notion.com/p/Day-of-BEO-Event-Timeline-Generator-3b5e152fc19981cd83cae7c3c90675cb_
 
@@ -219,6 +304,22 @@ Fallback: default score + manual review.
 **Required for Release:**  
 NO
 
+**Acceptance Criteria:**  
+NORMAL: profit_score 5/4 → Hot, 3 → Warm, 2 → Low, 1 → Pass, computed deterministically from ~/repo/config/lead_scoring_rubric.md; rubric_version = commit hash embedded.
+EDGE: AI unavailable → category=Low + scoring_ai_unavailable=true (fail safe, D7).
+EDGE: AI adjusts category by exactly one level with written red_flags reason → allowed; two levels → rejected.
+NEGATIVE: Silent override (AI changes category without red_flags) → BLOCKED; score_history records the attempt.
+SILENT-FAILURE: Re-score overwrites history → impossible: score_history is append-only; standing score = latest entry.
+CHALLENGE: Re-score fires 3× in one day (W4 Done + field update + manual) → three append-only entries, standing score correct, no duplicates.
+
+**Verification Method:**  
+1. [AUTO] Threshold test: 5 leads with scores 1–5 → categories Pass/Low/Warm/Hot/Hot exactly. Evidence: psql result.
+2. [AUTO] Fail-safe test: kill AI endpoint, score a lead → Low + flag. Evidence: psql + log.
+3. [AUTO] Append-only audit: re-score one lead 3× → score_history has 3 rows, never overwritten. Evidence: psql query.
+4. [AUTO] Rubric version: edit + commit rubric, score a lead → rubric_version = new commit hash. Evidence: psql + git log.
+5. [AUTO] Code-search: no code path writes category except through the threshold function. Evidence: grep output.
+
+
 _Notion: https://app.notion.com/p/Lead-Scoring-3b5e152fc199814da3fbea5f4d2054a0_
 
 ---
@@ -248,6 +349,22 @@ Fallback: manual reminder in NocoDB.
 
 **Required for Release:**  
 NO
+
+**Acceptance Criteria:**  
+NORMAL: Follow-up Task enters its 60-min window → 3-paragraph brief (≤900 chars: who / last interaction / angle) generated and delivered within 2 min (D9).
+EDGE: No recent touchpoints → brief reads "no recent touchpoints — call fresh"; never fabricated context.
+EDGE: due_time shifts ≥15 min after delivery → exactly one re-brief with logged reason; otherwise no duplicate.
+NEGATIVE: Two briefs for the same task_id → impossible: idempotent on task_id.
+SILENT-FAILURE: Brief generated from stale customer data → caught: data fetched at generation time, timestamp on brief.
+CHALLENGE: 20 tasks enter windows simultaneously → all briefs delivered within SLA, zero dropped, zero duplicated.
+
+**Verification Method:**  
+1. [NICK+AUTO] Live test: create a task due in 70 min → brief fires on window entry. Evidence: SMS screenshot + log timestamp.
+2. [NICK] Empty-touchpoint test → "call fresh" copy. Evidence: screenshot.
+3. [AUTO] Idempotency: replay the trigger → no second SMS. Evidence: delivery log.
+4. [AUTO] Shift test: move due_time +20 min → re-brief logged with reason. Evidence: log.
+5. [AUTO] Load: batch of 20 → 20 briefs, zero dupes. Evidence: log + count.
+
 
 _Notion: https://app.notion.com/p/Pre-Call-Brief-SMS-3b5e152fc1998185b35ff2a7110d9b56_
 
@@ -282,6 +399,22 @@ Fallback: Sandra continues manually, saves notes later.
 **Required for Release:**  
 NO
 
+**Acceptance Criteria:**  
+NORMAL: Sandra runs a multi-turn session with deepseek-v4-flash; on Done, structured JSON extraction writes to canonical CRM tables + creates follow-up Tasks.
+EDGE: Tab close before Done → session=partial, no auto-extract; transcript preserved (D12).
+EDGE: 24h inactivity → session=abandoned; no extraction.
+NEGATIVE: Extraction fails schema validation → raw transcript to exceptions_queue + SMS to Sandra; nothing bad written to CRM.
+SILENT-FAILURE: Partial write (some fields written, others failed) → impossible: extraction validates all-or-nothing before writing.
+CHALLENGE: Feed a rambling 20-turn transcript with contradictory info → extraction flags ambiguity, Sandra resolves, no silent guess.
+
+**Verification Method:**  
+1. [NICK+AUTO] Live session: Sandra runs a real session → JSON lands in correct tables + task created. Evidence: psql + screenshot.
+2. [AUTO] Abandon test: open session, simulate inactivity → abandoned, no extraction. Evidence: status log.
+3. [AUTO] Validation-fail drill: inject bad extraction → exceptions_queue + SMS. Evidence: screenshot + psql.
+4. [AUTO] Schema audit: sample 10 extractions → every field validates against CRM schema. Evidence: query + log.
+5. [NICK] Nick reviews a real session end-to-end. Evidence: observation log.
+
+
 _Notion: https://app.notion.com/p/CRM-Interview-Session-3b5e152fc1998139b87bff0888eb731f_
 
 ---
@@ -315,6 +448,21 @@ Whisper down → fail visibly: 'transcription unavailable, please type' (D13).
 **Required for Release:**  
 NO
 
+**Acceptance Criteria:**  
+NORMAL: ≤15s clip → transcript in browser <1s (clip-end to displayed text, D13).
+EDGE: 16–60s clip → <3s.
+EDGE: >60s clip → rejected at capture with "clip too long, please re-record".
+NEGATIVE: Whisper down → visible "transcription unavailable, please type"; never a silent hang.
+SILENT-FAILURE: Audio captured but transcript never delivered → timeout surfaces an error state, not an endless spinner.
+CHALLENGE: 10 consecutive clips in a live session → all meet tiered SLA, no degradation.
+
+**Verification Method:**  
+1. [AUTO] Timing test: 10 clips at 10s → measure clip-end to text. Evidence: browser timings log.
+2. [AUTO] Boundary: 60s and 61s clips → 60s accepted, 61s rejected. Evidence: screenshots.
+3. [AUTO] Whisper-down drill: block the API → visible failure message. Evidence: screenshot.
+4. [NICK] Real use: Sandra dictates a real note → transcript editable, feeds W4. Evidence: observation log + screenshot.
+
+
 _Notion: https://app.notion.com/p/CRM-Voice-Input-Handler-3b5e152fc19981cea6f8da10eef3955c_
 
 ---
@@ -341,6 +489,20 @@ Schedule midnight 00:00 UTC
 
 **Required for Release:**  
 NO
+
+**Acceptance Criteria:**  
+NORMAL: At midnight, digest of top-5 follow-ups + hot opportunities composed from W2 scores + touchpoints + open tasks, written to changelog, triggers W13; complete by 5am.
+EDGE: Zero touchpoints → digest says so; no fabricated entries.
+NEGATIVE: Scoring inputs missing → digest ranks only what it can source; no invented scores.
+SILENT-FAILURE: Digest composed but W13 never triggered → alert to Nick by 5am if undelivered.
+CHALLENGE: A day with 100 touchpoints + 20 open tasks → top-5 ranked correctly, rest omitted, complete by 5am.
+
+**Verification Method:**  
+1. [NICK] Live run: full digest on a real day → top-5 matches Nick's expectation. Evidence: screenshot + observation log.
+2. [AUTO] Empty-day run → "nothing to report" digest. Evidence: screenshot.
+3. [NICK+AUTO] Fail drill: block W13 trigger → Nick alerted by 5am. Evidence: SMS screenshot.
+4. [AUTO] Volume: synthetic 100-touchpoint day → completes by 5am, top-5 only. Evidence: log + timestamps.
+
 
 _Notion: https://app.notion.com/p/Nightly-CRM-Deep-Analysis-3b5e152fc199818fae84dd74324cb466_
 
@@ -369,6 +531,25 @@ Lead status to Ready to Invoice
 **Required for Release:**  
 NO
 
+**Acceptance Criteria:**  
+NORMAL: "Create AI Draft" pre-fills all 8 form sections from PostgreSQL within ~10–15s, with a confidence label (Pulled/Inferred/Guessed) on every field.
+EDGE: Field with missing source data → blank with honest low confidence; never fabricated.
+EDGE: kitchen_departure_time computed deterministically (crew_arrival − drive_time − pack_buffer), shown read-only with confidence label — not AI-generated.
+EDGE: Unusual dietary combination (nut-free + halal + vegan) → dietary flags correct on every food line.
+NEGATIVE: AI invents a serves count, hold time, or pan geometry → BLOCKED; field routes to Sandra review.
+NEGATIVE: Draft generated from an empty CRM record → no invented WHY sentences; those lines absent or blank.
+SILENT-FAILURE: A value labeled Pulled that does not exist in PostgreSQL → caught in audit; every Pulled label traces to a real row.
+CHALLENGE: Feed a lead with 0 CRM notes + 0 call summaries → structurally valid output, blanks where unknown.
+CHALLENGE: Sandra changes 5 fields after draft → delta between AI draft and her edits visible and reviewable, not silently overwritten.
+
+**Verification Method:**  
+1. [NICK+AUTO] Scenario battery: 20 lead scenarios (rich/empty/edge dietary) → inspect output. Evidence: screenshots + log.
+2. [AUTO] Fabrication check: deliberately empty CRM → zero invented WHY sentences, honest confidence. Evidence: screenshot + observation log.
+3. [AUTO] Arithmetic guard: code-review + grep proving kitchen_departure_time comes from a deterministic function. Evidence: diff + grep.
+4. [NICK] Live pilot: Sandra runs one real draft; Nick reviews delta. Evidence: before/after screenshots + observation log.
+5. [AUTO] Confidence audit: sample 20 drafts; every Pulled label traces to a real PostgreSQL row. Evidence: query + result log.
+
+
 _Notion: https://app.notion.com/p/Invoice-Draft-Workflow-3b5e152fc1998163bfc6f6de072d8f90_
 
 ---
@@ -395,5 +576,25 @@ catalog.version.updated Square webhook (primary) + 6hr fallback schedule
 
 **Required for Release:**  
 NO
+
+**Acceptance Criteria:**  
+NORMAL: A new item added in Square appears in menu_items within one 6h sync cycle, with all 11 attributes populated.
+NORMAL: A price change in Square is reflected in menu_items on the next sync.
+EDGE: Item deactivated in Square → is_active=false only after 2 consecutive misses (not on first miss).
+EDGE: Item reactivated → is_active=true on next sync.
+EDGE: Item near Square's 20-definition attribute cap → remaining headroom visible.
+NEGATIVE: SearchCatalogObjects used anywhere → BLOCKER (silently returns no custom-attribute values).
+NEGATIVE: 2 consecutive full-sync failures → Twilio SMS to Nick fires. Never silent.
+SILENT-FAILURE: One item silently missing an attribute after sync → completeness check catches it, routes to review.
+CHALLENGE: Kill Square API mid-sync → loud failure, no partial/corrupt write, next cycle retries cleanly.
+CHALLENGE: ≥1,000 items in catalog → sync completes within SLA without dropping attributes.
+
+**Verification Method:**  
+1. [AUTO] Live insert: add a test item in Square; confirm it lands via psql ≤6h. Evidence: Square screenshot + psql result.
+2. [AUTO] Code-search: grep SearchCatalogObjects → zero hits. Evidence: command + output.
+3. [AUTO] Completeness audit: psql join Square catalog vs menu_items → 100% attribute coverage. Evidence: query + screenshot.
+4. [NICK+AUTO] Failure drill: stop sync, force 2 consecutive failures → SMS to Nick. Evidence: phone screenshot + observation log.
+5. [AUTO] Blip test: block API one cycle → item NOT deactivated; two cycles → deactivated. Evidence: observation log.
+
 
 _Notion: https://app.notion.com/p/Square-Menu-Sync-3b5e152fc19981d8b3c3e961396f7fc9_
