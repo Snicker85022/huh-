@@ -118,10 +118,10 @@ West Wall MicroTouch + West Google TV are accepted to go dark with no backup pow
 **Acceptance Criteria:**
 NORMAL: West Wall MicroTouch + West Google TV go dark on outage; no UPS capacity specced for them.
 NEGATIVE: UPS budgeted for West screens → violates the cost guard.
-SILENT-FAILURE: someone later specs UPS for them → caught by EPR-007 allocation-map review.
+SILENT-FAILURE: someone later specs UPS for them → caught by [[SPEC:EPR-007]] allocation-map review.
 CHALLENGE: outage → West dark, East/core up, no panic.
 **Verification Method:**
-1. [AUTO] Allocation: EPR-007 map shows no West-screen UPS. Evidence: config.
+1. [AUTO] Allocation: [[SPEC:EPR-007]] map shows no West-screen UPS. Evidence: config.
 2. [NICK] Live: outage drill → West dark, core up. Evidence: observation log.
 
 **Required for Release:**  
@@ -143,7 +143,7 @@ Operational Monitoring
 Need: a final, settled answer for which device is backed up by which UPS — not an open question during an actual outage.
 
 **Functional Requirement Specification:**  
-Final UPS allocation map (which devices on which of the existing two 600VA APCs vs. a possible third/stronger unit). Blocked on EPR-006.
+Final UPS allocation map (which devices on which of the existing two 600VA APCs vs. a possible third/stronger unit). Blocked on [[SPEC:EPR-006]].
 
 **Acceptance Criteria:**
 NORMAL: settled device→UPS allocation map (which devices on the two 600VA APCs vs a possible third/stronger unit).

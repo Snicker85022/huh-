@@ -104,14 +104,14 @@ Event Execution
 Need: "Alexa, open Taza" + a question gets an immediate spoken answer for common location/status/task/allergen queries — cache-first for speed, full routing as fallback.
 
 **Functional Requirement Specification:**  
-Custom Alexa Skill — Taza operational interface: Alexa Skill built in Amazon Developer Console. Invocation: "Alexa, open Taza" or "Alexa, ask Taza [query]". On every invocation, Skill reads ALEXA 2 cache endpoint first (~50ms). If answer found in cache, speaks it immediately. If not found, POSTs to a Python-and/or-Rust/systemd automation webhook for W14 routing. Skill supports intent vocabulary: LocationQuery, StatusQuery, TaskCommand, AllergenQuery. Natural language within intents via AMAZON.SearchQuery slot.
+Custom Alexa Skill — Taza operational interface: Alexa Skill built in Amazon Developer Console. Invocation: "Alexa, open Taza" or "Alexa, ask Taza [query]". On every invocation, Skill reads ALEXA 2 cache endpoint first (~50ms). If answer found in cache, speaks it immediately. If not found, POSTs to a Python-and/or-Rust/systemd automation webhook for [[SPEC:W14]] routing. Skill supports intent vocabulary: LocationQuery, StatusQuery, TaskCommand, AllergenQuery. Natural language within intents via AMAZON.SearchQuery slot.
 
 **Failure Behavior:**  
 Fallback: Google Home Routines only (display nav, no voice-to-database).
 
 **Acceptance Criteria:**  
 NORMAL:
-1. "Alexa, open Taza" and "Alexa, ask Taza [query]" invoke the Skill; cache checked first (~50ms); cache hit speaks immediately; cache miss POSTs to the automation webhook for W14 routing.
+1. "Alexa, open Taza" and "Alexa, ask Taza [query]" invoke the Skill; cache checked first (~50ms); cache hit speaks immediately; cache miss POSTs to the automation webhook for [[SPEC:W14]] routing.
 2. All four intents (LocationQuery, StatusQuery, TaskCommand, AllergenQuery) function correctly, including natural-language variation via AMAZON.SearchQuery.
 
 EDGE:
@@ -151,7 +151,7 @@ Need: Alexa proactively speaks critical alerts (allergen, departure countdown, t
 Alexa proactive outbound alerts via Notifications API: N100 Python-and/or-Rust/systemd job POSTs to Alexa Notifications API on critical alert conditions. Alexa speaks alert through Insignia TV speakers. Alert conditions: allergen field populated on active event (immediate, highest priority), departure countdown at T-10 min, task timer completion, shortage alert requiring supervisor attention. Alert text is deterministic template, not LLM.
 
 **Failure Behavior:**  
-Fallback: TTS via ADB on Google TV speakers (TV-005).
+Fallback: TTS via ADB on Google TV speakers ([[SPEC:TV-005]]).
 
 **Acceptance Criteria:**  
 NORMAL:
@@ -165,7 +165,7 @@ NEGATIVE:
 4. An alert condition that's momentarily true then immediately resolves (flicker) doesn't cause a spoken alert for a non-issue — verify against realistic sensor/state noise, not just clean state transitions.
 
 SILENT FAILURE:
-5. This overlaps with DISPLAY 29 (TV-005)'s visual alert for the same conditions — verify audio and visual alerts stay synchronized/consistent, and resolve whether both firing is intentional redundancy or should be deduplicated (per the existing recon flag).
+5. This overlaps with DISPLAY 29 ([[SPEC:TV-005]])'s visual alert for the same conditions — verify audio and visual alerts stay synchronized/consistent, and resolve whether both firing is intentional redundancy or should be deduplicated (per the existing recon flag).
 6. The Alexa Notifications API call failing (network issue, API error) must not silently mean the highest-priority allergen alert simply never gets spoken with no fallback — verify there's a fallback signal path for the allergen case specifically, given its food-safety stakes.
 7. Deterministic-template requirement ("not LLM") must be verified by testing the actual alert-generation code path, not just trusting it was built that way — confirm no LLM call sits anywhere in this path.
 

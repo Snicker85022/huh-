@@ -25,7 +25,7 @@ For each configured kitchen-equipment cleaning obligation (e.g. end-of-day, post
 Equipment cleaning schedule configuration; crew PIN at close; system timestamp.
 
 **Outputs:**  
-One auditable close record per obligation (equipment, crew, timestamp) in the audit log (PROD-22).
+One auditable close record per obligation (equipment, crew, timestamp) in the audit log ([[SPEC:PROD-22]]).
 
 **Trigger:**  
 Scheduled end-of-period or post-use event per the equipment obligation configuration.
@@ -34,7 +34,7 @@ Scheduled end-of-period or post-use event per the equipment obligation configura
 One card per configured obligation per period; closure requires equipment + crew + timestamp; unclosed obligations are visible, not silently absent.
 
 **Failure Behavior:**  
-An equipment item with a configured obligation that has no corresponding closed card by end-of-period is flagged as a compliance gap — never silently skipped. Missing crew identity on a close blocks the close (URS-KANBAN-002 pattern).
+An equipment item with a configured obligation that has no corresponding closed card by end-of-period is flagged as a compliance gap — never silently skipped. Missing crew identity on a close blocks the close ([[SPEC:URS-KANBAN-002]] pattern).
 
 **Failure Mode Addressed:**  
 Equipment cleaned by nobody because the obligation was invisible — no card, no record, no accountability, and no way to prove compliance for health/safety review.
@@ -46,10 +46,10 @@ Each configured obligation produces one card and its closure records equipment, 
 Configuration audit and end-of-day workflow test.
 
 **Maintenance Requirements:**  
-Keep the equipment obligation configuration current as kitchen kit changes; verify card generation after any task-engine update (PROD-01).
+Keep the equipment obligation configuration current as kitchen kit changes; verify card generation after any task-engine update ([[SPEC:PROD-01]]).
 
 **Dependency Notes:**  
-Generated as a close_kind=EQUIPMENT_CLEANING card per CLOSE 1/CLOSE 4. Closure writes equipment ID, crew PIN (CLOSE 3), and timestamp to the audit log (CLOSE 35). Configuration drives which equipment items have end-of-day obligations. Part of BUNDLE-KANBAN-EXECUTION. Parent CLOSE 4.
+Generated as a close_kind=EQUIPMENT_CLEANING card per [[SPEC:PROD-38]]/CLOSE 4. Closure writes equipment ID, crew PIN ([[SPEC:URS-KIT-METHOD-003]]), and timestamp to the audit log ([[SPEC:PROD-22]]). Configuration drives which equipment items have end-of-day obligations. Part of BUNDLE-KANBAN-EXECUTION. Parent CLOSE 4.
 
 **Required for Release:**  
 YES
@@ -76,10 +76,10 @@ When a received shopping item contains a configured major allergen, the system s
 When a received shopping item contains a configured major allergen, the system shall immediately set a persistent allergen flag on that item and its bin location, display it on all relevant surfaces (kanban card dot, situational displays, mobile view), and maintain it until a structured consume-or-remove close explicitly clears it. Ordinary edits, renames, and location moves cannot clear the flag.
 
 **Inputs:**  
-Received item + its allergen attributes (CAT-001); crew confirmation of receipt; structured consume/remove close to clear.
+Received item + its allergen attributes ([[SPEC:CAT-001]]); crew confirmation of receipt; structured consume/remove close to clear.
 
 **Outputs:**  
-A persistent, multi-surface allergen flag from receive through to structured clearance; a clearance record (who, when, how) in the audit log (PROD-22).
+A persistent, multi-surface allergen flag from receive through to structured clearance; a clearance record (who, when, how) in the audit log ([[SPEC:PROD-22]]).
 
 **Trigger:**  
 A shopping item with a configured major allergen is received; cleared only on structured consume/remove close.
@@ -88,7 +88,7 @@ A shopping item with a configured major allergen is received; cleared only on st
 Flag is set synchronously on receive, before the receive is confirmed; flag persists across renames/edits/moves; only a structured close clears it; flag is visible on ALL surfaces that show operational context.
 
 **Failure Behavior:**  
-An allergen flag set on receive cannot be cleared by any edit, rename, or incidental action — only a structured consume or remove close. A stale allergen flag persists and displays with a staleness indicator rather than silently disappearing (per URS-HEALTH-005/URS-DISP-003 fail-visible principle). A flag that fails to write on receive blocks the receive action — not silently dropped.
+An allergen flag set on receive cannot be cleared by any edit, rename, or incidental action — only a structured consume or remove close. A stale allergen flag persists and displays with a staleness indicator rather than silently disappearing (per [[SPEC:URS-HEALTH-005]]/[[SPEC:URS-DISP-003]] fail-visible principle). A flag that fails to write on receive blocks the receive action — not silently dropped.
 
 **Failure Mode Addressed:**  
 A major allergen arriving in the kitchen without a persistent visible flag — crew unaware of its presence, cross-contact risk unmanaged, and no audit trail of when the allergen entered and was cleared.
@@ -115,10 +115,10 @@ SILENT FAILURE:
 1) Unit tests: single-allergen flag set/clear, multi-allergen flag set, rename/move does not clear. 2) Cross-surface integration test: verify flag state is consistent across kanban dot, situational display, and mobile view at the same moment, not tested in isolation. 3) Fault-injection test: force one surface's refresh to fail post-clear, confirm the mismatch is detectable, not silently inconsistent. 4) Food-safety review: Nick/Sandra confirm the flag behavior against actual allergen-handling SOP, not just the written spec. 5) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Maintenance Requirements:**  
-Keep the configured major-allergen list current (aligned with Taza's menu and the CAT-001 allergen_notes attribute); verify flag-clear behaviour after any close-path change; re-test multi-surface visibility after any display/push change.
+Keep the configured major-allergen list current (aligned with Taza's menu and the [[SPEC:CAT-001]] allergen_notes attribute); verify flag-clear behaviour after any close-path change; re-test multi-surface visibility after any display/push change.
 
 **Dependency Notes:**  
-Allergen detection keyed against the catalog allergen attribute (CATALOG 2 dietary_flags + allergen_notes). Flag surfaced on: kanban card signals (KANBAN 4 allergen dot), TCL East situational display (DISPLAY 23), and staff mobile situational view (SHOP 7). Clear only on structured consume/remove close (CLOSE 11 / CLOSE 1 close_kind=ALLERGEN_RECEIVING). Cross-ref: KIT-002 (task gate) overlaps CLOSE 11. Part of BUNDLE-KANBAN-EXECUTION. Parent CLOSE 4.
+Allergen detection keyed against the catalog allergen attribute ([[SPEC:CAT-002]] dietary_flags + allergen_notes). Flag surfaced on: kanban card signals (KANBAN 4 allergen dot), TCL East situational display (DISPLAY 23), and staff mobile situational view (SHOP 7). Clear only on structured consume/remove close (CLOSE 11 / [[SPEC:PROD-38]] close_kind=ALLERGEN_RECEIVING). Cross-ref: KIT-002 (task gate) overlaps CLOSE 11. Part of BUNDLE-KANBAN-EXECUTION. Parent CLOSE 4.
 
 **Rationale:**  
 P0, highest-priority row in the KIT-10x cluster — food-safety and liability requirement, not a UX nicety.
@@ -151,7 +151,7 @@ A van-load card shall block closure until every required BEO and standard loadou
 Van-scoreboard shows every outstanding item.
 
 **Inputs:**  
-BEO-derived required items (PROD-01/W15); standard loadout configuration; crew check-off per item; exception routing reason per any unloaded item.
+BEO-derived required items ([[SPEC:PROD-01]]/[[SPEC:W15]]); standard loadout configuration; crew check-off per item; exception routing reason per any unloaded item.
 
 **Outputs:**  
 A fully-resolved van-load close record (all items checked or exception-routed, with reasons) and an unlocked departure state.
@@ -193,7 +193,7 @@ SILENT FAILURE:
 Keep the standard loadout configuration current; regenerate the BEO-derived required items whenever the event menu or logistics change; test the negative path (unchecked item blocks) after any close-path change.
 
 **Dependency Notes:**  
-Checklist items sourced from the BEO/event record (CLOSE 34/W15) plus the standard loadout configuration. Van scoreboard (DISPLAY 25/DISPLAY 4) displays checklist state. Closure conforms to CLOSE 1 (close_kind van-load). Exception-routing for genuinely missing items via EXCEPT 1. Queryable in <1s from the canonical record. Part of BUNDLE-KANBAN-EXECUTION. Parent CLOSE 4.
+Checklist items sourced from the BEO/event record ([[SPEC:PROD-19]]/[[SPEC:W15]]) plus the standard loadout configuration. Van scoreboard (DISPLAY 25/DISPLAY 4) displays checklist state. Closure conforms to [[SPEC:PROD-38]] (close_kind van-load). Exception-routing for genuinely missing items via EXCEPT 1. Queryable in <1s from the canonical record. Part of BUNDLE-KANBAN-EXECUTION. Parent CLOSE 4.
 
 **Rationale:**  
 P0, highest-stakes operational gate in the system — cost of a miss = emergency grocery runs, broken events.
@@ -247,10 +247,10 @@ Both values are required, stored, and available to downstream displays without r
 Task-close integration test.
 
 **Maintenance Requirements:**  
-Ensure the portion-size unit options align with the catalog (CAT-001 units); verify both fields populate on the downstream inventory lot record (URS-INV-003).
+Ensure the portion-size unit options align with the catalog ([[SPEC:CAT-001]] units); verify both fields populate on the downstream inventory lot record ([[SPEC:URS-INV-003]]).
 
 **Dependency Notes:**  
-Captured values feed downstream displays (portion-count availability removes the need for anyone to recount) and the inventory lot record (CLOSE 8 qty fields). Conforms to CLOSE 1 (close_kind=PREP). Part of BUNDLE-KANBAN-EXECUTION. Parent CLOSE 4.
+Captured values feed downstream displays (portion-count availability removes the need for anyone to recount) and the inventory lot record (CLOSE 8 qty fields). Conforms to [[SPEC:PROD-38]] (close_kind=PREP). Part of BUNDLE-KANBAN-EXECUTION. Parent CLOSE 4.
 
 **Required for Release:**  
 YES
@@ -301,10 +301,10 @@ Exact purchase closes normally; substitution requires actual values and updates 
 Shopping substitution end-to-end test.
 
 **Maintenance Requirements:**  
-Align the substitution schema with the vendor-reliability tracker (URS-KIT-106); verify downstream prep propagation after any shopping-plan schema change.
+Align the substitution schema with the vendor-reliability tracker ([[SPEC:URS-KIT-106]]); verify downstream prep propagation after any shopping-plan schema change.
 
 **Dependency Notes:**  
-Writes through the canonical shopping backend (SHOP 8) so the kitchen board reflects the actual item purchased. Substitution data propagates to affected prep information and feeds the vendor-reliability tracker (SHOP 4). Folded into SHOP 1 (SQL/JS, SHOP 3). Part of BUNDLE-SHOPPING-AGGREGATION.
+Writes through the canonical shopping backend (SHOP 8) so the kitchen board reflects the actual item purchased. Substitution data propagates to affected prep information and feeds the vendor-reliability tracker (SHOP 4). Folded into [[SPEC:PROD-05-V2]] (SQL/JS, [[SPEC:URS-KIT-105]]). Part of BUNDLE-SHOPPING-AGGREGATION.
 
 **Required for Release:**  
 YES
@@ -331,13 +331,13 @@ Three substitutions in the same category from the same store within thirty days 
 When three or more substitutions are recorded in the same item category from the same store within any rolling 30-day window, the system shall create exactly one review flag for Nick. The flag is idempotent on replay and on additional substitutions beyond the third in the same window.
 
 **Inputs:**  
-Substitution records (URS-KIT-105) filtered by category + store + 30-day window.
+Substitution records ([[SPEC:URS-KIT-105]]) filtered by category + store + 30-day window.
 
 **Outputs:**  
 One review flag for Nick when the threshold is met; no flag below threshold.
 
 **Trigger:**  
-A substitution record is written (URS-KIT-105); rolling-window count evaluated.
+A substitution record is written ([[SPEC:URS-KIT-105]]); rolling-window count evaluated.
 
 **Invariants:**  
 Threshold is exactly three in 30 days per category/store pair; exactly one flag per triggered threshold regardless of additional subs or replays.
@@ -358,7 +358,7 @@ Boundary and replay tests.
 Keep the 30-day window configurable; review the threshold if the substitution volume materially changes.
 
 **Dependency Notes:**  
-Counts substitution records from SHOP 3 by category + store + 30-day window. Review flag routed to Nick via EXCEPT 1 (Exception Router) + EXCEPT 3 (Notifier). Idempotent: three subs create one flag; a fourth does not create a second. Part of BUNDLE-SHOPPING-AGGREGATION.
+Counts substitution records from [[SPEC:URS-KIT-105]] by category + store + 30-day window. Review flag routed to Nick via EXCEPT 1 (Exception Router) + EXCEPT 3 (Notifier). Idempotent: three subs create one flag; a fourth does not create a second. Part of BUNDLE-SHOPPING-AGGREGATION.
 
 **Required for Release:**  
 YES
@@ -409,10 +409,10 @@ Sampling is randomized; valid reading is stored and rewarded; unsafe reading cre
 Statistical scheduling test and threshold integration test.
 
 **Maintenance Requirements:**  
-Keep the configured safe-temperature thresholds aligned with TCS food-safety requirements (CAT-006); verify the alert path (PROD-23/PROD-25) after any exception-router change; tune randomisation window as event cadence evolves.
+Keep the configured safe-temperature thresholds aligned with TCS food-safety requirements ([[SPEC:CAT-006]]); verify the alert path ([[SPEC:PROD-23]]/[[SPEC:PROD-25]]) after any exception-router change; tune randomisation window as event cadence evolves.
 
 **Dependency Notes:**  
-Temperature reading stored in the audit log (CLOSE 35) and flagged to EXCEPT 1 (Exception Router) on threshold exceedance. Points awarded via the gamification layer (KANBAN 9/KANBAN 10 pattern). Randomisation prevents predictable sampling patterns. Part of BUNDLE-KANBAN-EXECUTION. Ties to CATALOG 7 (TCS danger-zone constraints).
+Temperature reading stored in the audit log ([[SPEC:PROD-22]]) and flagged to EXCEPT 1 (Exception Router) on threshold exceedance. Points awarded via the gamification layer (KANBAN 9/KANBAN 10 pattern). Randomisation prevents predictable sampling patterns. Part of BUNDLE-KANBAN-EXECUTION. Ties to CATALOG 7 (TCS danger-zone constraints).
 
 **External Dependencies:**  
 Calibrated physical thermometer.
@@ -469,7 +469,7 @@ UI inspection and automated component test.
 Keep the brand assets version-controlled; test the three-identifier assertion on every kanban renderer release.
 
 **Dependency Notes:**  
-Visual identity applied by the kanban renderer (KANBAN 1/KANBAN 2). The gold border + diamond-filigree mark + TAZA METHOD label are the same brand language as the Mom's Table card-game visual system (D-KIT-001). Part of BUNDLE-TAZA-METHOD. Parent KANBAN 11. Hex: #c7ae59.
+Visual identity applied by the kanban renderer (KANBAN 1/KANBAN 2). The gold border + diamond-filigree mark + TAZA METHOD label are the same brand language as the Mom's Table card-game visual system (D-[[SPEC:KIT-001]]). Part of BUNDLE-TAZA-METHOD. Parent KANBAN 11. Hex: #c7ae59.
 
 **Required for Release:**  
 YES
@@ -523,7 +523,7 @@ Automated state test plus UI demonstration.
 Keep the animation asset version-controlled; re-test the once-per-crew-method state after any crew-record schema change.
 
 **Dependency Notes:**  
-First-encounter state stored per crew member + method ID (KANBAN 7 writes the acknowledgment record that marks the encounter as seen). Animation plays before acknowledgment. State stored in the local device or the canonical crew record — reconcile in debate (local vs server). Part of BUNDLE-TAZA-METHOD. Parent KANBAN 11. Animation: ~2s fish-and-starburst (D-KIT-001).
+First-encounter state stored per crew member + method ID (KANBAN 7 writes the acknowledgment record that marks the encounter as seen). Animation plays before acknowledgment. State stored in the local device or the canonical crew record — reconcile in debate (local vs server). Part of BUNDLE-TAZA-METHOD. Parent KANBAN 11. Animation: ~2s fish-and-starburst (D-[[SPEC:KIT-001]]).
 
 **Required for Release:**  
 YES
@@ -577,10 +577,10 @@ The SOP remains gated until acknowledgment; one durable acknowledgment record is
 Database inspection and end-to-end UI test.
 
 **Maintenance Requirements:**  
-Keep the acknowledgment schema aligned with PROD-22 audit log; verify SOP-gating logic after any card-rendering change.
+Keep the acknowledgment schema aligned with [[SPEC:PROD-22]] audit log; verify SOP-gating logic after any card-rendering change.
 
 **Dependency Notes:**  
-Acknowledgment record is written to the audit log (CLOSE 35) with crew ID (from PIN/CLOSE 3), method/card ID, and timestamp. The SOP remains gated until this acknowledgment is recorded. Feeds the leaderboard/streak system (KANBAN 10) as a qualifying encounter. Part of BUNDLE-TAZA-METHOD. Parent KANBAN 11.
+Acknowledgment record is written to the audit log ([[SPEC:PROD-22]]) with crew ID (from PIN/[[SPEC:URS-KIT-METHOD-003]]), method/card ID, and timestamp. The SOP remains gated until this acknowledgment is recorded. Feeds the leaderboard/streak system (KANBAN 10) as a qualifying encounter. Part of BUNDLE-TAZA-METHOD. Parent KANBAN 11.
 
 **Rationale:**  
 Phrasing "I understand — show me how" is a first-class UX requirement (not generic "OK") — frames as seeking guidance, not dismissing a warning.
@@ -634,10 +634,10 @@ The correct asset opens from the card, does not block the entire screen, and clo
 UI demonstration using at least one method card.
 
 **Maintenance Requirements:**  
-Keep SOP links current as procedures are updated (PROD-15); verify panel render on all kanban surfaces (MT1/MT2) after any UI change.
+Keep SOP links current as procedures are updated ([[SPEC:PROD-15]]); verify panel render on all kanban surfaces (MT1/MT2) after any UI change.
 
 **Dependency Notes:**  
-The instructional asset (SOP or 3–4 panel Show Me) is linked from the task record / PROD-15 SOP library. The panel must not block the full kanban board (MT1/MT2 remain operable while the panel is open). Part of BUNDLE-TAZA-METHOD. Parent KANBAN 11. 3–4 panel Show Me format is V1 target; full SOP pages linked in V1.x+.
+The instructional asset (SOP or 3–4 panel Show Me) is linked from the task record / [[SPEC:PROD-15]] SOP library. The panel must not block the full kanban board (MT1/MT2 remain operable while the panel is open). Part of BUNDLE-TAZA-METHOD. Parent KANBAN 11. 3–4 panel Show Me format is V1 target; full SOP pages linked in V1.x+.
 
 **Required for Release:**  
 YES
@@ -691,10 +691,10 @@ Integration test with idempotent retry.
 Keep point values configurable; verify atomic write after any scoring-ledger change.
 
 **Dependency Notes:**  
-Both point transactions written to the scoring ledger via CLOSE 35 (audit log) with learner crew ID, teacher crew ID, and interaction ID. The interaction ID provides the idempotency key (retry creates no duplicate). Points feed the leaderboard (KANBAN 10). Part of BUNDLE-TAZA-METHOD. Parent KANBAN 11.
+Both point transactions written to the scoring ledger via [[SPEC:PROD-22]] (audit log) with learner crew ID, teacher crew ID, and interaction ID. The interaction ID provides the idempotency key (retry creates no duplicate). Points feed the leaderboard (KANBAN 10). Part of BUNDLE-TAZA-METHOD. Parent KANBAN 11.
 
 **Rationale:**  
-"Awards both asker and teacher" is a first-class cultural design decision (D-KIT-001), not a nice-to-have.
+"Awards both asker and teacher" is a first-class cultural design decision (D-[[SPEC:KIT-001]]), not a nice-to-have.
 
 **Required for Release:**  
 YES
@@ -745,10 +745,10 @@ Counts 1–9 do not award the badge; count 10 awards it once; leaderboard reflec
 Boundary-value test and display inspection.
 
 **Maintenance Requirements:**  
-Keep the qualifying-closure definition aligned with URS-KIT-METHOD-003 acknowledgment requirements; verify leaderboard push after any display-push change (PROD-04).
+Keep the qualifying-closure definition aligned with [[SPEC:URS-KIT-METHOD-003]] acknowledgment requirements; verify leaderboard push after any display-push change ([[SPEC:PROD-04]]).
 
 **Dependency Notes:**  
-Counts qualifying correct Taza Method closures per crew member from the scoring ledger (CLOSE 35). Badge award is idempotent at count 10 (count 11+ does not create a second badge for the same streak). Leaderboard ranking displayed on MT1/MT2 (KANBAN 1/KANBAN 2 gamemaster view). Part of BUNDLE-TAZA-METHOD. Parent KANBAN 11.
+Counts qualifying correct Taza Method closures per crew member from the scoring ledger ([[SPEC:PROD-22]]). Badge award is idempotent at count 10 (count 11+ does not create a second badge for the same streak). Leaderboard ranking displayed on MT1/MT2 (KANBAN 1/KANBAN 2 gamemaster view). Part of BUNDLE-TAZA-METHOD. Parent KANBAN 11.
 
 **Open Questions:**  
 Does a Short Stop on a Method card count as a qualifying closure for the streak? Does an exception-routed close count? The qualifying definition needs to be locked in debate before this can be implemented.
@@ -784,10 +784,10 @@ Turn proprietary technique transmission from a lecture or a manual into somethin
 Proprietary techniques executed casually without pause, guidance, or accountability; a kitchen culture where asking questions feels risky; training records that exist only on paper.
 
 **Out of Scope:**  
-Standard (non-Method) kanban mechanics (URS-KANBAN family); operational-capture cards (URS-KIT-101..107). This package is the proprietary Taza Method experience layer only.
+Standard (non-Method) kanban mechanics (URS-KANBAN family); operational-capture cards ([[SPEC:URS-KIT-101]]..107). This package is the proprietary Taza Method experience layer only.
 
 **Acceptance Criteria:**  
-Method cards render with gold border/mark/label (URS-KIT-METHOD-001); first-encounter animation plays unskippably (URS-KIT-METHOD-002); acknowledgment is logged before SOP access (URS-KIT-METHOD-003); Show Me panel opens non-blocking from the card (URS-KIT-METHOD-004); question interactions award both learner and teacher atomically (URS-KIT-METHOD-005); 10 qualifying closures produce exactly one streak badge and update the leaderboard (URS-KIT-METHOD-006).
+Method cards render with gold border/mark/label ([[SPEC:URS-KIT-METHOD-001]]); first-encounter animation plays unskippably ([[SPEC:URS-KIT-METHOD-002]]); acknowledgment is logged before SOP access ([[SPEC:URS-KIT-METHOD-003]]); Show Me panel opens non-blocking from the card ([[SPEC:URS-KIT-METHOD-004]]); question interactions award both learner and teacher atomically ([[SPEC:URS-KIT-METHOD-005]]); 10 qualifying closures produce exactly one streak badge and update the leaderboard ([[SPEC:URS-KIT-METHOD-006]]).
 
 **Verification Method:**  
 End-to-end test covering all six child requirements; plus a cultural validation that the game framing is preserved and the tone is aspirational throughout.
@@ -796,7 +796,7 @@ End-to-end test covering all six child requirements; plus a cultural validation 
 Does a Short Stop on a Method card count as a qualifying closure for the streak? Does an exception-routed close count? The qualifying definition needs to be locked in debate before this can be implemented.
 
 **Rationale:**  
-The method-experience design philosophy (the homage IS the mechanic, not the paint) is a Founding Design principle from D-KIT-001 that governs any future redesign.
+The method-experience design philosophy (the homage IS the mechanic, not the paint) is a Founding Design principle from D-[[SPEC:KIT-001]] that governs any future redesign.
 
 **Required for Release:**  
 YES

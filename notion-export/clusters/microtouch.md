@@ -19,7 +19,7 @@ Need: LKL queries on MicroTouch answered instantly from a local on-device cache 
 MicroTouch local LKL cache: each MicroTouch receives push updates including the full LKL snapshot in the delta payload, stored in browser memory. LKL queries (voice or touch) answered from local cache without an N100 round trip; stale cache (>10s since last push) triggers a REST pull before answering.
 
 **Failure Behavior:**  
-Fallback: direct N100 LKL query per URS-LKL-003 (functional, slower).
+Fallback: direct N100 LKL query per [[SPEC:URS-LKL-003]] (functional, slower).
 
 **Acceptance Criteria:**  
 NORMAL:
@@ -60,13 +60,13 @@ Production Core
 Need: simple voice commands recognized + acted on-device within 2s via MT8390 NPU wake word ("Hey Taza"), no audio leaves device for Path A intents.
 
 **Functional Requirement Specification:**  
-MicroTouch wake word + on-device intent classification: always-on wake word detection ("Hey Taza") on the MT8390 NPU at ~1-3% CPU. On detection, captures the next utterance and classifies intent on-device. Path A intents POST directly to the automation webhook with structured JSON — no audio transmitted. Path B/C route to N100 for AI processing per W14. Total Path A target <2s wake-to-write.
+MicroTouch wake word + on-device intent classification: always-on wake word detection ("Hey Taza") on the MT8390 NPU at ~1-3% CPU. On detection, captures the next utterance and classifies intent on-device. Path A intents POST directly to the automation webhook with structured JSON — no audio transmitted. Path B/C route to N100 for AI processing per [[SPEC:W14]]. Total Path A target <2s wake-to-write.
 
 **Failure Behavior:**  
 Fallback: on-device inference on N100 (audio over LAN, higher latency).
 
 **Acceptance Criteria:**  
-NOTE: this is the on-device NPU wake-word + intent-classification path — per the resolved local-vs-cloud/NPU decision, this is Nick's preferred long-term direction but not required for V1.0 (V1.0 ships with PROD-37/NPU 5's Chrome Web Speech API + N100 approach). Scope this row's debate/build priority accordingly.
+NOTE: this is the on-device NPU wake-word + intent-classification path — per the resolved local-vs-cloud/NPU decision, this is Nick's preferred long-term direction but not required for V1.0 (V1.0 ships with [[SPEC:PROD-37]]/NPU 5's Chrome Web Speech API + N100 approach). Scope this row's debate/build priority accordingly.
 
 NORMAL:
 1. "Hey Taza" wake word detected on-device at ~1-3% CPU; next utterance captured and classified on-device; Path A intents POST directly to the automation webhook with structured JSON, no audio transmitted; total wake-to-write under 2s.

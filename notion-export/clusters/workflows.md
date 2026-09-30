@@ -19,7 +19,7 @@ The system shall monitor a dedicated Gmail inbox for new lead notification email
 Wix form payload, Gmail inbox
 
 **Outputs:**  
-NocoDB Leads table row; Task; SMS notification. Feeds W2
+NocoDB Leads table row; Task; SMS notification. Feeds [[SPEC:W2]]
 
 **Trigger:**  
 Gmail (new Wix form submission email) — V1.0 email-only per D1; Wix webhook = V1.1 stub
@@ -83,10 +83,10 @@ _Notion: https://app.notion.com/p/Google-Calendar-Sync-3b5e152fc1998151a06bd5b92
 System Infrastructure
 
 **Functional Requirement Specification:**  
-The system shall provide a read-only changelog view over `audit_log` (PROD-22 — append-only, trigger-fired on every canonical write), filtered to the key tables: Leads, Customers, Invoices (= event records), Tasks. Nick/Sandra review field-level before/after history here. No separate capture path — PROD-22's audit trigger is the sole writer. Supersedes the earlier raw-diff design (duplicated PROD-22; folded in per D21).
+The system shall provide a read-only changelog view over `audit_log` ([[SPEC:PROD-22]] — append-only, trigger-fired on every canonical write), filtered to the key tables: Leads, Customers, Invoices (= event records), Tasks. Nick/Sandra review field-level before/after history here. No separate capture path — [[SPEC:PROD-22]]'s audit trigger is the sole writer. Supersedes the earlier raw-diff design (duplicated [[SPEC:PROD-22]]; folded in per D21).
 
 **Inputs:**  
-audit_log (PROD-22 — actor, table, old/new, timestamp)
+audit_log ([[SPEC:PROD-22]] — actor, table, old/new, timestamp)
 
 **Outputs:**  
 Read-only changelog view over audit_log, key tables (Leads, Customers, Invoices, Tasks)
@@ -103,15 +103,15 @@ NO
 **Acceptance Criteria:**  
 NORMAL: Read-only view over audit_log shows before/after history for Leads/Customers/Invoices/Tasks.
 EDGE: Query on a table with zero changes → empty result, no error.
-NEGATIVE: Any write attempt through W11 → rejected (read-only view).
-SILENT-FAILURE: A canonical write missing from audit_log → caught by PROD-22 trigger coverage; the view shows nothing missing.
+NEGATIVE: Any write attempt through [[SPEC:W11]] → rejected (read-only view).
+SILENT-FAILURE: A canonical write missing from audit_log → caught by [[SPEC:PROD-22]] trigger coverage; the view shows nothing missing.
 CHALLENGE: 10k audit rows → view returns in reasonable time, filtered correctly.
 
 **Verification Method:**  
 1. [AUTO] Read test: change a Lead → appears in view with old/new. Evidence: psql + screenshot.
 2. [AUTO] Write-reject: attempt INSERT via view → permission denied. Evidence: error log.
 3. [AUTO] Filter test: view excludes non-key tables. Evidence: psql query.
-4. [AUTO] PROD-22 coverage: every canonical write produces an audit row. Evidence: query + count.
+4. [AUTO] [[SPEC:PROD-22]] coverage: every canonical write produces an audit row. Evidence: query + count.
 
 
 _Notion: https://app.notion.com/p/Change-Log-Writer-3b5e152fc19981bf89ecc9f66f2ef5a0_
@@ -124,13 +124,13 @@ _Notion: https://app.notion.com/p/Change-Log-Writer-3b5e152fc19981bf89ecc9f66f2e
 Operational Monitoring
 
 **Functional Requirement Specification:**  
-On an hourly schedule, the system shall scan for: overdue Tasks, Leads with no response in >24 hours, and flagged Customer Events. Findings are written as alerts to the changelog (alert queue) and trigger W13.
+On an hourly schedule, the system shall scan for: overdue Tasks, Leads with no response in >24 hours, and flagged Customer Events. Findings are written as alerts to the changelog (alert queue) and trigger [[SPEC:W13]].
 
 **Inputs:**  
 Overdue Tasks; unresponded Leads (>24h); flagged Customer Events
 
 **Outputs:**  
-Alert written to changelog (alert queue), triggers W13
+Alert written to changelog (alert queue), triggers [[SPEC:W13]]
 
 **Trigger:**  
 Schedule every hour (or on-demand)
@@ -142,7 +142,7 @@ Fallback: manual review by Nick.
 NO
 
 **Acceptance Criteria:**  
-NORMAL: Hourly scan finds overdue Tasks, Leads >24h no response, flagged Customer Events → alerts to changelog (alert queue), triggers W13.
+NORMAL: Hourly scan finds overdue Tasks, Leads >24h no response, flagged Customer Events → alerts to changelog (alert queue), triggers [[SPEC:W13]].
 EDGE: Lead at exactly 24h → flagged; 23h59m → not flagged.
 NEGATIVE: Duplicate alert for the same item every hour → impossible: idempotent per item+state.
 SILENT-FAILURE: Scan runs but writes nothing on failure → alert to exceptions; never silent.
@@ -165,16 +165,16 @@ _Notion: https://app.notion.com/p/Hourly-Review-Workflow-3b5e152fc19981f19281e11
 Operational Monitoring
 
 **Functional Requirement Specification:**  
-The system shall be the sole delivery layer for W6 digest + W12 alerts. On W12 output and the W6 digest, deliver via canonical channels per D10 (Twilio SMS to Sandra for actionable items; email to Nick), logging every outbound communication to the Communications table. One delivery path for the whole system.
+The system shall be the sole delivery layer for [[SPEC:W6]] digest + [[SPEC:W12]] alerts. On [[SPEC:W12]] output and the [[SPEC:W6]] digest, deliver via canonical channels per D10 (Twilio SMS to Sandra for actionable items; email to Nick), logging every outbound communication to the Communications table. One delivery path for the whole system.
 
 **Inputs:**  
-Alert from W12; digest from W6
+Alert from [[SPEC:W12]]; digest from [[SPEC:W6]]
 
 **Outputs:**  
 Twilio SMS to Sandra (actionable); email to Nick; Communications log
 
 **Trigger:**  
-W12 alert; W6 digest ready; morning/afternoon schedule
+[[SPEC:W12]] alert; [[SPEC:W6]] digest ready; morning/afternoon schedule
 
 **Failure Behavior:**  
 Fallback: manual Slack/email check.
@@ -183,14 +183,14 @@ Fallback: manual Slack/email check.
 NO
 
 **Acceptance Criteria:**  
-NORMAL: W6 digest + W12 alerts delivered via canonical channels (Twilio SMS to Sandra for actionable; email to Nick), logged to Communications.
+NORMAL: [[SPEC:W6]] digest + [[SPEC:W12]] alerts delivered via canonical channels (Twilio SMS to Sandra for actionable; email to Nick), logged to Communications.
 EDGE: SMS delivery failure → retry, then fallback channel (email), logged.
 NEGATIVE: Delivery without logging → impossible: log write is part of the transaction.
 SILENT-FAILURE: A notification generated but never sent → surfaced by delivery-status tracking.
 CHALLENGE: 30 alerts at once → all delivered, none dropped, all logged.
 
 **Verification Method:**  
-1. [NICK+AUTO] Live: W12 alert → Sandra's phone receives SMS, Communications has a row. Evidence: screenshot + psql.
+1. [NICK+AUTO] Live: [[SPEC:W12]] alert → Sandra's phone receives SMS, Communications has a row. Evidence: screenshot + psql.
 2. [AUTO] Fail drill: block Twilio → fallback email + retry logged. Evidence: log.
 3. [AUTO] Volume: 30 alerts → 30 logs, zero drops. Evidence: count + log.
 4. [AUTO] Audit: sample 10 Communications rows → each traces to a real trigger. Evidence: query.
@@ -244,10 +244,10 @@ _Notion: https://app.notion.com/p/Voice-Feedback-Processor-Four-Path-Routing-3b5
 Event Execution
 
 **Functional Requirement Specification:**  
-On Event status → "Confirmed" (or manual trigger), the system shall generate a full day-of timeline and BEO. Model: AI for formatting only — all arithmetic is deterministic. Process: (1) zip-code drive-time lookup from the flat Phoenix-metro matrix, (2) back-calculate kitchen_departure = crew_arrival − drive_time − pack_buffer, (3) back-calculate pack_start from item count + guest count + setup buffer, (4) generate the full timeline from pack_start through breakdown_complete. Output: formatted BEO stored in the event NocoDB record + SMS to Nick with key times + available on Edgar's display. Confidence labels: drive-time estimates = Medium (zip-lookup, no live traffic); all other times are deterministic. Document watermark: "AI-estimated — confirm before distributing to staff." SLA: <60 seconds from trigger to SMS delivery. V2-FEAT-006 (PACK 2) replaces the zip-lookup drive time with the deterministic solver output; the W15 architecture stays the same. Fallback: manual timeline creation by Sandra.
+On Event status → "Confirmed" (or manual trigger), the system shall generate a full day-of timeline and BEO. Model: AI for formatting only — all arithmetic is deterministic. Process: (1) zip-code drive-time lookup from the flat Phoenix-metro matrix, (2) back-calculate kitchen_departure = crew_arrival − drive_time − pack_buffer, (3) back-calculate pack_start from item count + guest count + setup buffer, (4) generate the full timeline from pack_start through breakdown_complete. Output: formatted BEO stored in the event NocoDB record + SMS to Nick with key times + available on Edgar's display. Confidence labels: drive-time estimates = Medium (zip-lookup, no live traffic); all other times are deterministic. Document watermark: "AI-estimated — confirm before distributing to staff." SLA: <60 seconds from trigger to SMS delivery. [[SPEC:PROD-16-V2]] ([[SPEC:PROD-16-V2]]) replaces the zip-lookup drive time with the deterministic solver output; the [[SPEC:W15]] architecture stays the same. Fallback: manual timeline creation by Sandra.
 
 **Inputs:**  
-Confirmed invoice record from W7; menu timing attributes from W9 (prep_advance_max_hr, hot_hold_max_min, station_type); zip-code drive-time table
+Confirmed invoice record from [[SPEC:W7]]; menu timing attributes from [[SPEC:W9]] (prep_advance_max_hr, hot_hold_max_min, station_type); zip-code drive-time table
 
 **Outputs:**  
 Formatted BEO timeline in NocoDB event record; SMS to Nick; MicroTouch dashboard (Edgar)
@@ -261,7 +261,7 @@ NO
 **Acceptance Criteria:**  
 NORMAL: On event Confirmed, timeline generated from kitchen_exit = crew_arrival − drive_time − pack_buffer, pack_start back-calculated, full timeline through breakdown; BEO stored + SMS to Nick <60s.
 EDGE: Missing venue zip → drive time flagged Medium confidence or blocked; never guessed.
-EDGE: Refund rescinds Confirmed → re-payment re-triggers one authorized W15 run (idempotent on invoice ID + Message-ID).
+EDGE: Refund rescinds Confirmed → re-payment re-triggers one authorized [[SPEC:W15]] run (idempotent on invoice ID + Message-ID).
 NEGATIVE: LLM attempts arithmetic → blocked (AI formats only; deterministic math).
 SILENT-FAILURE: Hold-time attribute missing for an item → downstream flags low confidence, routes to review, never fabricates.
 CHALLENGE: 3 events confirmed within 5 min → three timelines generated correctly, no cross-event contamination.
@@ -269,7 +269,7 @@ CHALLENGE: 3 events confirmed within 5 min → three timelines generated correct
 **Verification Method:**  
 1. [NICK] Live: confirm a real event → BEO + SMS within 60s. Evidence: SMS screenshot + BEO document.
 2. [AUTO] Math audit: verify kitchen_departure = crew_arrival − drive_time − pack_buffer for 5 events. Evidence: computed vs stored.
-3. [AUTO] Refund drill: rescind + re-pay → exactly one W15 run each, no duplicate BEO. Evidence: log.
+3. [AUTO] Refund drill: rescind + re-pay → exactly one [[SPEC:W15]] run each, no duplicate BEO. Evidence: log.
 4. [AUTO] Missing-data test: event with missing hold time → flagged, not guessed. Evidence: flag + review queue.
 5. [NICK] Nick reviews a real BEO against the event. Evidence: observation log.
 
@@ -287,16 +287,16 @@ Lead Acquisition
 As the owner, I need incoming leads automatically sorted by how promising they are, so Sandra knows which ones deserve an immediate call and which can wait for the weekly review.
 
 **Functional Requirement Specification:**  
-On new Lead creation (W1 output), the system shall fetch the lead data, pass it to AI with Nick's scoring rubric, and return structured JSON: profit_score (1–5), category (Hot/Warm/Low/Pass), talking_points, red_flags. Hot leads trigger an immediate SMS to Sandra with the brief; Warm leads queue to the morning digest; Low/Pass route to weekly review.
+On new Lead creation ([[SPEC:W1]] output), the system shall fetch the lead data, pass it to AI with Nick's scoring rubric, and return structured JSON: profit_score (1–5), category (Hot/Warm/Low/Pass), talking_points, red_flags. Hot leads trigger an immediate SMS to Sandra with the brief; Warm leads queue to the morning digest; Low/Pass route to weekly review.
 
 **Inputs:**  
-NocoDB Lead record from W1
+NocoDB Lead record from [[SPEC:W1]]
 
 **Outputs:**  
-profit_score, category, talking_points, red_flags. Hot to SMS Sandra; Warm to digest W6; Low/Pass to weekly review
+profit_score, category, talking_points, red_flags. Hot to SMS Sandra; Warm to digest [[SPEC:W6]]; Low/Pass to weekly review
 
 **Trigger:**  
-New Lead created (W1 output)
+New Lead created ([[SPEC:W1]] output)
 
 **Failure Behavior:**  
 Fallback: default score + manual review.
@@ -310,7 +310,7 @@ EDGE: AI unavailable → category=Low + scoring_ai_unavailable=true (fail safe, 
 EDGE: AI adjusts category by exactly one level with written red_flags reason → allowed; two levels → rejected.
 NEGATIVE: Silent override (AI changes category without red_flags) → BLOCKED; score_history records the attempt.
 SILENT-FAILURE: Re-score overwrites history → impossible: score_history is append-only; standing score = latest entry.
-CHALLENGE: Re-score fires 3× in one day (W4 Done + field update + manual) → three append-only entries, standing score correct, no duplicates.
+CHALLENGE: Re-score fires 3× in one day ([[SPEC:W4]] Done + field update + manual) → three append-only entries, standing score correct, no duplicates.
 
 **Verification Method:**  
 1. [AUTO] Threshold test: 5 leads with scores 1–5 → categories Pass/Low/Warm/Hot/Hot exactly. Evidence: psql result.
@@ -336,7 +336,7 @@ As Sandra, I need a quick refresher on who I'm calling and why, texted to me rig
 When a Task of type 'follow-up call' is assigned to Sandra and is due within 60 minutes, the system shall fetch the customer profile + recent touchpoints, pass them to AI with the pre-call brief prompt, and deliver a 3-paragraph brief (3 paragraphs, ≤900 chars, ~150 words — phone-readable on the go) via Twilio SMS to Sandra. SLA: delivered per D9: fire at 60-min window entry, 5-min floor before due, poll 5 min, delivery SLA ≤2 min.
 
 **Inputs:**  
-NocoDB Customer profile from W2/W4
+NocoDB Customer profile from [[SPEC:W2]]/[[SPEC:W4]]
 
 **Outputs:**  
 3-paragraph SMS brief via Twilio to Sandra
@@ -379,10 +379,10 @@ Customer Intelligence
 As Sandra, I need to talk through an update on a customer by voice or chat and have the system pull it into the right records itself, instead of me typing structured notes by hand.
 
 **Functional Requirement Specification:**  
-The system shall provide a multi-turn CRM session interface (SCREEN-10, port 3001) where Sandra selects a customer, and the system fetches the customer profile + recent voice notes + communications, opens a conversation with deepseek-v4-flash as the CRM assistant, and manages the conversation turn-by-turn. On 'Done', the AI extracts structured updates as JSON; the system writes them to NocoDB Accounts/Contacts/Opportunities/Touchpoints and creates follow-up Tasks. The full conversation is stored in crm_sessions. Fallback: backup AI provider — TBD, wire later.
+The system shall provide a multi-turn CRM session interface ([[SPEC:SCREEN-10]], port 3001) where Sandra selects a customer, and the system fetches the customer profile + recent voice notes + communications, opens a conversation with deepseek-v4-flash as the CRM assistant, and manages the conversation turn-by-turn. On 'Done', the AI extracts structured updates as JSON; the system writes them to NocoDB Accounts/Contacts/Opportunities/Touchpoints and creates follow-up Tasks. The full conversation is stored in crm_sessions. Fallback: backup AI provider — TBD, wire later.
 
 **Inputs:**  
-NocoDB Customer profile; Sandra's turns (text or via W5 voice)
+NocoDB Customer profile; Sandra's turns (text or via [[SPEC:W5]] voice)
 
 **Outputs:**  
 Structured JSON updates to NocoDB Customers table; follow-up Tasks; session summary
@@ -434,7 +434,7 @@ When Sandra clicks 'Record' in the CRM session UI, the browser captures audio fr
 Browser mic audio blob
 
 **Outputs:**  
-Transcribed text feeds into W4 as Sandra's message
+Transcribed text feeds into [[SPEC:W4]] as Sandra's message
 
 **Trigger:**  
 Sandra clicks Record on CRM Session page
@@ -460,7 +460,7 @@ CHALLENGE: 10 consecutive clips in a live session → all meet tiered SLA, no de
 1. [AUTO] Timing test: 10 clips at 10s → measure clip-end to text. Evidence: browser timings log.
 2. [AUTO] Boundary: 60s and 61s clips → 60s accepted, 61s rejected. Evidence: screenshots.
 3. [AUTO] Whisper-down drill: block the API → visible failure message. Evidence: screenshot.
-4. [NICK] Real use: Sandra dictates a real note → transcript editable, feeds W4. Evidence: observation log + screenshot.
+4. [NICK] Real use: Sandra dictates a real note → transcript editable, feeds [[SPEC:W4]]. Evidence: observation log + screenshot.
 
 
 _Notion: https://app.notion.com/p/CRM-Voice-Input-Handler-3b5e152fc19981cea6f8da10eef3955c_
@@ -476,13 +476,13 @@ Customer Intelligence
 As Sandra, I need my voice notes and recent customer activity turned into a short morning briefing of what needs my attention today, without me reviewing everything myself overnight.
 
 **Functional Requirement Specification:**  
-At midnight, the system shall: aggregate the day's touchpoints + W2 scores + open tasks, rank follow-ups (who needs contacting today), compose a morning digest (top 5 follow-ups + hot opportunities), and write the digest to the changelog, triggering W13 for delivery. Must complete by 5:00am. SLA failure triggers retry at 1am and an alert to Nick by 5am if still failing. Lead scoring itself lives in W2 (real-time); this spec only ranks and composes.
+At midnight, the system shall: aggregate the day's touchpoints + [[SPEC:W2]] scores + open tasks, rank follow-ups (who needs contacting today), compose a morning digest (top 5 follow-ups + hot opportunities), and write the digest to the changelog, triggering [[SPEC:W13]] for delivery. Must complete by 5:00am. SLA failure triggers retry at 1am and an alert to Nick by 5am if still failing. Lead scoring itself lives in [[SPEC:W2]] (real-time); this spec only ranks and composes.
 
 **Inputs:**  
-W2 scores; touchpoints; open tasks from W12
+[[SPEC:W2]] scores; touchpoints; open tasks from [[SPEC:W12]]
 
 **Outputs:**  
-Morning digest (top 5 follow-ups + hot opportunities) → feeds W13 for delivery
+Morning digest (top 5 follow-ups + hot opportunities) → feeds [[SPEC:W13]] for delivery
 
 **Trigger:**  
 Schedule midnight 00:00 UTC
@@ -491,16 +491,16 @@ Schedule midnight 00:00 UTC
 NO
 
 **Acceptance Criteria:**  
-NORMAL: At midnight, digest of top-5 follow-ups + hot opportunities composed from W2 scores + touchpoints + open tasks, written to changelog, triggers W13; complete by 5am.
+NORMAL: At midnight, digest of top-5 follow-ups + hot opportunities composed from [[SPEC:W2]] scores + touchpoints + open tasks, written to changelog, triggers [[SPEC:W13]]; complete by 5am.
 EDGE: Zero touchpoints → digest says so; no fabricated entries.
 NEGATIVE: Scoring inputs missing → digest ranks only what it can source; no invented scores.
-SILENT-FAILURE: Digest composed but W13 never triggered → alert to Nick by 5am if undelivered.
+SILENT-FAILURE: Digest composed but [[SPEC:W13]] never triggered → alert to Nick by 5am if undelivered.
 CHALLENGE: A day with 100 touchpoints + 20 open tasks → top-5 ranked correctly, rest omitted, complete by 5am.
 
 **Verification Method:**  
 1. [NICK] Live run: full digest on a real day → top-5 matches Nick's expectation. Evidence: screenshot + observation log.
 2. [AUTO] Empty-day run → "nothing to report" digest. Evidence: screenshot.
-3. [NICK+AUTO] Fail drill: block W13 trigger → Nick alerted by 5am. Evidence: SMS screenshot.
+3. [NICK+AUTO] Fail drill: block [[SPEC:W13]] trigger → Nick alerted by 5am. Evidence: SMS screenshot.
 4. [AUTO] Volume: synthetic 100-touchpoint day → completes by 5am, top-5 only. Evidence: log + timestamps.
 
 
@@ -517,13 +517,13 @@ Revenue - Custom Catering
 Need: once a lead is ready to invoice, the invoice drafts itself from everything already captured about the event — the WHY behind the setup, not just line items — so Sandra/Nick only review and approve instead of building it from scratch.
 
 **Functional Requirement Specification:**  
-On Lead status → 'Ready to Invoice', the system shall fetch lead data + CRM notes + decision history, pass them to AI (invoice_blocks_generator prompt, INFERENCE 10 XML-delimited input, output-delimited JSON), and generate: three $0 custom line items (EVENT DETAILS, VENUE & LOGISTICS, SETUP SPECIFICATION with WHY context from CRM notes), four Square Order Custom Attributes (setup_type, tables_count, linens_tier, kitchen_departure), and food line items from the Square catalog. Creates an approval Task for Nick/Sandra review before publish. Output format per CX-001..CX-007. Fallback: manual Square invoice.
+On Lead status → 'Ready to Invoice', the system shall fetch lead data + CRM notes + decision history, pass them to AI (invoice_blocks_generator prompt, INFERENCE 10 XML-delimited input, output-delimited JSON), and generate: three $0 custom line items (EVENT DETAILS, VENUE & LOGISTICS, SETUP SPECIFICATION with WHY context from CRM notes), four Square Order Custom Attributes (setup_type, tables_count, linens_tier, kitchen_departure), and food line items from the Square catalog. Creates an approval Task for Nick/Sandra review before publish. Output format per [[SPEC:CX-001]]..[[SPEC:CX-007]]. Fallback: manual Square invoice.
 
 **Inputs:**  
-Lead data (event date, guest count, service level, menu SKUs); CRM notes from W4; Square catalog attributes from W9
+Lead data (event date, guest count, service level, menu SKUs); CRM notes from [[SPEC:W4]]; Square catalog attributes from [[SPEC:W9]]
 
 **Outputs:**  
-3 $0 custom line items (EVENT DETAILS/VENUE & LOGISTICS/SETUP SPEC); 4 Square Order Custom Attributes; food line items; approval Task for Nick/Sandra. Feeds W15
+3 $0 custom line items (EVENT DETAILS/VENUE & LOGISTICS/SETUP SPEC); 4 Square Order Custom Attributes; food line items; approval Task for Nick/Sandra. Feeds [[SPEC:W15]]
 
 **Trigger:**  
 Lead status to Ready to Invoice
@@ -569,7 +569,7 @@ On a Square catalog.version.updated webhook (primary trigger) or a 6-hour fallba
 Square Catalog (11 Catalog Intelligence attributes: 6 visible + 5 hidden, per D18)
 
 **Outputs:**  
-NocoDB Menu Items table (incremental upsert), catalog_version cursor. Feeds W7 (RAG lookups), V2-FEAT-006 Backward Scheduler
+NocoDB Menu Items table (incremental upsert), catalog_version cursor. Feeds [[SPEC:W7]] (RAG lookups), [[SPEC:PROD-16-V2]] Backward Scheduler
 
 **Trigger:**  
 catalog.version.updated Square webhook (primary) + 6hr fallback schedule

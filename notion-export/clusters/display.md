@@ -46,13 +46,13 @@ Device-by-device field inspection after reboot.
 Update role map + maintain scripts whenever a TV is added or a role reassigned.
 
 **Dependency Notes:**  
-Roles realised by SCREEN-01..05, DISPLAY 6. Boot/recovery depends on TV self-heal maintain scripts (mt1/mt2 confirmed; 3 TVs missing).
+Roles realised by [[SPEC:SCREEN-01]]..05, DISPLAY 6. Boot/recovery depends on TV self-heal maintain scripts (mt1/mt2 confirmed; 3 TVs missing).
 
 **External Dependencies:**  
 Configured LAN addresses and browser launch/supervision.
 
 **Open Questions:**  
-Open items tracked on URS-DISP-PKG (items 2, 3, 4 apply here).
+Open items tracked on [[SPEC:URS-DISP-PKG]] (items 2, 3, 4 apply here).
 
 **Required for Release:**  
 YES
@@ -79,10 +79,10 @@ For any valid state input, the mode engine shall return exactly one documented d
 The mode engine shall deterministically select exactly one of four modes from current time, active-event state, departure state, and pending-task state: EVENT (imminent/active event with open departure); PREP (pending prep, no imminent event); OVERNIGHT (22:00–06:00); DEAD DAY (no event, no pending prep, daytime). Priority: OVERNIGHT > EVENT > PREP > DEAD DAY. Any valid input returns exactly one mode; conflicts resolve by priority.
 
 **Inputs:**  
-Current time; active-event flag + event start/end times (PROD-01); departure state; pending-task count (PROD-01).
+Current time; active-event flag + event start/end times ([[SPEC:PROD-01]]); departure state; pending-task count ([[SPEC:PROD-01]]).
 
 **Outputs:**  
-One of: EVENT | PREP | DEAD DAY | OVERNIGHT — broadcast to all displays via the push fabric (PROD-04).
+One of: EVENT | PREP | DEAD DAY | OVERNIGHT — broadcast to all displays via the push fabric ([[SPEC:PROD-04]]).
 
 **Trigger:**  
 Any change to time window, active-event state, departure state, or pending-task count; also evaluated on each push cycle.
@@ -103,10 +103,10 @@ Table-driven unit tests at boundaries and conflicting-state cases.
 Keep mode boundary times configurable (e.g. OVERNIGHT window); run table-driven boundary tests after any mode-logic change.
 
 **Dependency Notes:**  
-Mode computed server-side on N100; pushed to displays (DISPLAY 1/DISPLAY 7). Inputs: time, active-event state (CLOSE 34), departure state, pending-task state.
+Mode computed server-side on N100; pushed to displays (DISPLAY 1/DISPLAY 7). Inputs: time, active-event state ([[SPEC:PROD-19]]), departure state, pending-task state.
 
 **Open Questions:**  
-Blocked by URS-DISP-PKG open item 1 (display-persistence.js not wired).
+Blocked by [[SPEC:URS-DISP-PKG]] open item 1 (display-persistence.js not wired).
 
 **Required for Release:**  
 YES
@@ -133,19 +133,19 @@ For each documented mode, TCL East shall render the required situational section
 TCL East shall present the situational sections required for the current mode: EVENT — event timeline, allergens, crew assignments, notes, departure status, active health/exception flags; PREP — pending tasks, allergens, prep countdown; DEAD DAY — upcoming events preview, recent LKL summary; OVERNIGHT — minimal/sleep state. Stale event-critical information (especially allergens) shall be visibly marked, never silently displayed as current.
 
 **Inputs:**  
-/situational.json + /inventory.json from N100; current mode from URS-DISP-002; push updates via SSE (PROD-04).
+/situational.json + /inventory.json from N100; current mode from [[SPEC:URS-DISP-002]]; push updates via SSE ([[SPEC:PROD-04]]).
 
 **Outputs:**  
 A rendered, mode-appropriate situational display on TCL East, updated within the <4s lag SLA.
 
 **Trigger:**  
-Mode change (URS-DISP-002); push update on any content-source change (PROD-04).
+Mode change ([[SPEC:URS-DISP-002]]); push update on any content-source change ([[SPEC:PROD-04]]).
 
 **Invariants:**  
 Allergen flags never silently disappear; stale signals always carry a visible timestamp/degraded indicator; content set is mode-specific (no event-mode content in OVERNIGHT).
 
 **Failure Behavior:**  
-Stale/unavailable signals render visibly degraded with timestamp (fail-visible, per URS-HEALTH-005). Allergen flags must never silently disappear — a stale signal keeps the flag visible with a staleness indicator. Addresses: the east wall becoming background noise, and stale allergen flags crew stop noticing.
+Stale/unavailable signals render visibly degraded with timestamp (fail-visible, per [[SPEC:URS-HEALTH-005]]). Allergen flags must never silently disappear — a stale signal keeps the flag visible with a staleness indicator. Addresses: the east wall becoming background noise, and stale allergen flags crew stop noticing.
 
 **Acceptance Criteria:**  
 Golden-screen tests validate the required section set for EVENT, PREP, DEAD DAY, and OVERNIGHT.
@@ -157,7 +157,7 @@ Visual regression and field demonstration.
 Keep golden-screen fixtures current as the section set evolves; verify allergen-staleness behaviour after any signal-source change.
 
 **Dependency Notes:**  
-Sources: event record (CLOSE 34), allergen flags (CLOSE 14/CATALOG 2), crew assignments (PROD-17), departure state (CLOSE 2), health signals (HEALTH 1). Mode from DISPLAY 22. DISPLAY 2 fetches /situational.json + /inventory.json.
+Sources: event record ([[SPEC:PROD-19]]), allergen flags (CLOSE 14/[[SPEC:CAT-002]]), crew assignments ([[SPEC:PROD-17]]), departure state ([[SPEC:PROD-02]]), health signals (HEALTH 1). Mode from DISPLAY 22. DISPLAY 2 fetches /situational.json + /inventory.json.
 
 **External Dependencies:**  
 TCL East 192.168.2.106; situational.json or equivalent API.
@@ -190,13 +190,13 @@ For each documented mode, TCL West shall render the required prep sections using
 TCL West shall present the prep-execution sections required for the current mode: EVENT — station progress, crew assignments, blockers, departure countdown, active LKL summary; PREP — full prep task list with completion state, blockers, countdown; DEAD DAY — upcoming event preview, pending prep; OVERNIGHT — minimal/sleep state. No data shall exceed the documented refresh window without a visible staleness indicator.
 
 **Inputs:**  
-/situational.json from N100 (station progress, task state, LKL summary, blockers); current mode from URS-DISP-002; push updates via SSE (PROD-04).
+/situational.json from N100 (station progress, task state, LKL summary, blockers); current mode from [[SPEC:URS-DISP-002]]; push updates via SSE ([[SPEC:PROD-04]]).
 
 **Outputs:**  
 A rendered, mode-appropriate prep-execution display on TCL West, updated within the <4s lag SLA.
 
 **Trigger:**  
-Mode change; push update on any task/LKL/blocker change (PROD-04).
+Mode change; push update on any task/LKL/blocker change ([[SPEC:PROD-04]]).
 
 **Invariants:**  
 Blocked stations are always visibly distinct from in-progress; content is mode-specific; data is never silently stale.
@@ -214,7 +214,7 @@ Visual regression and field demonstration.
 Keep golden-screen fixtures current; verify blocked/in-progress visual distinction after any card-state or colour change.
 
 **Dependency Notes:**  
-Sources: task records + station assignments (CLOSE 34), LKL data (CLOSE 2/URS-LKL), departure countdown (CLOSE 2), upcoming events (CLOSE 34). Mode from DISPLAY 22. DISPLAY 3 fetches /situational.json.
+Sources: task records + station assignments ([[SPEC:PROD-19]]), LKL data ([[SPEC:PROD-02]]/URS-LKL), departure countdown ([[SPEC:PROD-02]]), upcoming events ([[SPEC:PROD-19]]). Mode from DISPLAY 22. DISPLAY 3 fetches /situational.json.
 
 **External Dependencies:**  
 TCL West 192.168.2.101; task/LKL APIs.
@@ -247,13 +247,13 @@ For LOADOUT ACTIVE, PREP, and DEAD DAY states, the van scoreboard shall render t
 The van scoreboard shall render state-specific content from current packing and assignment data: LOADOUT ACTIVE — packing completion %, item-by-item checklist, driver, travel time, destination, departure countdown; PREP — upcoming departure preview (time + estimated packing state); DEAD DAY — next event + estimated departure window. Unchecked items shall be visibly flagged at all times before departure. The ~6% right-edge dead zone on the Insignia panel is handled via a CSS variable in van-loadout.html.
 
 **Inputs:**  
-/van-loadout.json from N100 (packing state, driver, destination, drive-time, departure time); current mode/state from URS-DISP-002.
+/van-loadout.json from N100 (packing state, driver, destination, drive-time, departure time); current mode/state from [[SPEC:URS-DISP-002]].
 
 **Outputs:**  
 A rendered, state-appropriate van readiness scoreboard on the Insignia Fire TV.
 
 **Trigger:**  
-Mode/state change; packing-state push update (PROD-04).
+Mode/state change; packing-state push update ([[SPEC:PROD-04]]).
 
 **Invariants:**  
 Unchecked items never appear as complete; departure countdown is always accurate to the drive-time matrix; CSS dead-zone compensation is always applied on this specific screen.
@@ -268,10 +268,10 @@ Each state renders its required fields; unchecked items are visibly flagged befo
 State-fixture UI tests and field demonstration.
 
 **Maintenance Requirements:**  
-Keep /van-loadout.json schema aligned with checklist + assignment sources; re-test dead-zone CSS var if van-loadout.html is restructured; keep drive-time matrix current (PROD-16/W15).
+Keep /van-loadout.json schema aligned with checklist + assignment sources; re-test dead-zone CSS var if van-loadout.html is restructured; keep drive-time matrix current ([[SPEC:PROD-16]]/[[SPEC:W15]]).
 
 **Dependency Notes:**  
-Sources: packing completion (PACK 1/CLOSE 15), item + driver assignments, drive-time matrix (PACK 1/W15). Mode from DISPLAY 22. DISPLAY 4 fetches /van-loadout.json.
+Sources: packing completion (PACK 1/[[SPEC:URS-KIT-103]]), item + driver assignments, drive-time matrix (PACK 1/[[SPEC:W15]]). Mode from DISPLAY 22. DISPLAY 4 fetches /van-loadout.json.
 
 **External Dependencies:**  
 Insignia/Alexa 192.168.2.109; packing manifest; drive-time cache.
@@ -344,7 +344,7 @@ Test RED/AMBER preservation after any frontend change; verify auto-revert timer 
 display-persistence.js implements RED/AMBER/GREEN locking. RED = critical/exception; AMBER = important/transitional; GREEN = normal. Gates both Hey Google and Alexa voice paths.
 
 **Open Questions:**  
-P0 — highest-priority row in cluster. BLOCKED by URS-DISP-PKG item 1: display-persistence.js built+tested but not wired to any live TV frontend.
+P0 — highest-priority row in cluster. BLOCKED by [[SPEC:URS-DISP-PKG]] item 1: display-persistence.js built+tested but not wired to any live TV frontend.
 
 **Required for Release:**  
 YES
@@ -374,13 +374,13 @@ Display-fleet architecture shall: (1) assign one primary role per display, enfor
 Addresses: wall displays becoming unreliable — wrong content, wrong mode, stale data, or a critical alert wiped by a voice query — causing crew to stop trusting and stop looking at them.
 
 **Out of Scope:**  
-SCREEN-01..08 (built artifacts); PROD-04/SSB (push fabric); ALC-001..006 (Alexa — Insignia hosts both roles, separate concern). This package = display-fleet architecture only.
+[[SPEC:SCREEN-01]]..08 (built artifacts); [[SPEC:PROD-04]]/SSB (push fabric); [[SPEC:ALC-001]]..006 (Alexa — Insignia hosts both roles, separate concern). This package = display-fleet architecture only.
 
 **Acceptance Criteria:**  
-Every named display boots to its assigned primary surface (URS-DISP-001); the mode engine returns exactly one mode for any input state (URS-DISP-002); TCL East, TCL West, and the van scoreboard render their mode-correct content sets (URS-DISP-003/004/005); RED/AMBER visual states are never displaced by voice or transient content (URS-DISP-006).
+Every named display boots to its assigned primary surface ([[SPEC:URS-DISP-001]]); the mode engine returns exactly one mode for any input state ([[SPEC:URS-DISP-002]]); TCL East, TCL West, and the van scoreboard render their mode-correct content sets ([[SPEC:URS-DISP-003]]/004/005); RED/AMBER visual states are never displaced by voice or transient content ([[SPEC:URS-DISP-006]]).
 
 **Verification Method:**  
-Device-by-device reboot test (URS-DISP-001); table-driven mode-engine unit tests (URS-DISP-002); golden-screen tests per mode per display (URS-DISP-003/004/005); RED/AMBER displacement test with voice integration (URS-DISP-006).
+Device-by-device reboot test ([[SPEC:URS-DISP-001]]); table-driven mode-engine unit tests ([[SPEC:URS-DISP-002]]); golden-screen tests per mode per display ([[SPEC:URS-DISP-003]]/004/005); RED/AMBER displacement test with voice integration ([[SPEC:URS-DISP-006]]).
 
 **External Dependencies:**  
 MT1 192.168.2.104; MT2 192.168.2.108; z33 192.168.2.105; TCL East 192.168.2.106; TCL West 192.168.2.101; Insignia/Alexa 192.168.2.109.

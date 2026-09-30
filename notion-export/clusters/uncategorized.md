@@ -13,16 +13,16 @@ Customer Intelligence
 As Sandra, I need to ask for the customer's real, spoken consent before any AI note-taker starts recording — not just play them a notice — so I'm never recording someone who actually objected.
 
 **Functional Requirement Specification:**  
-Before any AI-assisted call recording begins, Sandra shall verbally disclose that an AI note-taking assistant may record the call and shall verbally request the customer's consent, waiting for an affirmative spoken response before starting the recording. Recording shall never start automatically, silently, or before an affirmative response is given. A declined or absent response shall route to the manual brain-dump path (URS-CALL-004), not to recording.
+Before any AI-assisted call recording begins, Sandra shall verbally disclose that an AI note-taking assistant may record the call and shall verbally request the customer's consent, waiting for an affirmative spoken response before starting the recording. Recording shall never start automatically, silently, or before an affirmative response is given. A declined or absent response shall route to the manual brain-dump path ([[SPEC:URS-CALL-004]]), not to recording.
 
 **Rationale:**  
 The 2026 Otter.ai/Fireflies litigation turns on whether participants have a genuine opportunity to decline before recording starts, not merely a notification. Written to that stricter standard rather than Arizona's one-party-consent minimum, since customers may be calling from any state.
 
 **Acceptance Criteria:**
 NORMAL: recording starts only after verbal disclosure AND affirmative spoken consent.
-EDGE: declined or absent response → manual brain-dump path (URS-CALL-004).
+EDGE: declined or absent response → manual brain-dump path ([[SPEC:URS-CALL-004]]).
 NEGATIVE: auto-start or silent recording → impossible.
-SILENT-FAILURE: recording without a consent log → caught by URS-CALL-006 audit.
+SILENT-FAILURE: recording without a consent log → caught by [[SPEC:URS-CALL-006]] audit.
 CHALLENGE: customer says no → zero audio captured of that customer.
 **Verification Method:**
 1. [AUTO] Decline: customer declines → no recording, brain-dump offered. Evidence: log.
@@ -45,14 +45,14 @@ Customer Intelligence
 Need: get call recording and transcription working without building and maintaining a whole custom phone-calling system — use what the iPhone already does for free.
 
 **Functional Requirement Specification:**  
-The system shall use the iPhone's native Call Recording feature (iOS 18.1+/iOS 26, available on iPhone 17 Pro) to capture call audio and on-device transcription, rather than a custom VoIP/softphone recording pipeline. Sandra places/receives the call normally through the standard Phone app; the companion app does not mediate call initiation and instead picks up the resulting Notes recording/transcript afterward. Recording is enabled only after consent is obtained per URS-CALL-001.
+The system shall use the iPhone's native Call Recording feature (iOS 18.1+/iOS 26, available on iPhone 17 Pro) to capture call audio and on-device transcription, rather than a custom VoIP/softphone recording pipeline. Sandra places/receives the call normally through the standard Phone app; the companion app does not mediate call initiation and instead picks up the resulting Notes recording/transcript afterward. Recording is enabled only after consent is obtained per [[SPEC:URS-CALL-001]].
 
 **Rationale:**  
 Decision (Nick, agnostic on call-through-app vs. app-on-the-side — chose whichever ships fastest): building a custom in-app dialer would require a VoIP/CallKit integration purely to get call-audio access Apple already provides for free via the Phone app on A14-chip-and-later devices, including automatic recording-in-progress announcement and on-device transcription to Notes. No dialer-mediated call initiation is required for V1.
 
 **Acceptance Criteria:**
 NORMAL: uses iPhone native Call Recording + on-device transcription; no custom dialer mediates call initiation.
-EDGE: recording enabled only after consent per URS-CALL-001.
+EDGE: recording enabled only after consent per [[SPEC:URS-CALL-001]].
 NEGATIVE: companion app mediating call initiation → out of scope (must not).
 SILENT-FAILURE: recording captured but never retrieved → caught by post-call pickup.
 CHALLENGE: a full real call → audio + transcript available in Notes after hangup.
@@ -131,10 +131,10 @@ Customer Intelligence
 Need: however Sandra captures a call — edited transcript or brain-dump — it ends up in the CRM the same way, tagged with how it was captured.
 
 **Functional Requirement Specification:**  
-On Sandra's submit action, the system shall send the finalized content — either the edited transcript (URS-CALL-003) or the manual brain-dump (URS-CALL-004) — to the CRM intake point (URS-CRM-008), tagged with which path was used and the consent status.
+On Sandra's submit action, the system shall send the finalized content — either the edited transcript ([[SPEC:URS-CALL-003]]) or the manual brain-dump ([[SPEC:URS-CALL-004]]) — to the CRM intake point ([[SPEC:URS-CRM-008]]), tagged with which path was used and the consent status.
 
 **Acceptance Criteria:**
-NORMAL: edited transcript or brain-dump submits to URS-CRM-008 with path + consent tags.
+NORMAL: edited transcript or brain-dump submits to [[SPEC:URS-CRM-008]] with path + consent tags.
 EDGE: both paths tag correctly.
 NEGATIVE: untagged content → blocked.
 CHALLENGE: 5 calls in a day → all submit tagged correctly.
@@ -192,17 +192,17 @@ Need: one real prospect list, not a notebook plus a spreadsheet.
 The system shall provide a single canonical prospect record for every inbound sales inquiry, capturing at minimum: prospect name, phone number, event date, guest count, event type (corporate/wedding/birthday/other), lead source, and free-text notes. Every phone-originated or web-originated lead shall be entered into this record within the same interaction — no lead shall exist only in a notebook, spreadsheet, or unsynced local note.
 
 **Dependency Notes:**  
-Replaces Sandra's paper notebook + manual Google Sheet transcription step. Extends the existing Accounts/Contacts/Opportunities/Touchpoints tables (W4/CRM 3) rather than creating a parallel schema. Is the canonical record that CRM 21 (W1, Wix/Gmail lead capture) also writes into — phone-originated leads and web-originated leads land in the same record, not separate ones.
+Replaces Sandra's paper notebook + manual Google Sheet transcription step. Extends the existing Accounts/Contacts/Opportunities/Touchpoints tables ([[SPEC:W4]]/CRM 3) rather than creating a parallel schema. Is the canonical record that CRM 21 ([[SPEC:W1]], Wix/Gmail lead capture) also writes into — phone-originated leads and web-originated leads land in the same record, not separate ones.
 
 **Rationale:**  
 Directly addresses Sandra's stated pain point: "I don't have a spot that has all the prospect lists with details about their event" — her spreadsheet is a manual, easily-abandoned workaround.
 
 **Acceptance Criteria:**
 NORMAL: every inbound inquiry (phone or web) creates or updates one canonical prospect record within the same interaction — name, phone, event date, guest count, type, source, notes.
-EDGE: web leads (W1) and phone leads land in the SAME record type, no separate schema.
-EDGE: partial data (call comes in mid-task) → minimum fields captured; full detail later per URS-CRM-009.
+EDGE: web leads ([[SPEC:W1]]) and phone leads land in the SAME record type, no separate schema.
+EDGE: partial data (call comes in mid-task) → minimum fields captured; full detail later per [[SPEC:URS-CRM-009]].
 NEGATIVE: a lead existing only in notebook/spreadsheet → impossible: intake writes the record immediately.
-SILENT-FAILURE: a lead dropped between capture and record → caught by W1 record-count reconciliation.
+SILENT-FAILURE: a lead dropped between capture and record → caught by [[SPEC:W1]] record-count reconciliation.
 CHALLENGE: 10 leads in one day, mixed phone/web → all land in canonical records, zero duplicates.
 **Verification Method:**
 1. [AUTO] Create: phone-originated lead → record appears with all fields. Evidence: psql.
@@ -226,7 +226,7 @@ Customer Intelligence
 Need: see where each prospect actually stands, not just booked or not.
 
 **Functional Requirement Specification:**  
-The system shall track every prospect record through a defined pipeline: Lead Captured → Contacted → Qualified → Proposal Sent → Negotiation → Booked (Won) / Lost (Ghosted or Declined). Each stage transition shall be explicit (user-initiated or system-triggered per URS-CRM-004), timestamped, and visible in the record's history. A prospect shall be in exactly one stage at any time.
+The system shall track every prospect record through a defined pipeline: Lead Captured → Contacted → Qualified → Proposal Sent → Negotiation → Booked (Won) / Lost (Ghosted or Declined). Each stage transition shall be explicit (user-initiated or system-triggered per [[SPEC:URS-CRM-004]]), timestamped, and visible in the record's history. A prospect shall be in exactly one stage at any time.
 
 **Rationale:**  
 Sandra's current process is binary — a name is either on the spreadsheet or off it once booked. A defined pipeline makes partial progress (contacted-but-not-booked) visible instead of invisible.
@@ -261,7 +261,7 @@ Need: the system reminds Sandra when a follow-up is due, not her memory.
 For every prospect not yet in Booked or Lost status, the system shall maintain a next-follow-up-due date and shall proactively notify Sandra (push notification and/or SMS) when a follow-up is due or overdue. Notification cadence shall escalate (e.g. due-today reminder, then daily overdue reminders) rather than firing once and going silent.
 
 **Dependency Notes:**  
-Extends the existing nightly digest (W6/CRM 5, top-5 follow-ups at 7am) to real-time, due-date-driven nagging rather than a single daily batch.
+Extends the existing nightly digest ([[SPEC:W6]]/CRM 5, top-5 follow-ups at 7am) to real-time, due-date-driven nagging rather than a single daily batch.
 
 **Rationale:**  
 Sandra: "I sometimes hear back, sometimes I don't," with no structured re-contact process. Auto-nag closes the gap between deciding to follow up and actually doing it.
@@ -332,11 +332,11 @@ As Sandra, I need every event detail — date, guest count, type, venue, budget 
 For every prospect/opportunity, the system shall capture and present in one view: event date, guest count, event type, venue/location, budget signals, dietary/allergen notes, and decision history (what has been discussed, quoted, or promised). This detail shall be visible to Sandra without needing to search her notebook, texts, or memory.
 
 **Dependency Notes:**  
-Overlaps with but is distinct from invoice pre-fill (INVOICE 1/PROD-07): this is pre-booking opportunity detail, invoice pre-fill is post-decision.
+Overlaps with but is distinct from invoice pre-fill ([[SPEC:PROD-07]]/[[SPEC:PROD-07]]): this is pre-booking opportunity detail, invoice pre-fill is post-decision.
 
 **Acceptance Criteria:**
 NORMAL: one view shows date, guest count, type, venue, budget signals, allergen notes, and decision history per prospect.
-EDGE: pre-booking detail stays distinct from post-decision invoice pre-fill (PROD-07).
+EDGE: pre-booking detail stays distinct from post-decision invoice pre-fill ([[SPEC:PROD-07]]).
 NEGATIVE: a promised item not recorded → caught by decision-history requirement.
 SILENT-FAILURE: detail scattered across notebook/texts → impossible (single view).
 CHALLENGE: complex wedding → every detail in one view.
@@ -365,7 +365,7 @@ The system shall present a single chronological activity timeline per prospect/c
 **Acceptance Criteria:**
 NORMAL: chronological timeline per contact combining calls, texts, notes, stage changes, follow-ups.
 EDGE: timeline survives across tools (single source of truth).
-NEGATIVE: an activity missing from the timeline → caught (URS-CRM-008 routes everything to it).
+NEGATIVE: an activity missing from the timeline → caught ([[SPEC:URS-CRM-008]] routes everything to it).
 CHALLENGE: six months of a hot prospect's activity → renders in order, complete.
 **Verification Method:**
 1. [AUTO] Order: activities render chronologically. Evidence: screenshot + query.
@@ -420,15 +420,15 @@ Customer Intelligence
 Need: whatever comes out of a sales call — an edited transcript or a manual brain-dump — lands in the same place and updates the same prospect record, regardless of which path was used.
 
 **Functional Requirement Specification:**  
-The system shall provide a single intake point that accepts either (a) an edited call transcript with consent-status metadata, or (b) a manual post-call brain-dump, and shall write the result into the corresponding prospect's activity timeline (URS-CRM-006) and update pipeline stage / next-follow-up-due as appropriate.
+The system shall provide a single intake point that accepts either (a) an edited call transcript with consent-status metadata, or (b) a manual post-call brain-dump, and shall write the result into the corresponding prospect's activity timeline ([[SPEC:URS-CRM-006]]) and update pipeline stage / next-follow-up-due as appropriate.
 
 **Dependency Notes:**  
-This is the landing point for the companion call-capture app's output — see URS-CALL-005.
+This is the landing point for the companion call-capture app's output — see [[SPEC:URS-CALL-005]].
 
 **Acceptance Criteria:**
 NORMAL: edited transcript OR manual brain-dump lands in the same intake; writes to activity timeline and updates stage/next-follow-up.
 EDGE: consent-status metadata rides along with either path.
-NEGATIVE: a transcript submitted without Sandra's review → blocked (URS-CALL-003 gate).
+NEGATIVE: a transcript submitted without Sandra's review → blocked ([[SPEC:URS-CALL-003]] gate).
 SILENT-FAILURE: intake accepted but timeline not updated → caught.
 CHALLENGE: both paths used in one day → both land identically, tagged with capture path.
 **Verification Method:**
@@ -529,16 +529,16 @@ Spec Package
 Roadmap V1.5
 
 **Functional Requirement Specification:**  
-The system shall parse raw voice/text input into the Taza Input Grammar — a 5-field structure (EVENT_TYPE, VENUE, GUEST_COUNT required; DATE, NOTES optional) — using an LSI (Language Stress Index) pre-processor score to derive a per-field confidence percentage. Confidence bands: >85% green (auto-accept), 65-85% yellow (accept but flagged for review), <65% red (block auto-accept, trigger a structured clarification nudge naming the uncertain field). Confidence % is displayed at the point of input in both Open WebUI and the kitchen display. Parsed grammar + confidence feed forward into the INVOICE 13 (Invoice Draft Workflow) extraction pipeline.
+The system shall parse raw voice/text input into the Taza Input Grammar — a 5-field structure (EVENT_TYPE, VENUE, GUEST_COUNT required; DATE, NOTES optional) — using an LSI (Language Stress Index) pre-processor score to derive a per-field confidence percentage. Confidence bands: >85% green (auto-accept), 65-85% yellow (accept but flagged for review), <65% red (block auto-accept, trigger a structured clarification nudge naming the uncertain field). Confidence % is displayed at the point of input in both Open WebUI and the kitchen display. Parsed grammar + confidence feed forward into the [[SPEC:PROD-07]] (Invoice Draft Workflow) extraction pipeline.
 
 **Inputs:**  
 Raw voice/text input; LSI (Language Stress Index) pre-processor score
 
 **Outputs:**  
-Confidence % display (Open WebUI + kitchen display); structured Taza Input Grammar nudge on low confidence; feeds W7 extraction.
+Confidence % display (Open WebUI + kitchen display); structured Taza Input Grammar nudge on low confidence; feeds [[SPEC:W7]] extraction.
 
 **Trigger:**  
-Any voice/text input to W7/W11 extraction pipeline
+Any voice/text input to [[SPEC:W7]]/[[SPEC:W11]] extraction pipeline
 
 **Acceptance Criteria:**  
 Given a voice/text input, the system extracts EVENT_TYPE, VENUE, GUEST_COUNT (required) and DATE, NOTES (optional) with a confidence % per field. Inputs scoring >85% pass through without interruption. 65-85% are accepted but visibly flagged. <65% block auto-accept and surface a structured clarification nudge naming the low-confidence field(s). Confidence % is visible in both Open WebUI and the kitchen display for every parse.

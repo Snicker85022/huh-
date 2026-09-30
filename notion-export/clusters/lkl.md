@@ -22,10 +22,10 @@ A location-changing card shall not enter Done without a valid LKL/bin identifier
 The system shall block task closure until a valid LKL/bin is supplied whenever the task changes item location.
 
 **Inputs:**  
-Task type (does it change item location?); crew-entered LKL/bin at close; bin master (KIT-001) for validity.
+Task type (does it change item location?); crew-entered LKL/bin at close; bin master ([[SPEC:KIT-001]]) for validity.
 
 **Outputs:**  
-A valid LKL/bin captured at close, handed to URS-LKL-002 for persistence.
+A valid LKL/bin captured at close, handed to [[SPEC:URS-LKL-002]] for persistence.
 
 **Trigger:**  
 Crew attempts to close a location-changing card.
@@ -59,10 +59,10 @@ SILENT FAILURE:
 1) Unit tests: location-changing task with/without valid bin, non-location-changing task closes freely, invalid bin ID rejected. 2) Classification test: enumerate task types and confirm each is correctly classified as location-changing or not. 3) UX test: confirm the blocked-close error message is specific and actionable, not generic. 4) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Maintenance Requirements:**  
-Keep the 'is this task location-changing?' classification current as task types are added; keep bin-master validation in sync with KIT-001.
+Keep the 'is this task location-changing?' classification current as task types are added; keep bin-master validation in sync with [[SPEC:KIT-001]].
 
 **Dependency Notes:**  
-Enforced at task close (CLOSE 11 / CLOSE 1 close contract). The captured LKL becomes the record in CLOSE 19. Bin validity checked against the bin master (CLOSE 23). Part of BUNDLE-LKL-TRUTH. Parent CLOSE 2.
+Enforced at task close (CLOSE 11 / [[SPEC:PROD-38]] close contract). The captured LKL becomes the record in CLOSE 19. Bin validity checked against the bin master (CLOSE 23). Part of BUNDLE-LKL-TRUTH. Parent [[SPEC:PROD-02]].
 
 **Required for Release:**  
 YES
@@ -89,7 +89,7 @@ Each accepted LKL update shall create or idempotently update a record containing
 The system shall persist the item, quantity, unit, bin, event, source task, crew member, state, and timestamp for every LKL update.
 
 **Inputs:**  
-The accepted LKL/bin from URS-LKL-001, plus item, quantity, unit, event, source task, crew member (PIN), state, timestamp.
+The accepted LKL/bin from [[SPEC:URS-LKL-001]], plus item, quantity, unit, event, source task, crew member (PIN), state, timestamp.
 
 **Outputs:**  
 A complete, idempotent LKL record (item/qty/unit/bin/event/task/crew/state/timestamp) available to lookup and downstream consumers.
@@ -126,10 +126,10 @@ SILENT FAILURE:
 1) Unit tests: full-field write, missing-required-field rejection, invalid-crew-reference rejection. 2) Concurrency test: two rapid updates to the same item/bin, confirm both persist distinctly and in correct order. 3) Field-provenance test: confirm the persisted timestamp reflects actual event time, not write time, under simulated latency. 4) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Maintenance Requirements:**  
-Keep the provenance field set aligned with KIT-003 if merged; enforce the idempotency key on the write path; retire/expire consumed records so lookups don't return stale locations (see staleness handling KIT-007).
+Keep the provenance field set aligned with KIT-003 if merged; enforce the idempotency key on the write path; retire/expire consumed records so lookups don't return stale locations (see staleness handling [[SPEC:KIT-007]]).
 
 **Dependency Notes:**  
-Written at close (CLOSE 18 gate / CLOSE 11). Provenance fields feed lookup (CLOSE 20) and the downstream event (CLOSE 21). CROSS-REF: overlaps KIT-003 (LKL table schema) — reconcile field-level in debate. Part of BUNDLE-LKL-TRUTH. Parent CLOSE 2. Table: PostgreSQL, includes a notes field.
+Written at close (CLOSE 18 gate / CLOSE 11). Provenance fields feed lookup (CLOSE 20) and the downstream event (CLOSE 21). CROSS-REF: overlaps KIT-003 (LKL table schema) — reconcile field-level in debate. Part of BUNDLE-LKL-TRUTH. Parent [[SPEC:PROD-02]]. Table: PostgreSQL, includes a notes field.
 
 **Required for Release:**  
 YES
@@ -168,7 +168,7 @@ A crew member issues an LKL query (text or voice) on any device.
 p95 < 1.0s on the production LAN for every supported lookup key; results reflect current (not consumed/moved) records; staleness is surfaced, never hidden.
 
 **Failure Behavior:**  
-No match → explicit 'not found / not yet placed' rather than a wrong or empty guess. A stale record (older than threshold, KIT-007) returns with a 'verify before hunting' warning rather than silent confidence.
+No match → explicit 'not found / not yet placed' rather than a wrong or empty guess. A stale record (older than threshold, [[SPEC:KIT-007]]) returns with a 'verify before hunting' warning rather than silent confidence.
 
 **Failure Mode Addressed:**  
 Crew wasting time hunting for an item, or interrupting someone to ask where it is — the lookup must be faster than asking a person or it won't get used.
@@ -194,10 +194,10 @@ SILENT FAILURE:
 1) Unit tests: single-filter lookup per type (item/event/category/allergen/bin), combined-filter lookup, not-found case. 2) Voice-lookup test: phoneme-match against a set of confusable item-name pairs, confirm no cross-matches. 3) Performance test: p95/p99 latency under concurrent-user load simulating event-rush conditions, not just single-query benchmark. 4) Security test: malformed/injection query strings handled safely. 5) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Maintenance Requirements:**  
-Re-run the performance test at production data volume after schema/index changes; keep the voice item-list vocabulary current with the catalog; validate the MicroTouch local cache (MT-001) stays within the latency budget.
+Re-run the performance test at production data volume after schema/index changes; keep the voice item-list vocabulary current with the catalog; validate the MicroTouch local cache ([[SPEC:MT-001]]) stays within the latency budget.
 
 **Dependency Notes:**  
-Queries the LKL records from CLOSE 19. Voice lookup path is phoneme-match against the item list (not LLM inference) per KIT-004. Served on the LAN; MicroTouch may answer from a local cache (CLOSE 31) to hit the latency target. CROSS-REF: overlaps KIT-004 (LKL query interface) — reconcile in debate. Part of BUNDLE-LKL-TRUTH. Parent CLOSE 2.
+Queries the LKL records from CLOSE 19. Voice lookup path is phoneme-match against the item list (not LLM inference) per KIT-004. Served on the LAN; MicroTouch may answer from a local cache (CLOSE 31) to hit the latency target. CROSS-REF: overlaps KIT-004 (LKL query interface) — reconcile in debate. Part of BUNDLE-LKL-TRUTH. Parent [[SPEC:PROD-02]].
 
 **Required for Release:**  
 YES
@@ -227,13 +227,13 @@ The system shall publish each accepted LKL change to wall displays, voice cache,
 Driven by one event, never direct cross-writes that drift.
 
 **Inputs:**  
-The committed LKL record (URS-LKL-002) + the event envelope (correlation/provenance) per URS-EVENT-001.
+The committed LKL record ([[SPEC:URS-LKL-002]]) + the event envelope (correlation/provenance) per [[SPEC:URS-EVENT-001]].
 
 **Outputs:**  
 Exactly one correlated location-change event per committed LKL write, consumed idempotently by displays/voice-cache/inventory/shopping/labels.
 
 **Trigger:**  
-An LKL write commits (URS-LKL-002).
+An LKL write commits ([[SPEC:URS-LKL-002]]).
 
 **Invariants:**  
 commit-then-emit ordering; exactly one correlated event per successful write; idempotent consumption on replay; every event traces to its originating LKL write.
@@ -254,7 +254,7 @@ Integration test against event bus and consumer fixtures.
 Keep the subscribed-consumer list + idempotency keys current as surfaces are added; verify ordering after any LKL write-path change.
 
 **Dependency Notes:**  
-Emitted through EXCEPT 2 (Event Bus, Spec Drafted) after the LKL write commits (CLOSE 19). Same commit-then-emit pattern as CLOSE 12 / EXCEPT 4/EXCEPT 5. Consumers: wall displays (DISPLAY 1/SSB), voice/Alexa cache (ALC), inventory (URS-INV/CLOSE 5), shopping (SHOP 11), labels (LABEL 1/URS-LABEL). Part of BUNDLE-LKL-TRUTH. Parent CLOSE 2.
+Emitted through EXCEPT 2 (Event Bus, Spec Drafted) after the LKL write commits (CLOSE 19). Same commit-then-emit pattern as CLOSE 12 / EXCEPT 4/EXCEPT 5. Consumers: wall displays (DISPLAY 1/SSB), voice/Alexa cache (ALC), inventory (URS-INV/CLOSE 5), shopping ([[SPEC:PROD-05-V2]]), labels (LABEL 1/URS-LABEL). Part of BUNDLE-LKL-TRUTH. Parent [[SPEC:PROD-02]].
 
 **Required for Release:**  
 YES
@@ -287,7 +287,7 @@ Turn 'where is the thing?' from a person-to-person interruption into an instant,
 The single biggest day-to-day time sink and stress source in the kitchen: not knowing where something is, and the interruptions/hunting that follow.
 
 **Out of Scope:**  
-Inventory quantity/lot lineage (URS-INV family / PROD-36) — LKL is 'where is it', inventory is 'how much/what lot'. Labels (URS-LABEL). These consume LKL but are separate specs.
+Inventory quantity/lot lineage (URS-INV family / [[SPEC:PROD-36]]) — LKL is 'where is it', inventory is 'how much/what lot'. Labels (URS-LABEL). These consume LKL but are separate specs.
 
 **Acceptance Criteria:**  
 This is a package row (Record Type: Spec Package) — its acceptance criteria is the aggregate of its 4 child atomic requirements passing independently AND working correctly together end-to-end:
@@ -309,7 +309,7 @@ SILENT FAILURE:
 1) End-to-end integration test: full lifecycle from blocked-close through published-event, using real data, not mocked child components. 2) Performance test: p95 lookup latency under simulated event-rush load. 3) Voice-lookup fail-closed test: near-miss pronunciation returns no match rather than a guessed one. 4) Regression suite: run all 4 child rows' (CLOSE 18/19/20/21) own acceptance tests as a precondition gate before running this package's end-to-end test. 5) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Dependency Notes:**  
-Parent/anchor CLOSE 2.
+Parent/anchor [[SPEC:PROD-02]].
 
 **Required for Release:**  
 YES

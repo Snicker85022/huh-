@@ -145,7 +145,7 @@ SILENT FAILURE:
 6. UFW being active is not sufficient if a specific rule still permits a wider CIDR than intended — verify each individual rule's scope, not just the overall active/inactive state.
 
 **Verification Method:**  
-1) UFW status audit: confirm active with default-deny inbound. 2) Per-rule review: enumerate every allow rule, confirm each maps to a documented necessary service and correct scope (LAN-only vs. any). 3) Regression check: re-run this audit after any future config change as a documented, repeatable process (script or checklist), not ad hoc. 4) External + internal scan cross-check against SEC-002's port scan. 5) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
+1) UFW status audit: confirm active with default-deny inbound. 2) Per-rule review: enumerate every allow rule, confirm each maps to a documented necessary service and correct scope (LAN-only vs. any). 3) Regression check: re-run this audit after any future config change as a documented, repeatable process (script or checklist), not ad hoc. 4) External + internal scan cross-check against [[SPEC:SEC-002]]'s port scan. 5) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Required for Release:**  
 YES

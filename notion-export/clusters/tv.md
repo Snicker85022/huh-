@@ -199,7 +199,7 @@ OVERLAP: same alert conditions (allergen/departure/timer) as ALEXA 4, both may f
 1. [AUTO] Latency: trigger allergen flag → TTS fires ≤10s. Evidence: log timestamp.
 2. [AUTO] Coverage: allergen population fires every time; departure countdown fires at configured time. Evidence: test log.
 3. [NICK] Live: Sandra hears the alert at her primary work position under normal kitchen ambient noise. Evidence: observation log.
-4. [NICK] Overlap: confirm TTS and Alexa (ALC-004) both firing on the Insignia is not a conflict. Evidence: observation log.
+4. [NICK] Overlap: confirm TTS and Alexa ([[SPEC:ALC-004]]) both firing on the Insignia is not a conflict. Evidence: observation log.
 
 **Required for Release:**  
 NO
@@ -256,7 +256,7 @@ Need: TV browser watched + auto-relaunched on crash/background; health (CPU/mem/
 TV watchdog + Chrome auto-relaunch: a lightweight sideloaded APK monitors Chrome's process state every 30s and relaunches it to the last known URL if crashed or backgrounded. Reports TV health (CPU, memory, Chrome state, current URL) to N100 every 60s for viewing without touching the TVs.
 
 **Failure Behavior:**  
-Fallback: manual Chrome relaunch via ADB when TV-002 alerts.
+Fallback: manual Chrome relaunch via ADB when [[SPEC:TV-002]] alerts.
 
 **Acceptance Criteria:**  
 Chrome crash on any TV triggers auto-relaunch within 45s; health reports visible in NocoDB with TV name/CPU/memory/state/URL/timestamp; APK survives TV reboot
@@ -289,7 +289,7 @@ Need: TV voice commands resolve locally on LAN <1s (fallback to cloud if N100 un
 Google Assistant Local Fulfillment: N100 registers as a local smart home fulfillment endpoint so voice commands to the TVs resolve directly on the LAN (<1s) instead of round-tripping to Google's cloud, with automatic fallback to cloud Routines (DISPLAY 16) if N100 is unreachable. Works without internet on LAN.
 
 **Failure Behavior:**  
-Fallback: Google Home cloud Routines only (TV-003, 2-4s, internet-dependent).
+Fallback: Google Home cloud Routines only ([[SPEC:TV-003]], 2-4s, internet-dependent).
 
 **Acceptance Criteria:**  
 NORMAL:
@@ -326,13 +326,13 @@ Atomic Requirement
 Event Execution
 
 **User Requirement Statement:**  
-Need: TV dashboards as PWAs with local state caching — show last-known state during brief N100 outage instead of blank, auto-reconnect on recovery. Replaces need for TV-007 watchdog APK.
+Need: TV dashboards as PWAs with local state caching — show last-known state during brief N100 outage instead of blank, auto-reconnect on recovery. Replaces need for [[SPEC:TV-007]] watchdog APK.
 
 **Functional Requirement Specification:**  
 TV dashboard PWA via self-owned domain: all three TV dashboards served as Progressive Web Apps in full-screen kiosk mode with local state caching (shows last-known state instead of a blank screen during an N100 outage), WebSocket push per INFRA 18, and automatic reconnection — replacing the need for the separate DISPLAY 18 watchdog APK, since the PWA handles its own resilience.
 
 **Failure Behavior:**  
-Fallback: ADB-launched Chrome tab per TV-001 (functional but no offline cache/PWA resilience).
+Fallback: ADB-launched Chrome tab per [[SPEC:TV-001]] (functional but no offline cache/PWA resilience).
 
 **Acceptance Criteria:**  
 NORMAL:

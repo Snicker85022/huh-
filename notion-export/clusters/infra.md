@@ -30,14 +30,14 @@ EDGE:
 3. An OS update/patch cycle doesn't silently change graphics driver behavior in a way that breaks anything dependent on it (if applicable — flag for recon if graphics dependency exists beyond display output).
 
 NEGATIVE:
-4. A fresh install/rebuild (e.g. during a DR drill, OPS-003) reproduces this exact baseline reliably from documented steps, not tribal knowledge.
+4. A fresh install/rebuild (e.g. during a DR drill, [[SPEC:OPS-003]]) reproduces this exact baseline reliably from documented steps, not tribal knowledge.
 
 SILENT FAILURE:
 5. LAN address 'drifting' due to a DHCP reservation being lost (router reset, misconfiguration) would silently break every hardcoded-IP reference across the system — verify addressing is actually static/reserved at the network level, not just 'usually comes up the same' by DHCP luck.
 6. Intel graphics support degrading after a kernel/driver update is a real regression risk — verify there's a smoke test for graphics functionality after any OS-level update, not assumed permanently fine.
 
 **Verification Method:**  
-1) Baseline verification: confirm Ubuntu 22.04 LTS, static LAN address, graphics support all present and correct. 2) Reboot test: multiple reboot cycles, confirm the N100 returns to the exact same LAN address every time. 3) Rebuild-reproducibility test: as part of a DR drill (OPS-003), confirm this baseline is reproducible from documentation alone. 4) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
+1) Baseline verification: confirm Ubuntu 22.04 LTS, static LAN address, graphics support all present and correct. 2) Reboot test: multiple reboot cycles, confirm the N100 returns to the exact same LAN address every time. 3) Rebuild-reproducibility test: as part of a DR drill ([[SPEC:OPS-003]]), confirm this baseline is reproducible from documentation alone. 4) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Required for Release:**  
 YES
@@ -153,7 +153,7 @@ NORMAL:
 
 EDGE:
 2. Throttle called while already throttled is a no-op that doesn't over-throttle or error; restore called while already normal is a no-op that doesn't error.
-3. Throttle/restore correctly interacts with the overnight-analysis CPU-throttle window (W6/CRM 5) — verify the actual consumer of this control behaves correctly, not just the control mechanism in isolation.
+3. Throttle/restore correctly interacts with the overnight-analysis CPU-throttle window ([[SPEC:W6]]/CRM 5) — verify the actual consumer of this control behaves correctly, not just the control mechanism in isolation.
 
 NEGATIVE:
 4. A throttle command issued but never followed by a restore command (bug, crash mid-window) leaves the system permanently throttled — verify there's a safety timeout or a way to detect and recover from a stuck-throttled state.
@@ -163,7 +163,7 @@ SILENT FAILURE:
 6. Concurrent throttle/restore calls (race condition, e.g. two different callers) must resolve to a defined, correct end state, not an undefined race.
 
 **Verification Method:**  
-1) Idempotency tests: repeated throttle calls, repeated restore calls, confirm stable end state both times. 2) Stuck-state test: simulate a crash between throttle and restore, confirm a timeout/recovery mechanism returns the system to normal. 3) Real-consumer integration test: run the actual overnight-analysis throttle window (W6) and confirm real-time voice-path performance is unaffected outside that window. 4) Verified-restore test: confirm restore is checked against actual measured CPU behavior, not just command-success. 5) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
+1) Idempotency tests: repeated throttle calls, repeated restore calls, confirm stable end state both times. 2) Stuck-state test: simulate a crash between throttle and restore, confirm a timeout/recovery mechanism returns the system to normal. 3) Real-consumer integration test: run the actual overnight-analysis throttle window ([[SPEC:W6]]) and confirm real-time voice-path performance is unaffected outside that window. 4) Verified-restore test: confirm restore is checked against actual measured CPU behavior, not just command-success. 5) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Required for Release:**  
 YES
@@ -201,10 +201,10 @@ NEGATIVE:
 
 SILENT FAILURE:
 4. This row's own Design Spec was flagged as still needing authoring (per earlier recon) — verify the actual Tailscale ACL/reverse-proxy config has been documented to match what's live, not left as an undocumented tribal-knowledge setup.
-5. A reverse-proxy misconfiguration exposing an internal-only service (e.g. the health dashboard) beyond its intended scope must be caught by the same audit as SEC-004, not treated as a separate unchecked surface.
+5. A reverse-proxy misconfiguration exposing an internal-only service (e.g. the health dashboard) beyond its intended scope must be caught by the same audit as [[SPEC:SEC-004]], not treated as a separate unchecked surface.
 
 **Verification Method:**  
-1) Access-surface audit: enumerate every service reachable via the tunnel, confirm each is on the approved list and no more. 2) Config documentation check: confirm the actual live Tailscale ACL / reverse-proxy rules are documented, closing the previously-flagged authoring gap. 3) Cross-check against SEC-004's firewall audit for consistency. 4) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
+1) Access-surface audit: enumerate every service reachable via the tunnel, confirm each is on the approved list and no more. 2) Config documentation check: confirm the actual live Tailscale ACL / reverse-proxy rules are documented, closing the previously-flagged authoring gap. 3) Cross-check against [[SPEC:SEC-004]]'s firewall audit for consistency. 4) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Open Questions:**  
 Design Spec (actual Tailscale config/ACLs) still needs authoring.

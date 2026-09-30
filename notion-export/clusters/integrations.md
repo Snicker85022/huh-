@@ -16,7 +16,7 @@ System Infrastructure
 Need: Square wired for catalog sync, invoice creation, and payment webhooks — Square stays source of truth without manual re-entry.
 
 **Functional Requirement Specification:**  
-Square API: catalog sync (CATALOG 10), invoice creation (INVOICE 13), payment webhooks (W8) — all three flows end-to-end, rate limits respected.
+Square API: catalog sync ([[SPEC:SW-011]]), invoice creation ([[SPEC:PROD-07]]), payment webhooks (W8) — all three flows end-to-end, rate limits respected.
 
 **Failure Behavior:**  
 Fallback: manual Square console.
@@ -25,7 +25,7 @@ Fallback: manual Square console.
 All 3 flows e2e; rate limits respected
 
 **Verification Method:**
-1. [AUTO] Sync: catalog sync (W9) completes end-to-end. Evidence: log + row count.
+1. [AUTO] Sync: catalog sync ([[SPEC:W9]]) completes end-to-end. Evidence: log + row count.
 2. [AUTO] Invoice: invoice creation via Square API succeeds. Evidence: test invoice.
 3. [AUTO] Webhook: payment webhook triggers the deposit flow. Evidence: test event.
 4. [AUTO] Rate limits: no 429s under normal volume. Evidence: log.
@@ -49,7 +49,7 @@ System Infrastructure
 Need: SMS delivery for hot alerts, briefs, digests, reminders — fast, cheap, no dependency on checking email/dashboard.
 
 **Functional Requirement Specification:**  
-Twilio SMS integration: hot alerts (W2), briefs (W3), digest (W6), reminders (W13). SMS delivered under 60s to the correct recipient, under 300 chars, under $0.01/msg.
+Twilio SMS integration: hot alerts ([[SPEC:W2]]), briefs ([[SPEC:W3]]), digest ([[SPEC:W6]]), reminders ([[SPEC:W13]]). SMS delivered under 60s to the correct recipient, under 300 chars, under $0.01/msg.
 
 **Failure Behavior:**  
 Fallback: email fallback; manual call for urgent items.
@@ -58,7 +58,7 @@ Fallback: email fallback; manual call for urgent items.
 SMS <60s; correct recipient; <300 chars; <$0.01/msg
 
 **Open Questions:**  
-TOOL CHOICE OPEN: Twilio requires install/registration on Nick's and Sandra's phones. Alternatives to evaluate: carrier SMS gateway, push instead of SMS, ntfy (already proven, PROD-25).
+TOOL CHOICE OPEN: Twilio requires install/registration on Nick's and Sandra's phones. Alternatives to evaluate: carrier SMS gateway, push instead of SMS, ntfy (already proven, [[SPEC:PROD-25]]).
 
 **Verification Method:**
 1. [AUTO] Latency: SMS delivered <60s. Evidence: timestamp log.
@@ -85,7 +85,7 @@ System Infrastructure
 Need: an AI API (cheapest capable/tested for the task) for CRM sessions, complex voice-command reasoning, and BOM substitution — cases too nuanced for deterministic logic/small models, predictable cost.
 
 **Functional Requirement Specification:**  
-AI API integration (cheapest capable/tested model per task type): CRM sessions (W4), voice reasoning Path C (W14), on-the-fly BOM substitution/unrecognized item (KIT-015); JSON extraction on 'done'.
+AI API integration (cheapest capable/tested model per task type): CRM sessions ([[SPEC:W4]]), voice reasoning Path C ([[SPEC:W14]]), on-the-fly BOM substitution/unrecognized item ([[SPEC:KIT-015]]); JSON extraction on 'done'.
 
 **Failure Behavior:**  
 Fallback: a backup AI provider for CRM and Path C.
@@ -117,7 +117,7 @@ System Infrastructure
 Need: fast, accurate voice-to-text transcription for hands-free CRM notes.
 
 **Functional Requirement Specification:**  
-Whisper API integration: voice-to-text for CRM (W5); under 1s latency, roughly $0.06/10min.
+Whisper API integration: voice-to-text for CRM ([[SPEC:W5]]); under 1s latency, roughly $0.06/10min.
 
 **Failure Behavior:**  
 Fallback: "Type instead"; Web Speech API.
@@ -149,7 +149,7 @@ System Infrastructure
 Need: voice commands processed on-device via MicroTouch NPU — audio never leaves the building.
 
 **Functional Requirement Specification:**  
-On-device voice inference on the MicroTouch NPU for W14 — audio never leaves the device. (Note: D-051 overturned the original Sherpa-ONNX assumption; implementation path is now TFLite + NeuroPilot/NNAPI via the confirmed MT8390 NPU access, capability target unchanged.)
+On-device voice inference on the MicroTouch NPU for [[SPEC:W14]] — audio never leaves the device. (Note: D-051 overturned the original Sherpa-ONNX assumption; implementation path is now TFLite + NeuroPilot/NNAPI via the confirmed MT8390 NPU access, capability target unchanged.)
 
 **Failure Behavior:**  
 Fallback: on-device inference on WI-6 (LAN audio).
@@ -181,7 +181,7 @@ System Infrastructure
 Need: Google Calendar auto-sync and Phoenix-scoped address autocomplete on invoice form — no manual re-entry/full-address typing.
 
 **Functional Requirement Specification:**  
-Google Calendar + Places API integration: calendar sync (W10) every 30min, address autocomplete on the Invoice Form returning Phoenix-area results.
+Google Calendar + Places API integration: calendar sync ([[SPEC:W10]]) every 30min, address autocomplete on the Invoice Form returning Phoenix-area results.
 
 **Failure Behavior:**  
 Fallback: manual calendar; manual address entry.

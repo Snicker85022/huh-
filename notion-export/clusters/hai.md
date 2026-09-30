@@ -16,7 +16,7 @@ Production Core
 As Sandra, I need a single-tap override with just my PIN — no reason field required — on every system recommendation, so that I can act on my own judgment quickly without the system demanding I justify myself.
 
 **Functional Requirement Specification:**  
-Sandra override path: every system recommendation presented to Sandra must include a single-tap override. Override requires Sandra's PIN (from CLOSE 3 PIN table) — tap override, enter PIN, confirm. Zero explanation or reason field. PIN is authentication, not justification. Override logged automatically for retrospective analysis by Nick only.
+Sandra override path: every system recommendation presented to Sandra must include a single-tap override. Override requires Sandra's PIN (from [[SPEC:URS-KIT-METHOD-003]] PIN table) — tap override, enter PIN, confirm. Zero explanation or reason field. PIN is authentication, not justification. Override logged automatically for retrospective analysis by Nick only.
 
 **Failure Behavior:**  
 Fallback: Sandra verbally tells Nick; Nick manually applies.
@@ -167,7 +167,7 @@ Production Core
 Need: clear authority order when sources conflict (NocoDB confirmation > vendor email/text > verbal), with conflicting sources and winner named.
 
 **Functional Requirement Specification:**  
-Conflict authority hierarchy: when two information sources contradict, NocoDB written confirmation wins over vendor email/text over verbal confirmation. Sandra is notified with the conflicting sources named and the winning authority identified; can override via CLOSE 32.
+Conflict authority hierarchy: when two information sources contradict, NocoDB written confirmation wins over vendor email/text over verbal confirmation. Sandra is notified with the conflicting sources named and the winning authority identified; can override via [[SPEC:HAI-005]].
 
 **Failure Behavior:**  
 Fallback: Nick manually adjudicates conflicts; Sandra calls Nick.

@@ -28,22 +28,22 @@ Turn 'is the system OK?' from a multi-command SSH investigation into a single gl
 systemctl service states; apcaccess UPS telemetry; /sys thermal + psutil CPU/RAM/disk; ping/ADB presence of the display fleet; llama.cpp /health; printer/CUPS status; backup file mtimes.
 
 **Outputs:**  
-Rendered health dashboard (HTML, 30s auto-refresh) on LAN + Tailscale; the same signals available for URS-HEALTH-005 staleness logic and for alerting.
+Rendered health dashboard (HTML, 30s auto-refresh) on LAN + Tailscale; the same signals available for [[SPEC:URS-HEALTH-005]] staleness logic and for alerting.
 
 **Trigger:**  
 Continuous — page load + 30s poll loop while the service runs.
 
 **Invariants:**  
-Every configured signal is always shown (present-with-state), never silently omitted; an unreadable signal is degraded/unknown, never healthy (URS-HEALTH-005).
+Every configured signal is always shown (present-with-state), never silently omitted; an unreadable signal is degraded/unknown, never healthy ([[SPEC:URS-HEALTH-005]]).
 
 **Failure Behavior:**  
-A failed signal read renders that tile as degraded/unknown with its last-known timestamp; the dashboard process itself is systemd-managed and restarts on failure (URS-HEALTH-004).
+A failed signal read renders that tile as degraded/unknown with its last-known timestamp; the dashboard process itself is systemd-managed and restarts on failure ([[SPEC:URS-HEALTH-004]]).
 
 **Failure Mode Addressed:**  
 Silent infrastructure failure that stays invisible until it hurts an event (the 08-21 dnsmasq outage that looked 'active' the whole time).
 
 **Out of Scope:**  
-PROD-25/ntfy (alerting).
+[[SPEC:PROD-25]]/ntfy (alerting).
 
 **Acceptance Criteria:**  
 Every configured signal appears with timestamp and state; unavailable signals are marked unknown rather than healthy.
@@ -94,7 +94,7 @@ On-demand (crew opens the page); always-live service.
 Reachable only via LAN or authenticated Tailscale — never exposed to the public internet (SEC alignment); the page does not depend on the main operational UI being up.
 
 **Failure Behavior:**  
-systemd-managed, restarts on failure (URS-HEALTH-004). If the N100 itself is down, this path is unavailable by definition — the emergency PRINT path (URS-HEALTH-003) is the deeper fallback.
+systemd-managed, restarts on failure ([[SPEC:URS-HEALTH-004]]). If the N100 itself is down, this path is unavailable by definition — the emergency PRINT path ([[SPEC:URS-HEALTH-003]]) is the deeper fallback.
 
 **Failure Mode Addressed:**  
 Total loss of operating info when the primary screens/UI degrade; being locked out of ops data during an incident.
@@ -160,7 +160,7 @@ A printed 80mm thermal packout/ops-truth strip with dual QR codes, auto-cut, on 
 apcupsd ONBATTERY hook fires on power loss (after 30s TIMELEFT stabilization).
 
 **Invariants:**  
-Prints via StarTSPImage direct-USB path only; fires automatically on ONBATTERY with no human action; UPS must hold the N100 + printer long enough to complete the job (HW-008).
+Prints via StarTSPImage direct-USB path only; fires automatically on ONBATTERY with no human action; UPS must hold the N100 + printer long enough to complete the job ([[SPEC:HW-008]]).
 
 **Failure Behavior:**  
 If the DB read fails, print last-known/essential static content rather than nothing. Auto-cut confirms completion.
@@ -183,11 +183,11 @@ NEGATIVE:
 4. A print job that fails partway (paper jam, mechanical fault) doesn't produce a silently truncated packet presented as complete — needs a way to distinguish a genuinely complete print from a failed one, even without network to report the failure.
 
 SILENT FAILURE:
-5. See HEALTH 2 (PROD-11) — this row and that one describe the same real behavior; verify consistency and treat their acceptance criteria and test execution as one shared verification effort, not duplicated separately with potential drift.
+5. See HEALTH 2 ([[SPEC:PROD-11]]) — this row and that one describe the same real behavior; verify consistency and treat their acceptance criteria and test execution as one shared verification effort, not duplicated separately with potential drift.
 6. Readability under real degraded conditions (thermal paper contrast, small text at 576px width) must be confirmed by an actual person reading a real printed sample, not assumed from the raw spec numbers.
 
 **Verification Method:**  
-1) Shared verification with HEALTH 2 (PROD-11) — same real power-down test, same printed artifact, evaluated against both rows' criteria together. 2) Readability check: Nick/Sandra physically read a real printed packet under kitchen lighting, confirm legibility. 3) Failure-mode test: interrupt the print job mid-print (simulate jam), confirm the failure is distinguishable from a complete print. 4) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
+1) Shared verification with HEALTH 2 ([[SPEC:PROD-11]]) — same real power-down test, same printed artifact, evaluated against both rows' criteria together. 2) Readability check: Nick/Sandra physically read a real printed packet under kitchen lighting, confirm legibility. 3) Failure-mode test: interrupt the print job mid-print (simulate jam), confirm the failure is distinguishable from a complete print. 4) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Maintenance Requirements:**  
 Keep the packout/ops-truth template current; verify the QR endpoints resolve (an earlier V1.0-Project-Plan item flagged QR codes returning 'site can't be reached' at ~67% — confirm resolved against the 07-07 working state); re-run a live power-down drill after any printer/UPS change.

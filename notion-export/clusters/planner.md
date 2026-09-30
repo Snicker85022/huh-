@@ -2,7 +2,7 @@
 _Exported: 2026-09-24 | 1 Spec Package + 8 Atomic Requirements_
 _Source: Notion Master URS & Specification Registry_
 
-This cluster supersedes the prior fragmented URS-PLAN-PKG draft. It specifies the seating/layout/room-intelligence layer of the holistic Taza Client/Planner Portal — a living, shared command center for events. Decision-tree cost tracking, referral QR codes, vendor SLA monitoring, and post-event feedback are part of the same portal but specified elsewhere.
+This cluster supersedes the prior fragmented [[SPEC:URS-PLAN-PKG]] draft. It specifies the seating/layout/room-intelligence layer of the holistic Taza Client/Planner Portal — a living, shared command center for events. Decision-tree cost tracking, referral QR codes, vendor SLA monitoring, and post-event feedback are part of the same portal but specified elsewhere.
 
 ---
 
@@ -29,14 +29,14 @@ The system shall provide a real-time collaborative seating/layout editor for eve
 
 **Functional Requirement Specification (package scope):**
 The Planner Portal Seating/Layout layer shall implement:
-1. A public-by-default fork model for free-tier events, with private-by-default access for paid-tier events (URS-PLAN-001).
-2. Per-event access control via signed tokens, with role-based grants (staff/planner/customer/guest) and guest attribution (URS-PLAN-002).
-3. Real-time collaborative layout editing over WebSocket, with last-write-wins conflict resolution per table/seat and live presence cursors (URS-PLAN-003).
-4. A draft/locked workflow that auto-locks events 72h before start for food-service-affecting changes, with staff-only override capability (URS-PLAN-004).
-5. Three room-capture paths (AR scan, AI-guided measurement Q&A, PDF/drawing upload) converging on a shared capacity/clearance check (URS-PLAN-005).
-6. Per-event change log with undo, revert, and batched staff notifications (URS-PLAN-006).
-7. Offline-tolerant client via Cloudflare Pages + service worker, with queued local edits and reconcile-on-reconnect (URS-PLAN-007).
-8. Tiered billing enforcement — free tier unlimited public events; paid tier flat monthly base + bundled private events + per-event overage (URS-PLAN-008).
+1. A public-by-default fork model for free-tier events, with private-by-default access for paid-tier events ([[SPEC:URS-PLAN-001]]).
+2. Per-event access control via signed tokens, with role-based grants (staff/planner/customer/guest) and guest attribution ([[SPEC:URS-PLAN-002]]).
+3. Real-time collaborative layout editing over WebSocket, with last-write-wins conflict resolution per table/seat and live presence cursors ([[SPEC:URS-PLAN-003]]).
+4. A draft/locked workflow that auto-locks events 72h before start for food-service-affecting changes, with staff-only override capability ([[SPEC:URS-PLAN-004]]).
+5. Three room-capture paths (AR scan, AI-guided measurement Q&A, PDF/drawing upload) converging on a shared capacity/clearance check ([[SPEC:URS-PLAN-005]]).
+6. Per-event change log with undo, revert, and batched staff notifications ([[SPEC:URS-PLAN-006]]).
+7. Offline-tolerant client via Cloudflare Pages + service worker, with queued local edits and reconcile-on-reconnect ([[SPEC:URS-PLAN-007]]).
+8. Tiered billing enforcement — free tier unlimited public events; paid tier flat monthly base + bundled private events + per-event overage ([[SPEC:URS-PLAN-008]]).
 
 **Intent / User Need:**
 Turn proprietary technique transmission from a lecture or a manual into something the crew experience through the card game itself — so the Taza standard is absorbed in the flow of work, not in a training room.
@@ -54,9 +54,9 @@ All 8 child requirements pass their individual Acceptance Criteria. End-to-end t
 End-to-end black-box test covering all 8 FRs in sequence; plus adversarial tests (clock-skew, network-loss mid-edit, concurrent edits to same table, stale service-worker version, PDF-upload-of-menu-instead-of-floorplan, billing-service-unreachable) per each child requirement's verification method.
 
 **Open Questions:**
-1. Does the 72-hour lock (URS-PLAN-004) apply to the whole layout or only food-service-relevant fields (headcount, table count)?
-2. Pricing-model conflict (URS-PLAN-008) — bundle-plus-overage vs. older V2 $50/instance flat fee. Debate team must pick one, not merge both.
-3. If a planner is removed from an event (reassigned) while a customer they invited still has active Editor access — does the customer's access survive the planner's removal? Needs a decision per URS-PLAN-002.
+1. Does the 72-hour lock ([[SPEC:URS-PLAN-004]]) apply to the whole layout or only food-service-relevant fields (headcount, table count)?
+2. Pricing-model conflict ([[SPEC:URS-PLAN-008]]) — bundle-plus-overage vs. older V2 $50/instance flat fee. Debate team must pick one, not merge both.
+3. If a planner is removed from an event (reassigned) while a customer they invited still has active Editor access — does the customer's access survive the planner's removal? Needs a decision per [[SPEC:URS-PLAN-002]].
 4. Rectangular/banquet table clearance rule — currently an interim default (72" edge-to-edge); needs a real rule before V1.x ships.
 5. Exact monthly base price, bundle size, and overage fee — needs real Cloudflare usage-cost modeling once live.
 
@@ -368,7 +368,7 @@ NORMAL:
 
 EDGE:
 5. Undo after a session has been closed and re-opened: the undo stack persists across sessions (the change log is the source of truth; "undo" on reconnect uses the latest entry from the log that hasn't been explicitly reverted, not a client-side-only stack).
-6. Revert to a point that is still within the locked period (URS-PLAN-004) — reverting food-service-relevant fields while locked requires an override just like a direct edit would.
+6. Revert to a point that is still within the locked period ([[SPEC:URS-PLAN-004]]) — reverting food-service-relevant fields while locked requires an override just like a direct edit would.
 7. Two revert operations in rapid succession (someone clicks "revert to point A" then immediately "revert to point B" before the first finishes) are queued and applied sequentially, not raced.
 
 NEGATIVE:
@@ -403,7 +403,7 @@ Event Planning — Planner Portal
 As a planner visiting a rural venue with one bar of signal, I need the app to open instantly and let me keep working on the layout even with no internet. When I get back online, my changes should sync up without losing anything or silently overwriting someone else's work.
 
 **Functional Requirement Specification:**
-The app shell shall load from Cloudflare Pages' edge cache and be precached by a service worker after first load, so it opens instantly and remains usable with zero connectivity. Offline, the user shall be able to edit solo with changes queued locally; on reconnect, queued changes shall sync and the client shall reconcile to full current state under the same last-write-wins rule as URS-PLAN-003. A persistent, honest UI indicator shall distinguish "Live" from "Offline — changes will sync," and any conflict discovered on reconnect shall surface a visible notice, never a silent overwrite.
+The app shell shall load from Cloudflare Pages' edge cache and be precached by a service worker after first load, so it opens instantly and remains usable with zero connectivity. Offline, the user shall be able to edit solo with changes queued locally; on reconnect, queued changes shall sync and the client shall reconcile to full current state under the same last-write-wins rule as [[SPEC:URS-PLAN-003]]. A persistent, honest UI indicator shall distinguish "Live" from "Offline — changes will sync," and any conflict discovered on reconnect shall surface a visible notice, never a silent overwrite.
 
 **Failure Behavior:**
 Fallback: app requires connectivity (degraded — offline editing lost, but app shell still loads from cache for instant-on experience). If service worker cache is invalidated while the user is offline, show a "New version available — reconnect to update" notice and continue with the cached version.
@@ -417,7 +417,7 @@ NORMAL:
 
 EDGE:
 5. User is offline long enough that the app shell itself has a newer version available — the service worker cache-invalidation strategy must not strand the user on a broken stale version once they reconnect. On reconnect, the new version is fetched and presented with a "Updated — reload to see latest features" notice.
-6. User makes edits offline on an event that was locked (URS-PLAN-004) during their offline period — on reconnect, the edits are rejected with a clear explanation ("This event was locked while you were offline. Your changes have been saved locally but not applied") rather than silently failing sync.
+6. User makes edits offline on an event that was locked ([[SPEC:URS-PLAN-004]]) during their offline period — on reconnect, the edits are rejected with a clear explanation ("This event was locked while you were offline. Your changes have been saved locally but not applied") rather than silently failing sync.
 7. The offline queue grows very large (500+ edits over a long offline period) — verify it syncs within a reasonable time on reconnect (e.g. all edits processed within 30s on a typical connection), or if not, shows a progress indicator.
 
 NEGATIVE:
@@ -487,7 +487,7 @@ Billing enforcement lives in the Worker at event-creation/visibility-change time
 2. Exact monthly base price, bundle size, and overage fee — need real Cloudflare usage-cost modeling once live.
 
 **Required for Release:**
-YES — P1 priority (billing enforcement is P1; the access-control model (free public / paid private) from URS-PLAN-001 is P0 and can launch with manual billing enforcement in V1.x if the automated billing service is deferred)
+YES — P1 priority (billing enforcement is P1; the access-control model (free public / paid private) from [[SPEC:URS-PLAN-001]] is P0 and can launch with manual billing enforcement in V1.x if the automated billing service is deferred)
 
 ---
 
@@ -495,27 +495,27 @@ YES — P1 priority (billing enforcement is P1; the access-control model (free p
 
 ### BUNDLE-PLANNER-CORE (Cloudflare Edge Architecture)
 
-The backbone underlying URS-PLAN-001 through URS-PLAN-004, URS-PLAN-006, and URS-PLAN-007.
+The backbone underlying [[SPEC:URS-PLAN-001]] through [[SPEC:URS-PLAN-004]], [[SPEC:URS-PLAN-006]], and [[SPEC:URS-PLAN-007]].
 
 ```
 Customer / Planner phone
    │ (QR code or direct link)
    ▼
-Cloudflare Pages ─── app shell, edge-cached (URS-PLAN-007)
+Cloudflare Pages ─── app shell, edge-cached ([[SPEC:URS-PLAN-007]])
    │
    ▼
-Cloudflare Worker ── auth (URS-PLAN-002 tokens), billing checks (URS-PLAN-008), routing
+Cloudflare Worker ── auth ([[SPEC:URS-PLAN-002]] tokens), billing checks ([[SPEC:URS-PLAN-008]]), routing
    │
    ▼  WebSocket
-Durable Object (one per event) ── live layout state, presence, change log (URS-PLAN-003, URS-PLAN-004, URS-PLAN-006)
+Durable Object (one per event) ── live layout state, presence, change log ([[SPEC:URS-PLAN-003]], [[SPEC:URS-PLAN-004]], [[SPEC:URS-PLAN-006]])
 ```
 
 **Component responsibilities:**
-- **Durable Objects**: one per event, holding canonical live state while in draft. A fork (URS-PLAN-001) is a state snapshot copied into a new Durable Object under a new event ID.
-- **Worker**: enforces every access-token check (URS-PLAN-002), the 72-hour lock transition and override gate (URS-PLAN-004), and billing/bundle checks (URS-PLAN-008) before requests reach the Durable Object.
-- **Pages + service worker**: serves the app shell from the edge and precaches it client-side for offline use (URS-PLAN-007).
+- **Durable Objects**: one per event, holding canonical live state while in draft. A fork ([[SPEC:URS-PLAN-001]]) is a state snapshot copied into a new Durable Object under a new event ID.
+- **Worker**: enforces every access-token check ([[SPEC:URS-PLAN-002]]), the 72-hour lock transition and override gate ([[SPEC:URS-PLAN-004]]), and billing/bundle checks ([[SPEC:URS-PLAN-008]]) before requests reach the Durable Object.
+- **Pages + service worker**: serves the app shell from the edge and precaches it client-side for offline use ([[SPEC:URS-PLAN-007]]).
 
-### AI Room Intelligence (URS-PLAN-005)
+### AI Room Intelligence ([[SPEC:URS-PLAN-005]])
 
 Two AI-dependent capture paths, both routed through an AI Gateway sitting in front of the model:
 - **AI-guided measurement Q&A**: a conversational flow (not a static form) that asks the user targeted questions, feeding answers plus any photos into a vision-capable model to deduce room shape and floor area.
@@ -524,13 +524,13 @@ Two AI-dependent capture paths, both routed through an AI Gateway sitting in fro
 - **Clearance check**: a deterministic rule (not AI-driven) run against whatever room object either capture path (or the AR path) produces — keeps the safety-adjacent capacity math auditable and independent of model behavior.
 
 ### Storage & Sync
-- **R2**: stores uploaded room photos and PDF/drawing files (URS-PLAN-005), and any other user-uploaded media — zero egress fees make this cheap even at volume.
+- **R2**: stores uploaded room photos and PDF/drawing files ([[SPEC:URS-PLAN-005]]), and any other user-uploaded media — zero egress fees make this cheap even at volume.
 - **D1 / KV**: read-optimized copies of catalog data (table types, room presets) synced one-way from the canonical Postgres store on the N100 — fast edge reads without making Postgres the request path for every planner-app lookup.
 - **Durable-Object-to-Postgres sync**: on lock or periodic autosave, the Worker pushes a snapshot of an event's Durable Object state back to Postgres on the N100, which remains the canonical system of record for anything downstream (invoicing, reporting, the rest of the holistic portal).
 
 ### Notification & Billing Integration
-- **Staff notifications (URS-PLAN-006)**: routed through the existing N100 dashboard/notification path already in production use elsewhere in the stack — no new notification system needed.
-- **Billing (URS-PLAN-008)**: enforcement point lives in the Worker at event-creation/visibility-change time; the actual payment processor is not yet selected and is out of scope for this spec.
+- **Staff notifications ([[SPEC:URS-PLAN-006]])**: routed through the existing N100 dashboard/notification path already in production use elsewhere in the stack — no new notification system needed.
+- **Billing ([[SPEC:URS-PLAN-008]])**: enforcement point lives in the Worker at event-creation/visibility-change time; the actual payment processor is not yet selected and is out of scope for this spec.
 
 ---
 
@@ -538,8 +538,8 @@ Two AI-dependent capture paths, both routed through an AI Gateway sitting in fro
 
 | This Spec | Depends On | Nature |
 |-----------|-----------|--------|
-| URS-PLAN-005 AR path | WebXR API (browser) | Platform capability, not code dependency |
-| URS-PLAN-005 AI paths | AI Gateway on gflip | Production infrastructure |
+| [[SPEC:URS-PLAN-005]] AR path | WebXR API (browser) | Platform capability, not code dependency |
+| [[SPEC:URS-PLAN-005]] AI paths | AI Gateway on gflip | Production infrastructure |
 | BUNDLE-PLANNER-CORE | Cloudflare Workers, Durable Objects, Pages | Platform |
 | Storage & sync | R2, D1/KV, Postgres on N100 | Production infrastructure |
 | Staff notifications | N100 dashboard | Existing system |
@@ -549,23 +549,23 @@ Two AI-dependent capture paths, both routed through an AI Gateway sitting in fro
 
 ## Conflict Register
 
-1. **Pricing model (URS-PLAN-008)**: this spec's bundle-plus-overage model conflicts with the older V2 Client/Planner Portal's flat $50/plan/customer/instance (Module 7). Must be resolved in debate — do not merge both.
-2. **Lock scope (URS-PLAN-004)**: whole-layout lock vs. food-service-fields-only lock. Spec recommends whole-layout for V1.x.
-3. **Planner-removal access (URS-PLAN-002)**: does a removed planner's invited customers retain access? Two valid approaches — debate team decides.
-4. **Rectangular table clearance rule (URS-PLAN-005)**: interim 72" edge-to-edge default is not a real rule for rectangular geometry — needs definition before V1.x ships.
+1. **Pricing model ([[SPEC:URS-PLAN-008]])**: this spec's bundle-plus-overage model conflicts with the older V2 Client/Planner Portal's flat $50/plan/customer/instance (Module 7). Must be resolved in debate — do not merge both.
+2. **Lock scope ([[SPEC:URS-PLAN-004]])**: whole-layout lock vs. food-service-fields-only lock. Spec recommends whole-layout for V1.x.
+3. **Planner-removal access ([[SPEC:URS-PLAN-002]])**: does a removed planner's invited customers retain access? Two valid approaches — debate team decides.
+4. **Rectangular table clearance rule ([[SPEC:URS-PLAN-005]])**: interim 72" edge-to-edge default is not a real rule for rectangular geometry — needs definition before V1.x ships.
 
 ---
 
 ## Implementation Sequence (Recommended)
 
 **Phase 1 — Core (P0, ship first):**
-URS-PLAN-001 (Fork model), URS-PLAN-002 (Access control), URS-PLAN-003 (Real-time editing), URS-PLAN-007 (Offline client) — these form the spine. Without these, the app isn't fundamentally usable. Ship with manual billing enforcement and manual lock management.
+[[SPEC:URS-PLAN-001]] (Fork model), [[SPEC:URS-PLAN-002]] (Access control), [[SPEC:URS-PLAN-003]] (Real-time editing), [[SPEC:URS-PLAN-007]] (Offline client) — these form the spine. Without these, the app isn't fundamentally usable. Ship with manual billing enforcement and manual lock management.
 
 **Phase 2 — Intelligence (P0, ship next):**
-URS-PLAN-005 (Room capture + AI) — the technological moat. Can ship as soon as the AI Gateway integration is ready.
+[[SPEC:URS-PLAN-005]] (Room capture + AI) — the technological moat. Can ship as soon as the AI Gateway integration is ready.
 
 **Phase 3 — Governance (P0/P1):**
-URS-PLAN-004 (Lock workflow), URS-PLAN-006 (Change tracking + notifications) — operational rigor.
+[[SPEC:URS-PLAN-004]] (Lock workflow), [[SPEC:URS-PLAN-006]] (Change tracking + notifications) — operational rigor.
 
 **Phase 4 — Monetization (P1):**
-URS-PLAN-008 (Billing enforcement) — automated payments can follow manual billing for initial launch.
+[[SPEC:URS-PLAN-008]] (Billing enforcement) — automated payments can follow manual billing for initial launch.

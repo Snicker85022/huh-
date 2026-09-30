@@ -22,7 +22,7 @@ The kitchen execution surface shall represent work using hand/not-started, table
 The kitchen execution surface shall represent every task in one of three explicit states — hand (not-started), table (in-progress), done — laid out with a clear top-to-bottom flow, and shall permit only valid state transitions. The current state of any task shall be unambiguous on MT1, MT2, and z33 simultaneously.
 
 **Inputs:**  
-Task records + their current state from the task engine (PROD-01); crew interaction (tap/PIN) on the kanban surface.
+Task records + their current state from the task engine ([[SPEC:PROD-01]]); crew interaction (tap/PIN) on the kanban surface.
 
 **Outputs:**  
 A rendered three-column (hand/table/done) board with unambiguous per-task state on all surfaces.
@@ -61,7 +61,7 @@ SILENT FAILURE:
 Keep the three-state model and its transition rules identical across MT1/MT2/z33 renderers; re-test multi-device consistency after any kanban.html change.
 
 **Dependency Notes:**  
-Rendered by the deployed kanban surface (server_kanban.py :9003, kanban.html on MT1/MT2/z33). State transitions are driven by the task engine (CLOSE 34, Built-unverified). Close semantics are governed by CLOSE 11 + CLOSE 1 (Canonical Task Close Contract, Spec Drafted).
+Rendered by the deployed kanban surface (server_kanban.py :9003, kanban.html on MT1/MT2/z33). State transitions are driven by the task engine ([[SPEC:PROD-19]], Built-unverified). Close semantics are governed by CLOSE 11 + [[SPEC:PROD-38]] (Canonical Task Close Contract, Spec Drafted).
 
 **Required for Release:**  
 YES
@@ -94,7 +94,7 @@ Captured data seeds LKL, inventory, and competency tracking downstream.
 Crew PIN; system timestamp; completed quantity entered by crew; required LKL (bin/location) where the task type demands it.
 
 **Outputs:**  
-A committed task-close record (PIN, timestamp, qty, LKL) written once; a brief on-screen confirmation; the trigger for the downstream event (URS-KANBAN-005).
+A committed task-close record (PIN, timestamp, qty, LKL) written once; a brief on-screen confirmation; the trigger for the downstream event ([[SPEC:URS-KANBAN-005]]).
 
 **Trigger:**  
 Crew attempts to close/complete a card on the kanban surface.
@@ -128,10 +128,10 @@ SILENT FAILURE:
 1) Unit tests: successful close, each required field individually missing, invalid PIN, conditional-LKL correctness. 2) Idempotency test: duplicate submission of an identical close vs. a genuinely corrected resubmission, confirm each is handled correctly and distinctly. 3) UI-state test: confirm the success confirmation only ever renders after a persisted successful write, never optimistically. 4) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Maintenance Requirements:**  
-Keep the required-field set aligned with PROD-38's close contract as task kinds evolve; verify idempotency after any close-path change.
+Keep the required-field set aligned with [[SPEC:PROD-38]]'s close contract as task kinds evolve; verify idempotency after any close-path change.
 
 **Dependency Notes:**  
-CONFORMS TO CLOSE 1 (Canonical Task Close Contract, Spec Drafted). PIN identity from CLOSE 3/KIT-009 (Staff PIN). LKL capture per URS-LKL family / CLOSE 2. Emits the downstream event via CLOSE 12 + EXCEPT 2 (Event Bus, Spec Drafted). CROSS-REF: overlaps KIT-002 (task completion form gate) — reconcile in debate.
+CONFORMS TO [[SPEC:PROD-38]] (Canonical Task Close Contract, Spec Drafted). PIN identity from [[SPEC:URS-KIT-METHOD-003]]/KIT-009 (Staff PIN). LKL capture per URS-LKL family / [[SPEC:PROD-02]]. Emits the downstream event via CLOSE 12 + EXCEPT 2 (Event Bus, Spec Drafted). CROSS-REF: overlaps KIT-002 (task completion form gate) — reconcile in debate.
 
 **Required for Release:**  
 YES
@@ -198,7 +198,7 @@ SILENT FAILURE:
 Keep the signal→position mapping and the color/shape legend identical across all card renderers; run visual-regression on fixture cards after any card-template change.
 
 **Dependency Notes:**  
-Urgency stripe driven by task timing/priority (CLOSE 34). Allergen dot sourced from allergen flags (CLOSE 14 receiving flags / catalog dietary_flags CATALOG 2). Dependency/waiting counts from the task-chain graph (CLOSE 34/CLOSE 1). Renders on the deployed kanban surface (:9003).
+Urgency stripe driven by task timing/priority ([[SPEC:PROD-19]]). Allergen dot sourced from allergen flags (CLOSE 14 receiving flags / catalog dietary_flags [[SPEC:CAT-002]]). Dependency/waiting counts from the task-chain graph ([[SPEC:PROD-19]]/[[SPEC:PROD-38]]). Renders on the deployed kanban surface (:9003).
 
 **Required for Release:**  
 YES
@@ -249,10 +249,10 @@ Completed plus residual quantity equals the pre-stop quantity; retry creates no 
 Quantity-reconciliation and idempotent replay tests.
 
 **Maintenance Requirements:**  
-Keep the reconciliation arithmetic and idempotency key aligned with PROD-02/KIT-006 if those are merged; test replay after any close/short-stop change.
+Keep the reconciliation arithmetic and idempotency key aligned with [[SPEC:PROD-02]]/KIT-006 if those are merged; test replay after any close/short-stop change.
 
 **Dependency Notes:**  
-Builds on the close-capture gate (CLOSE 11) and the task engine's task-spawn capability (CLOSE 34). CROSS-REF: overlaps CLOSE 2 (PARTIAL_COMPLETE auto-spawn) and KIT-006 (partial completion handling) — reconcile in debate; 'Short Stop' is the crew-facing name for this behavior.
+Builds on the close-capture gate (CLOSE 11) and the task engine's task-spawn capability ([[SPEC:PROD-19]]). CROSS-REF: overlaps [[SPEC:PROD-02]] (PARTIAL_COMPLETE auto-spawn) and KIT-006 (partial completion handling) — reconcile in debate; 'Short Stop' is the crew-facing name for this behavior.
 
 **Required for Release:**  
 YES
@@ -282,13 +282,13 @@ After a task closure commits, the system shall emit exactly one correlated event
 Task close is the single fan-out point — never via direct cross-writes that can drift.
 
 **Inputs:**  
-The committed task-close record (from URS-KANBAN-002); the event envelope (correlation id, provenance) per URS-EVENT-001.
+The committed task-close record (from [[SPEC:URS-KANBAN-002]]); the event envelope (correlation id, provenance) per [[SPEC:URS-EVENT-001]].
 
 **Outputs:**  
 Exactly one correlated downstream event per committed close, consumed idempotently by LKL/inventory/scoring/label/display consumers.
 
 **Trigger:**  
-A task-close transaction commits (from URS-KANBAN-002).
+A task-close transaction commits (from [[SPEC:URS-KANBAN-002]]).
 
 **Invariants:**  
 commit-then-emit ordering (event only after commit); exactly one event per successful close; idempotent consumption on replay; every event correlated to its originating close.
@@ -322,7 +322,7 @@ SILENT FAILURE:
 Keep the consumer list and their idempotency keys current as new consumers (e.g. new label types, new dashboards) are added; verify commit-then-emit ordering after any close-path change.
 
 **Dependency Notes:**  
-Emitted through EXCEPT 2 (System Event Bus, Spec Drafted) and governed by CLOSE 1 (Canonical Task Close Contract, Spec Drafted). Consumers: LKL (CLOSE 2/URS-LKL), inventory (URS-INV/CLOSE 5), competency scoring (CLOSE 3), labels (LABEL 1/URS-LABEL), displays (DISPLAY 1/SSB). The commit-then-emit ordering is the same transactional-integrity pattern as EXCEPT 4/EXCEPT 5.
+Emitted through EXCEPT 2 (System Event Bus, Spec Drafted) and governed by [[SPEC:PROD-38]] (Canonical Task Close Contract, Spec Drafted). Consumers: LKL ([[SPEC:PROD-02]]/URS-LKL), inventory (URS-INV/CLOSE 5), competency scoring ([[SPEC:URS-KIT-METHOD-003]]), labels (LABEL 1/URS-LABEL), displays (DISPLAY 1/SSB). The commit-then-emit ordering is the same transactional-integrity pattern as EXCEPT 4/EXCEPT 5.
 
 **Required for Release:**  
 YES

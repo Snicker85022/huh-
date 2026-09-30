@@ -31,14 +31,14 @@ EDGE:
 4. A schema update (new field added to canonical definitions) has a defined migration path, not requiring a manual out-of-band DB edit each time.
 
 NEGATIVE:
-5. A table/column that exists in Postgres but has drifted from the canonical schema definition (added ad hoc, not reflected back in the source-of-truth doc) is detectable — this is exactly the PROD-18 'some elements already populated directly in Postgres' recon flag; verify a reconciliation pass catches this.
+5. A table/column that exists in Postgres but has drifted from the canonical schema definition (added ad hoc, not reflected back in the source-of-truth doc) is detectable — this is exactly the [[SPEC:PROD-18]] 'some elements already populated directly in Postgres' recon flag; verify a reconciliation pass catches this.
 
 SILENT FAILURE:
 6. A foreign key that's technically present but points to the wrong table/column (typo, copy-paste error) would silently allow bad data linkage — verify FK correctness is spot-checked against actual relationships, not just 'a constraint exists.'
 7. Missing indexes on frequently-queried columns would silently degrade performance without an explicit error — verify indexes match actual query patterns, not just the documented list.
 
 **Verification Method:**  
-1) Schema-diff test: automated comparison of canonical Data Schema definitions against live Postgres schema, flagging any drift in either direction. 2) FK-integrity test: verify each foreign key references the correct table/column, spot-checked against real relationships. 3) Reconciliation pass: address the PROD-18 flag — confirm no Postgres tables/columns exist outside what canonical schema defines, or update canonical schema to match reality. 4) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
+1) Schema-diff test: automated comparison of canonical Data Schema definitions against live Postgres schema, flagging any drift in either direction. 2) FK-integrity test: verify each foreign key references the correct table/column, spot-checked against real relationships. 3) Reconciliation pass: address the [[SPEC:PROD-18]] flag — confirm no Postgres tables/columns exist outside what canonical schema defines, or update canonical schema to match reality. 4) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Required for Release:**  
 YES

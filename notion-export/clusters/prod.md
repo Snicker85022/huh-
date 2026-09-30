@@ -115,13 +115,13 @@ Production Core
 Need: a kitchen task board ("Mom's Table") that is a card game — makes the right way the fun way, teaches the Taza standard through play, carries our brand, feels calm under pressure — while reliably tracking every task through not-started / in-progress / done.
 
 **Functional Requirement Specification:**  
-Card-based kanban on MT1/MT2/z33 implementing: three-state flow (KANBAN 3), accountable close capture (CLOSE 11), per-card operational signals (KANBAN 4), Short Stop (CLOSE 33), commit-then-emit downstream events (CLOSE 12). The card-game mechanic is the mechanism itself, not a skin: brand/visual language (gold #c7ae59, diamond-filigree, LB monogram) and gamification (first-encounter fish animation 2s logged w/ timestamp+crew ID, question-awards-both-parties, compliance streak badge at 10, quality scoring 40% food quality / 40% food safety / 20% appearance) are first-class requirements per D-KIT-001. Any rebuild preserves the game framing + brand language.
+Card-based kanban on MT1/MT2/z33 implementing: three-state flow (KANBAN 3), accountable close capture (CLOSE 11), per-card operational signals (KANBAN 4), Short Stop (CLOSE 33), commit-then-emit downstream events (CLOSE 12). The card-game mechanic is the mechanism itself, not a skin: brand/visual language (gold #c7ae59, diamond-filigree, LB monogram) and gamification (first-encounter fish animation 2s logged w/ timestamp+crew ID, question-awards-both-parties, compliance streak badge at 10, quality scoring 40% food quality / 40% food safety / 20% appearance) are first-class requirements per D-[[SPEC:KIT-001]]. Any rebuild preserves the game framing + brand language.
 
 **Inputs:**  
 Task rows from PostgreSQL; SSE pushes; staff card actions (game-night design language per CONFIRMED homage page)
 
 **Outputs:**  
-Card state changes → task status updates → PROD-01 trigger; card-closing captures LKL data (inventory = side effect of the game)
+Card state changes → task status updates → [[SPEC:PROD-01]] trigger; card-closing captures LKL data (inventory = side effect of the game)
 
 **Trigger:**  
 Staff interaction on MT1 (192.168.2.104 east) / MT2 (192.168.2.108 west); SSE state updates
@@ -135,20 +135,20 @@ NORMAL:
 2. Brand/visual language (gold #c7ae59, diamond-filigree, LB monogram) and gamification elements (first-encounter animation, question-award, streak badge, quality scoring) are present and functioning, not treated as optional polish.
 
 EDGE:
-3. A rebuild or redesign of any single piece (e.g. a UI refresh) preserves the game framing and brand language per D-KIT-001 — verify this constraint is actually checked in any future redesign, not just true at initial build.
+3. A rebuild or redesign of any single piece (e.g. a UI refresh) preserves the game framing and brand language per D-[[SPEC:KIT-001]] — verify this constraint is actually checked in any future redesign, not just true at initial build.
 
 NEGATIVE:
 4. Any of the 5 referenced child behaviors failing its own acceptance criteria means this package-level row cannot be considered passing — this row's own AC is not separable from its children's.
 
 SILENT FAILURE:
-5. The gamification/brand elements being quietly stripped out during a future 'simplification' pass (common failure mode — engineers deprioritizing 'decoration' under time pressure) would violate D-KIT-001's explicit first-class-requirement status — verify there's a way to catch this in review, e.g. a checklist item tied to D-KIT-001 for any future PR touching this surface.
+5. The gamification/brand elements being quietly stripped out during a future 'simplification' pass (common failure mode — engineers deprioritizing 'decoration' under time pressure) would violate D-[[SPEC:KIT-001]]'s explicit first-class-requirement status — verify there's a way to catch this in review, e.g. a checklist item tied to D-[[SPEC:KIT-001]] for any future PR touching this surface.
 6. Quality scoring (40% food quality / 40% food safety / 20% appearance) computing but never actually surfacing/affecting anything downstream would make it decorative math instead of a real mechanic — verify it has a real, tested downstream effect.
 
 **Verification Method:**  
-1) Integration test: full kanban surface exercised end-to-end across all 5 child behaviors on real MT1/MT2/z33 hardware. 2) Brand/gamification checklist: verify each D-KIT-001 element (animation, streak badge, quality scoring, visual language) is present and functioning, not just visually similar. 3) Downstream-effect test: confirm quality scoring actually feeds a real downstream consumer (leaderboard, review flag), not just computed and discarded. 4) Regression gate: document a required D-KIT-001 checklist item for any future PR touching this surface. 5) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
+1) Integration test: full kanban surface exercised end-to-end across all 5 child behaviors on real MT1/MT2/z33 hardware. 2) Brand/gamification checklist: verify each D-[[SPEC:KIT-001]] element (animation, streak badge, quality scoring, visual language) is present and functioning, not just visually similar. 3) Downstream-effect test: confirm quality scoring actually feeds a real downstream consumer (leaderboard, review flag), not just computed and discarded. 4) Regression gate: document a required D-[[SPEC:KIT-001]] checklist item for any future PR touching this surface. 5) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Dependency Notes:**  
-CONFORMS TO CLOSE 1. See SHOP 1 for a related dead-ternary bug note.
+CONFORMS TO [[SPEC:PROD-38]]. See [[SPEC:PROD-05-V2]] for a related dead-ternary bug note.
 
 **Open Questions:**  
 Event-driven wiring to watcher/AI outputs unevidenced (Phase 4 unaudited).
@@ -172,7 +172,7 @@ Need: wall TVs showing NOW / NEXT / WHERE / WATCH, updating on their own in real
 Drive wall display fleet (2×75" TCL + 55" Insignia + z33) with pushed state, <4s lag, no human action. Each screen renders its assigned per-screen mode (EVENT / PREP / DEAD DAY / OVERNIGHT) and role. Uncleared/cluttered board is an INTENTIONAL visual stress signal forcing disciplined task closeout — the display is a self-correcting calming mechanism, not just an information radiator. Dark/gold Taza brand + visible Mom's Table game state. Any redesign preserves both ambient-calm and brand/culture functions.
 
 **Inputs:**  
-PostgreSQL state changes; W15 BEO data; allergen flags; van/crew assignments
+PostgreSQL state changes; [[SPEC:W15]] BEO data; allergen flags; van/crew assignments
 
 **Outputs:**  
 Reactive SLA 4s to all surfaces; morning SLA 07:12am (systemd timer 07:05); green/amber/red stress logic (red = allergen or critical failure only)
@@ -184,10 +184,10 @@ Any task/event/packing state change → webhook → Python SQL traversal → SSE
 Addresses: crew interrupting each other to ask 'where is X / what's next'; stale or blank wall displays; inference overload from active lookups (D-INF-001).
 
 **Acceptance Criteria:**  
-All wall displays update from pushed state with <4s lag; each TV shows its correct per-screen mode (EVENT/PREP/DEAD DAY/OVERNIGHT); completed items persist with visual suppression (SSB-003); CRITICAL allergen updates reach displays fast; TV→content mapping matches the intended role split (repoint pass needed — see Notes); voice gating (display-persistence.js) wired to the live frontends.
+All wall displays update from pushed state with <4s lag; each TV shows its correct per-screen mode (EVENT/PREP/DEAD DAY/OVERNIGHT); completed items persist with visual suppression ([[SPEC:SSB-003]]); CRITICAL allergen updates reach displays fast; TV→content mapping matches the intended role split (repoint pass needed — see Notes); voice gating (display-persistence.js) wired to the live frontends.
 
 **Open Questions:**  
-TCL West=prep, TCL East=situational, Insignia=van loadout mode assignment mismatched vs 07-14 audit — needs repoint. Voice gated by display-persistence.js (built+tested, NOT wired to live TV — see DISPLAY 26). square-catalog-sync/square-menu-sync/taza-git-sync were FAILED on N100 — verify status, feeds PROD-06/CATALOG 10.
+TCL West=prep, TCL East=situational, Insignia=van loadout mode assignment mismatched vs 07-14 audit — needs repoint. Voice gated by display-persistence.js (built+tested, NOT wired to live TV — see DISPLAY 26). square-catalog-sync/square-menu-sync/taza-git-sync were FAILED on N100 — verify status, feeds [[SPEC:PROD-06]]/[[SPEC:SW-011]].
 
 **Rationale:**  
 D-INF-001: reduce inference demand, don't speed it up.
@@ -218,7 +218,7 @@ Need: staff can update the shopping list from a phone, authenticated simply with
 The system shall provide a passkey-authenticated staff PWA on mobile that displays the shopping list and writes updates back to the canonical NocoDB backend using optimistic UI updates.
 
 **Inputs:**  
-Shopping lists generated from deposit trigger (PROD-06); live watcher data; staff interactions
+Shopping lists generated from deposit trigger ([[SPEC:PROD-06]]); live watcher data; staff interactions
 
 **Outputs:**  
 Direct PostgreSQL writes <50ms deterministic; checked-state visible <100ms optimistic w/ rollback; morning lists on all surfaces by 07:12am
@@ -227,16 +227,16 @@ Direct PostgreSQL writes <50ms deterministic; checked-state visible <100ms optim
 Staff check/mark shopping items; watcher-generated list updates; 07:05am morning push
 
 **Dependency Notes:**  
-V1 spec, retained as historical record only — not in active use. Superseded by SHOP 1 (PROD-05-V2).
+V1 spec, retained as historical record only — not in active use. Superseded by [[SPEC:PROD-05-V2]] ([[SPEC:PROD-05-V2]]).
 
 **Rationale:**  
-Kept for reference: SHOP 1 added the locked aggregation rule, Task Verb Library integration, frost-risk-first ordering, and vendor grouping, none of which this V1 design accounted for.
+Kept for reference: [[SPEC:PROD-05-V2]] added the locked aggregation rule, Task Verb Library integration, frost-risk-first ordering, and vendor grouping, none of which this V1 design accounted for.
 
 **Acceptance Criteria:**  
-Deferred — Superseded by PROD-05-V2 — historical record only.
+Deferred — Superseded by [[SPEC:PROD-05-V2]] — historical record only.
 
 **Verification Method:**  
-Deferred — Superseded by PROD-05-V2 — historical record only.
+Deferred — Superseded by [[SPEC:PROD-05-V2]] — historical record only.
 
 **Required for Release:**  
 NO
@@ -257,19 +257,19 @@ Production Core
 Need: shopping for multiple events gets combined into one smart list — grouped by vendor, frost-risk items handled last so nothing thaws in the car — instead of shopping trip by trip and guessing.
 
 **Functional Requirement Specification:**  
-The system shall aggregate shopping needs across all events in the planning window, group items by preferred vendor (frost-risk items pulled last within each vendor group to minimise temperature exposure in-car), apply Task Verb Library governance (Buy / Pull / FLAG) so every line is a real task-engine task, enforce safety-stock thresholds, capture substitutions at check-off (SHOP 3), and write all updates through the canonical backend with optimistic-update + conflict-revert on the mobile client. CAUTION: do not use an earlier draft sketch as a code reference — its frost-risk ternary is a no-op bug (both branches return 'Buy').
+The system shall aggregate shopping needs across all events in the planning window, group items by preferred vendor (frost-risk items pulled last within each vendor group to minimise temperature exposure in-car), apply Task Verb Library governance (Buy / Pull / FLAG) so every line is a real task-engine task, enforce safety-stock thresholds, capture substitutions at check-off ([[SPEC:URS-KIT-105]]), and write all updates through the canonical backend with optimistic-update + conflict-revert on the mobile client. CAUTION: do not use an earlier draft sketch as a code reference — its frost-risk ternary is a no-op bug (both branches return 'Buy').
 
 **Inputs:**  
-Paid-deposit events in shopping window; PROD-09 item_components BOM; ingredient master (vendor, frost_risk, safety_stock_qty - schema incomplete, see Open Items)
+Paid-deposit events in shopping window; [[SPEC:PROD-09]] item_components BOM; ingredient master (vendor, frost_risk, safety_stock_qty - schema incomplete, see Open Items)
 
 **Outputs:**  
 Buy/Pull tasks written to PostgreSQL tasks table, vendor-tagged; FLAG tasks for any quantity the system can't determine with confidence; vendor-grouped view in staff app
 
 **Trigger:**  
-Deposit paid (same trigger as PROD-06) OR scheduled nightly aggregation run OR manual staff refresh
+Deposit paid (same trigger as [[SPEC:PROD-06]]) OR scheduled nightly aggregation run OR manual staff refresh
 
 **Dependency Notes:**  
-Supersedes-in-detail SHOP 11 v1 (kept, historical). Wired into CLOSE 34's task engine, not a parallel model.
+Supersedes-in-detail [[SPEC:PROD-05-V2]] v1 (kept, historical). Wired into [[SPEC:PROD-19]]'s task engine, not a parallel model.
 
 **Rationale:**  
 Rewritten 2026-08-07 per RAG Operations Content discovery to incorporate the locked aggregation rule, Task Verb Library, and Task Governance Rules that v1 never incorporated.
@@ -343,7 +343,7 @@ Production Core
 As Sandra, I need to just brain-dump event details by voice or text and get a fully pre-filled invoice back, so I'm not manually retyping information I already gave a customer on the phone.
 
 **Functional Requirement Specification:**  
-The system shall provide an invoice-drafting interface where Sandra's voice/text brain-dump is processed by AI (via INFERENCE 1, endpoint env-var per D-061, composite confidence per D-060) into a structured pre-fill of all invoice fields, with per-field confidence display. Inference runs as a non-modal background worker so Sandra continues working during the draft. Fields flagged for pre-hand-off check: tables_required, linens_required, setup_type; kitchen_exit_time is computed, not Sandra-entered (D3). Output format per CX-001..CX-007.
+The system shall provide an invoice-drafting interface where Sandra's voice/text brain-dump is processed by AI (via INFERENCE 1, endpoint env-var per D-061, composite confidence per D-060) into a structured pre-fill of all invoice fields, with per-field confidence display. Inference runs as a non-modal background worker so Sandra continues working during the draft. Fields flagged for pre-hand-off check: tables_required, linens_required, setup_type; kitchen_exit_time is computed, not Sandra-entered (D3). Output format per [[SPEC:CX-001]]..[[SPEC:CX-007]].
 
 **Inputs:**  
 Sandra brain-dump; RAG: menu items, service templates, customer history, logistics rules; Tier 1 catalog attributes
@@ -426,7 +426,7 @@ Production Core
 Need: the system has real, structured data about how each dish packs, what it's made of, what equipment it needs, and its SOP — not just a name and price — so invoices, packing, and scheduling can be generated correctly instead of guessed.
 
 **Functional Requirement Specification:**  
-The system shall build and populate the four Tier-2 PostgreSQL operational tables (item_packing_profiles, item_components/BOM, item_equipment, procedure_link) per the Catalog Operations Intelligence Design Spec. These tables feed INVOICE 1 RAG lookups (invoice pre-fill confidence) and will power the Tier-3 deterministic packing solver/backward scheduler (PACK 2) once built. The LLM retrieves parameters from these tables; it never computes pan geometry or hold-time arithmetic itself. V1.0 launch milestone (schema ref V2-FEAT-005).
+The system shall build and populate the four Tier-2 PostgreSQL operational tables (item_packing_profiles, item_components/BOM, item_equipment, procedure_link) per the Catalog Operations Intelligence Design Spec. These tables feed [[SPEC:PROD-07]] RAG lookups (invoice pre-fill confidence) and will power the Tier-3 deterministic packing solver/backward scheduler ([[SPEC:PROD-16-V2]]) once built. The LLM retrieves parameters from these tables; it never computes pan geometry or hold-time arithmetic itself. V1.0 launch milestone (schema ref V2-FEAT-005).
 
 **Inputs:**  
 Item definitions; GN Pan footprints/depths/fill qty per service mode; component explosions; equipment occupancy
@@ -542,10 +542,10 @@ NEGATIVE:
 
 SILENT FAILURE:
 5. QR codes on the printed packet resolving to broken/unreachable endpoints (previously flagged as a ~67% failure rate issue elsewhere in the registry) would mean the packet looks complete but its most useful feature doesn't work — verify the resolving-QR-code claim specifically, with a real scan test, not just that a QR image renders.
-6. This is functionally the same behavior as HEALTH 7 (URS-HEALTH-003) — verify both rows describe the same actual implementation consistently, not two independently-drifting descriptions of one real print path.
+6. This is functionally the same behavior as HEALTH 7 ([[SPEC:URS-HEALTH-003]]) — verify both rows describe the same actual implementation consistently, not two independently-drifting descriptions of one real print path.
 
 **Verification Method:**  
-1) Real power-down test: pull power during an active-event-like dataset (multiple open tasks/events), confirm the full packet prints correctly within the UPS window. 2) QR-scan test: physically scan each QR code on a real printed packet, confirm it resolves correctly (not the previously-flagged ~67% failure). 3) Physical-readiness check: confirm paper stock and printer jam-free state as part of the test, not assumed. 4) Consistency check against HEALTH 7 (URS-HEALTH-003) to confirm no drift between the two descriptions of this path. 5) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
+1) Real power-down test: pull power during an active-event-like dataset (multiple open tasks/events), confirm the full packet prints correctly within the UPS window. 2) QR-scan test: physically scan each QR code on a real printed packet, confirm it resolves correctly (not the previously-flagged ~67% failure). 3) Physical-readiness check: confirm paper stock and printer jam-free state as part of the test, not assumed. 4) Consistency check against HEALTH 7 ([[SPEC:URS-HEALTH-003]]) to confirm no drift between the two descriptions of this path. 5) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Dependency Notes:**  
 Depends on INFRA 9 (UPS) + LABEL 2 (printer, StarTSPImage direct-USB). Groups HEALTH 7.
@@ -627,7 +627,7 @@ Crew taps Label button on any kanban card (any state); auto-propose at card clos
 Mystery containers (no label or incomplete label), phantom prints (no confirmation), lost jobs (offline printer), QR codes that don't scan (dithering at 203 DPI), and broken print paths (USB port now physically occupied by AKiTiO).
 
 **Acceptance Criteria:**  
-A kanban close triggers a label proposal (URS-INV-004); crew confirms and a Type A label (URS-LABEL-001) prints over Ethernet TCP 9100 (URS-LABEL-005); the attempt is logged (URS-LABEL-006); the QR resolves to the correct canonical lot (URS-LABEL-003); the bitmap uses threshold-only conversion (URS-LABEL-004) and scans first try on the Zebra 203-DPI printer.
+A kanban close triggers a label proposal ([[SPEC:URS-INV-004]]); crew confirms and a Type A label ([[SPEC:URS-LABEL-001]]) prints over Ethernet TCP 9100 ([[SPEC:URS-LABEL-005]]); the attempt is logged ([[SPEC:URS-LABEL-006]]); the QR resolves to the correct canonical lot ([[SPEC:URS-LABEL-003]]); the bitmap uses threshold-only conversion ([[SPEC:URS-LABEL-004]]) and scans first try on the Zebra 203-DPI printer.
 
 **Verification Method:**  
 Print path proven 2026-07-14 (scanned first try).
@@ -660,7 +660,7 @@ The system shall leverage Square's 3-level nested/conditional modifier reveal to
 Customer catalog selections; allergen self-declaration; upsell tier choices
 
 **Outputs:**  
-Structured allergen flags → feeds PROD-02 task queue automatically (no staff interpretation step); upsell selections → PROD-07 invoice draft; could integrate with allergen display logic already on PROD-04 KDS
+Structured allergen flags → feeds [[SPEC:PROD-02]] task queue automatically (no staff interpretation step); upsell selections → [[SPEC:PROD-07]] invoice draft; could integrate with allergen display logic already on [[SPEC:PROD-04]] KDS
 
 **Trigger:**  
 Customer selects an item with a nested modifier set during Wix/Square ordering flow
@@ -687,13 +687,13 @@ Production Core
 Sandra interview responses (shop/prep/cook/pack/present per dish), structured via the Sandra-Claude interview process
 
 **Outputs:**  
-Per-dish packing profile, BOM/component explosion, equipment occupancy, SOP text -> PROD-09 catalog tables; Taza Method distinctions -> PROD-03 gamification content
+Per-dish packing profile, BOM/component explosion, equipment occupancy, SOP text -> [[SPEC:PROD-09]] catalog tables; Taza Method distinctions -> [[SPEC:PROD-03]] gamification content
 
 **Trigger:**  
 Sandra-Claude interview session(s), ad hoc
 
 **Dependency Notes:**  
-Output feeds CATALOG 1 catalog Tier 2 directly per-dish. Invoice RAG (INVOICE 1) and task chain generation (CLOSE 34) both depend on this for accuracy. Source: 📖 RAG — Operations Content db (recipe-type entries) — interview with Sandra in progress: 38 draft / 32 locked / 10 pending_approval / 2 superseded (82 total).
+Output feeds [[SPEC:CAT-001]] catalog Tier 2 directly per-dish. Invoice RAG ([[SPEC:PROD-07]]) and task chain generation ([[SPEC:PROD-19]]) both depend on this for accuracy. Source: 📖 RAG — Operations Content db (recipe-type entries) — interview with Sandra in progress: 38 draft / 32 locked / 10 pending_approval / 2 superseded (82 total).
 
 **Open Questions:**  
 This row has no FRS — needs real FRS text once enough of the recipe interview (in progress) is locked.
@@ -702,7 +702,7 @@ This row has no FRS — needs real FRS text once enough of the recipe interview 
 This is the deterministic recipe backbone the system currently lacks — no dish-level ground truth exists yet.
 
 **Acceptance Criteria:**  
-NORMAL: every active menu item has a locked recipe/method record covering portion, prep method, cook temp, and BOM components (CAT-003).
+NORMAL: every active menu item has a locked recipe/method record covering portion, prep method, cook temp, and BOM components ([[SPEC:CAT-003]]).
 EDGE: a recipe Sandra has not verified stays draft/pending_approval — never locked.
 NEGATIVE: a BOM explosion runs against a draft recipe → flagged, never silently trusted.
 SILENT-FAILURE: an active menu item with no recipe record at all → caught by completeness scan.
@@ -731,10 +731,10 @@ Production Core
 Need: correct packing rules (pan sizes, hot/cold zones) applied consistently — never guessed by an LLM.
 
 **Functional Requirement Specification:**  
-The system shall encode the locked packing and carrier logistics rules from the RAG Operations Content: GN pan co-habitation geometry (2×half / 3×third / 6×sixth per 1/1 slot; halves and thirds cannot be cleanly mixed), 3-zone vehicle load (hot/cold/ambient), and per-item service-mode packing profiles. V1 = rule-set lookup; the deterministic constraint solver (PACK 2) is the V1.x upgrade. LLM never computes pan geometry — it retrieves parameters from the Tier-2 tables (CATALOG 3/CATALOG 5) and narrates results.
+The system shall encode the locked packing and carrier logistics rules from the RAG Operations Content: GN pan co-habitation geometry (2×half / 3×third / 6×sixth per 1/1 slot; halves and thirds cannot be cleanly mixed), 3-zone vehicle load (hot/cold/ambient), and per-item service-mode packing profiles. V1 = rule-set lookup; the deterministic constraint solver ([[SPEC:PROD-16-V2]]) is the V1.x upgrade. LLM never computes pan geometry — it retrieves parameters from the Tier-2 tables (CATALOG 3/CATALOG 5) and narrates results.
 
 **Inputs:**  
-Item quantity + service mode (from PROD-09 item_packing_profiles); event's composed-salad/charcuterie flags
+Item quantity + service mode (from [[SPEC:PROD-09]] item_packing_profiles); event's composed-salad/charcuterie flags
 
 **Outputs:**  
 Correct pan size selected per item; correct carrier assigned; correct load position in 3-zone pattern; two-task trigger for presentation-ready items
@@ -743,7 +743,7 @@ Correct pan size selected per item; correct carrier assigned; correct load posit
 Task reaches PACK stage in the chain (post-cook, pre-load)
 
 **Dependency Notes:**  
-Pan Tetris packing-efficiency optimization remains draft/unextracted — candidate for PROD-18 knowledge graph.
+Pan Tetris packing-efficiency optimization remains draft/unextracted — candidate for [[SPEC:PROD-18]] knowledge graph.
 
 **Acceptance Criteria:**
 NORMAL: Packing plan maps items to pans and a 3-zone vehicle load.
@@ -776,16 +776,16 @@ Need: the system tells crew exactly how to load the van and by when, computed, n
 The system shall implement a three-layer deterministic packing solver: (1) thermal partition (hot/cold/ambient per carrier), (2) footprint tiling (GN pan geometry, integer-only), (3) vertical stacking by pan_depth_in until carrier height is consumed. A backward event scheduler derives latest_prep_finish = service_time − display_wait − transit − pack, enforcing TCS danger-zone hold times as hard constraints (never soft preferences) per CATALOG 7. Output: a named carrier manifest per event. LLM narrates; the solver computes — unconditionally. PULL-FORWARD CANDIDATE for V1 launch if core elements finish on time.
 
 **Inputs:**  
-PROD-09 item_packing_profiles (pan footprint/depth/fill qty) + PROD-16 pan geometry/3-zone vehicle load rules + event service_time/transit_time
+[[SPEC:PROD-09]] item_packing_profiles (pan footprint/depth/fill qty) + [[SPEC:PROD-16]] pan geometry/3-zone vehicle load rules + event service_time/transit_time
 
 **Outputs:**  
-Named carrier manifests -> PROD-02 task generation (Pack tasks); item lifecycle stages (prep/pack/transit/setup/display) each with duration + hold-clock effect
+Named carrier manifests -> [[SPEC:PROD-02]] task generation (Pack tasks); item lifecycle stages (prep/pack/transit/setup/display) each with duration + hold-clock effect
 
 **Trigger:**  
 Event confirmed / production planning stage, before task chain generation
 
 **Dependency Notes:**  
-Full-spec version of placeholder PACK 1 (kept separate, no-overwrite rule — see SHOP 11/SHOP 1). CATALOG 1 anticipated this as V2-FEAT-006.
+Full-spec version of placeholder PACK 1 (kept separate, no-overwrite rule — see [[SPEC:PROD-05-V2]]/[[SPEC:PROD-05-V2]]). [[SPEC:CAT-001]] anticipated this as [[SPEC:PROD-16-V2]].
 
 **Acceptance Criteria:**
 NORMAL: Backward schedule from service_start → pack_start → kitchen_exit, all deterministic.
@@ -819,10 +819,10 @@ The system shall compute staffing role counts from guest count via a nonlinear i
 Guest count, service type, event type; historical staffing outcomes (none yet — first 24-40 real events needed per the DOE analysis referenced in KB)
 
 **Outputs:**  
-Operational + Scheduled staff counts; role assignments by service type; arrival/lead-time; feeds PROD-07 invoice dashboard (labor cost) and PROD-06 task scheduling (crew availability)
+Operational + Scheduled staff counts; role assignments by service type; arrival/lead-time; feeds [[SPEC:PROD-07]] invoice dashboard (labor cost) and [[SPEC:PROD-06]] task scheduling (crew availability)
 
 **Trigger:**  
-Deposit paid (same trigger as PROD-06) OR quote-stage estimate for pricing purposes
+Deposit paid (same trigger as [[SPEC:PROD-06]]) OR quote-stage estimate for pricing purposes
 
 **Acceptance Criteria:**
 NORMAL: Guest count → role counts via deterministic interpolation.
@@ -852,10 +852,10 @@ Production Core
 The system shall maintain a temporal, conditional business-logic knowledge graph where facts are scored by confidence and decay over time. The graph handles standardised-vs-semi-custom conditionality (e.g. 'if guest count > 150 AND outdoor, THEN extra equipment') that a static lookup table cannot represent. Confidence mechanism mirrors D-060 (composite signal, same mechanism as INFERENCE 1 applied to facts). Formalises the MemPalace 4-layer pattern and Reservoir Computing framing already logged (2026-06-18/20). Requires a dedicated design session before any build.
 
 **Inputs:**  
-Locked rules (Founding Decisions, RAG Operations Content), Sandra's evolving recipe/method corrections, crew corrections, PROD-10 confidence signal (shared mechanism)
+Locked rules (Founding Decisions, RAG Operations Content), Sandra's evolving recipe/method corrections, crew corrections, [[SPEC:PROD-10]] confidence signal (shared mechanism)
 
 **Outputs:**  
-Feeds PROD-09 Tier 2 tables (proposed: materialized view of a graph subset); feeds PROD-07 RAG lookups; feeds PROD-16 Pan Tetris as first real use case
+Feeds [[SPEC:PROD-09]] Tier 2 tables (proposed: materialized view of a graph subset); feeds [[SPEC:PROD-07]] RAG lookups; feeds [[SPEC:PROD-16]] Pan Tetris as first real use case
 
 **Trigger:**  
 Not yet triggered — design-stage only
@@ -888,19 +888,19 @@ Production Core
 Need: equipment cleaning, allergen receiving, van-load departure, and prep-portion counts all get captured automatically as part of closing the card that already does that work — not as separate manual bookkeeping steps crew have to remember.
 
 **Functional Requirement Specification:**  
-The system shall capture four close-time data types as side effects of normal kanban card close, all conforming to CLOSE 1 (TaskCloseEvent): equipment cleaning (close_kind=EQUIPMENT_CLEANING, requires equipment_id + cleaning_checklist_passed), allergen receiving (close_kind=ALLERGEN_RECEIVING, sets allergen_flag), van load departure (close_kind=VAN_LOAD, requires full checklist resolution), and prep portion count + size (close_kind=PORTION_CAPTURE, requires qty + unit). Same gate pattern as CLOSE 2's LKL bin-capture, applied to four different data types.
+The system shall capture four close-time data types as side effects of normal kanban card close, all conforming to [[SPEC:PROD-38]] (TaskCloseEvent): equipment cleaning (close_kind=EQUIPMENT_CLEANING, requires equipment_id + cleaning_checklist_passed), allergen receiving (close_kind=ALLERGEN_RECEIVING, sets allergen_flag), van load departure (close_kind=VAN_LOAD, requires full checklist resolution), and prep portion count + size (close_kind=PORTION_CAPTURE, requires qty + unit). Same gate pattern as [[SPEC:PROD-02]]'s LKL bin-capture, applied to four different data types.
 
 **Inputs:**  
-Task close event; equipment ID (KIT-101); ingredient allergen_type (KIT-102); BEO requirements list (KIT-103); portion count/size entered by crew (KIT-104)
+Task close event; equipment ID ([[SPEC:URS-KIT-101]]); ingredient allergen_type ([[SPEC:URS-KIT-102]]); BEO requirements list ([[SPEC:URS-KIT-103]]); portion count/size entered by crew ([[SPEC:URS-KIT-104]])
 
 **Outputs:**  
-Equipment audit trail (health inspection ready); allergen_flags rows feeding PROD-04's persistent banner; van load manifest (departure-blocking if incomplete); portion counts feeding PROD-04 LKL display
+Equipment audit trail (health inspection ready); allergen_flags rows feeding [[SPEC:PROD-04]]'s persistent banner; van load manifest (departure-blocking if incomplete); portion counts feeding [[SPEC:PROD-04]] LKL display
 
 **Trigger:**  
 Task close attempt on: equipment-cleaning card, allergen-item receiving, van-load card, or prep-task card
 
 **Dependency Notes:**  
-CONFORMS TO CLOSE 1 — fixed a routing gap that had silently dropped equipment-cleaning/allergen-receiving kinds. SHOP 3/SHOP 4 folded into SHOP 1 instead (shopping-flow specific).
+CONFORMS TO [[SPEC:PROD-38]] — fixed a routing gap that had silently dropped equipment-cleaning/allergen-receiving kinds. [[SPEC:URS-KIT-105]]/SHOP 4 folded into [[SPEC:PROD-05-V2]] instead (shopping-flow specific).
 
 **Acceptance Criteria:**
 NORMAL: Card close with close_kind → correct side-effect (EQUIPMENT_CLEANING audit, ALLERGEN_RECEIVING flag, VAN_LOAD manifest, PORTION_CAPTURE count).
@@ -934,22 +934,22 @@ Production Core
 Need: every module talks through one shared event system, not direct calls to each other, so nothing gets missed or bypassed.
 
 **Functional Requirement Specification:**  
-The system shall provide a central event bus (emit() / emit_failure()) backed by an append-only system_events table in PostgreSQL. Every cross-module state change — task close, LKL write, inventory transaction, exception — is published through this bus. Consumers (CLOSE 35 audit log, EXCEPT 1 exception router, INFERENCE 12 cache router, EXCEPT 3 notifier, DISPLAY 1 displays) subscribe to topics. No direct inter-module calls bypass the bus.
+The system shall provide a central event bus (emit() / emit_failure()) backed by an append-only system_events table in PostgreSQL. Every cross-module state change — task close, LKL write, inventory transaction, exception — is published through this bus. Consumers ([[SPEC:PROD-22]] audit log, EXCEPT 1 exception router, INFERENCE 12 cache router, EXCEPT 3 notifier, DISPLAY 1 displays) subscribe to topics. No direct inter-module calls bypass the bus.
 
 **Inputs:**  
 Every PROD-XX write module (task close, invoice ready, allergen flag, service failure)
 
 **Outputs:**  
-system_events rows -> PROD-22 audit log, PROD-23 exception router, PROD-25 notifier, PROD-04 dashboard state (all subscribe)
+system_events rows -> [[SPEC:PROD-22]] audit log, [[SPEC:PROD-23]] exception router, [[SPEC:PROD-25]] notifier, [[SPEC:PROD-04]] dashboard state (all subscribe)
 
 **Trigger:**  
 Any workflow module completing a state-changing action
 
 **Failure Mode Addressed:**  
-Every module was implicitly assuming some 'something tells the rest of the system this happened' mechanism existed. It didn't. Without this, PROD-22/23/24/25 and the dashboard have no way to know a state change occurred except polling.
+Every module was implicitly assuming some 'something tells the rest of the system this happened' mechanism existed. It didn't. Without this, [[SPEC:PROD-22]]/23/24/25 and the dashboard have no way to know a state change occurred except polling.
 
 **Acceptance Criteria:**  
-Any module can call emit() with a topic and payload; system_events row is written; PROD-22/23/25 subscribers receive it within the SLA their own spec states, without the emitting module knowing who's listening.
+Any module can call emit() with a topic and payload; system_events row is written; [[SPEC:PROD-22]]/23/25 subscribers receive it within the SLA their own spec states, without the emitting module knowing who's listening.
 
 **Rationale:**  
 Foundational — every consumer spec implicitly assumed some trigger mechanism; this is it.
@@ -982,7 +982,7 @@ The system shall stage all raw external inputs (Square webhooks, Gmail leads) in
 Raw Square invoice/payment webhooks, voice notes, customer comms landing in staging tables
 
 **Outputs:**  
-Promoted canonical records -> W1/W2 lead capture, W6 CRM nightly, PROD-07 invoice prefill; invalid rows -> PROD-23 exceptions queue; PROD-22 audit log
+Promoted canonical records -> [[SPEC:W1]]/[[SPEC:W2]] lead capture, [[SPEC:W6]] CRM nightly, [[SPEC:PROD-07]] invoice prefill; invalid rows -> [[SPEC:PROD-23]] exceptions queue; [[SPEC:PROD-22]] audit log
 
 **Trigger:**  
 New row lands in any raw staging/inbox table
@@ -991,10 +991,10 @@ New row lands in any raw staging/inbox table
 Raw Square/voice/comms input reaching canonical tables unvalidated — one bad webhook payload corrupts a customer record or invoice with no trace of where the bad data came from.
 
 **Acceptance Criteria:**  
-A malformed or incomplete raw row never reaches a canonical table — it either promotes cleanly or lands in PROD-23's exceptions_queue with the specific validation failure attached, never silently dropped or silently accepted.
+A malformed or incomplete raw row never reaches a canonical table — it either promotes cleanly or lands in [[SPEC:PROD-23]]'s exceptions_queue with the specific validation failure attached, never silently dropped or silently accepted.
 
 **Dependency Notes:**  
-Wix retirement per D-062; supersedes W7-SHOP/W8-SHOP.
+Wix retirement per D-062; supersedes [[SPEC:W7]]-SHOP/W8-SHOP.
 
 **Verification Method:**
 1. [AUTO] Validation: malformed input → flagged, not promoted. Evidence: log.
@@ -1020,10 +1020,10 @@ As the owner, I need a complete, tamper-proof record of every change made to the
 The system shall maintain an append-only audit log in PostgreSQL capturing every write across all operational tables: who (crew/module), what (table + old/new values), when (timestamp), and the originating correlation ID. No write to a canonical table succeeds without a corresponding audit record. Implements D-004, D-019, D-021. Target inference-demand composition per D-INF-001: 65% deterministic / 25% KB retrieval / 8% small model / 2% T3 / <1% AI API.
 
 **Inputs:**  
-PROD-20 event bus; every canonical write across all PROD-XX modules
+[[SPEC:PROD-20]] event bus; every canonical write across all PROD-XX modules
 
 **Outputs:**  
-audit_log rows -> PROD-04 dashboard state, health monitoring, W6 nightly brief (change-history context)
+audit_log rows -> [[SPEC:PROD-04]] dashboard state, health monitoring, [[SPEC:W6]] nightly brief (change-history context)
 
 **Trigger:**  
 Any canonical table write, human or AI-assisted
@@ -1068,10 +1068,10 @@ Need: when something fails, it gets logged and flagged automatically — never s
 The system shall route processing failures from any module to the exception router (EXCEPT 1), which (1) persists the error and full event context before notifying (persist-before-notify per EXCEPT 5), (2) classifies severity (informational/warning/critical), and (3) dispatches to EXCEPT 3 (notifier) for warning/critical. Implements the Task System Governance Rule 'FLAG rather than guess' (D-006) as a real routing mechanism rather than a text convention.
 
 **Inputs:**  
-PROD-20 event bus; validation failures from PROD-21 inbox promoter and any other workflow
+[[SPEC:PROD-20]] event bus; validation failures from [[SPEC:PROD-21]] inbox promoter and any other workflow
 
 **Outputs:**  
-exceptions_queue rows -> PROD-25 notifier (alerts owner), PROD-04 dashboard state, PROD-22 audit log
+exceptions_queue rows -> [[SPEC:PROD-25]] notifier (alerts owner), [[SPEC:PROD-04]] dashboard state, [[SPEC:PROD-22]] audit log
 
 **Trigger:**  
 Any workflow hitting a validation/API/parse/timeout/missing-data failure
@@ -1080,7 +1080,7 @@ Any workflow hitting a validation/API/parse/timeout/missing-data failure
 The system's own "FLAG, don't guess" governance rule had no actual mechanism behind it — a module hitting an ambiguous case had nowhere defined to send it.
 
 **Acceptance Criteria:**  
-Any module that can't confidently complete an action routes it here instead of guessing or silently failing; PROD-25 fires an alert for WARNING/CRITICAL severity; the exception is visible in one place, not scattered across module-specific error logs.
+Any module that can't confidently complete an action routes it here instead of guessing or silently failing; [[SPEC:PROD-25]] fires an alert for WARNING/CRITICAL severity; the exception is visible in one place, not scattered across module-specific error logs.
 
 **Verification Method:**
 1. [AUTO] Routing: each exception class → its documented handler. Evidence: log.
@@ -1106,10 +1106,10 @@ Need: don't burn AI time/cost on a question the system can already answer from i
 The system shall intercept any inference request and check the canonical DB and KB cache before dispatching to an AI model. Target demand composition (D-INF-001 / INV-005): 65% deterministic DB lookup, 25% KB retrieval, 8% small AI model, 2% T3 (AI API), <1% AI API escalation. Cache hits return without touching the inference stack. The cache is warmed on every state-change event.
 
 **Inputs:**  
-PROD-20 event bus (rebuild triggers); PROD-02 LKL state; PROD-01 task engine; allergen/van/event records
+[[SPEC:PROD-20]] event bus (rebuild triggers); [[SPEC:PROD-02]] LKL state; [[SPEC:PROD-01]] task engine; allergen/van/event records
 
 **Outputs:**  
-Cached answers -> dashboard/browser; only cache-miss queries -> PROD-10 inference layer
+Cached answers -> dashboard/browser; only cache-miss queries -> [[SPEC:PROD-10]] inference layer
 
 **Trigger:**  
 State-change event (task close, LKL write, allergen flag, van status, event open/close, scheduled tick) OR an incoming operational query
@@ -1150,13 +1150,13 @@ Need: one notification system for the whole app, not five modules each texting N
 The system shall route all outbound notifications through a unified notifier: ntfy push to Nick's phone and Twilio SMS to Sandra as the PRIMARY channel for time-sensitive alerts (D10). All callers use a single notify(recipient, severity, message, correlation_id) interface — never direct Twilio or ntfy calls from business logic. All callers use a single notify(recipient, severity, message, correlation_id) interface — never direct Twilio or ntfy calls from business logic. Implements D-008.
 
 **Inputs:**  
-PROD-20 event bus; PROD-23 exception router; W2 lead scoring (hot lead alerts); PROD-01 task engine
+[[SPEC:PROD-20]] event bus; [[SPEC:PROD-23]] exception router; [[SPEC:W2]] lead scoring (hot lead alerts); [[SPEC:PROD-01]] task engine
 
 **Outputs:**  
-Twilio SMS (Sandra), ntfy (Nick/ops), PROD-22 audit log, PROD-04 dashboard state
+Twilio SMS (Sandra), ntfy (Nick/ops), [[SPEC:PROD-22]] audit log, [[SPEC:PROD-04]] dashboard state
 
 **Trigger:**  
-PROD-23 exception created, hot lead scored, task-engine alert condition, or any module calling alert() directly
+[[SPEC:PROD-23]] exception created, hot lead scored, task-engine alert condition, or any module calling alert() directly
 
 **Failure Mode Addressed:**  
 Alerts were being wired ad hoc per module (some to ntfy, some nowhere) — no single place guarantees a critical alert actually reaches the right human.
@@ -1165,7 +1165,7 @@ Alerts were being wired ad hoc per module (some to ntfy, some nowhere) — no si
 Every module that needs to alert a human calls the same alert() interface; ntfy-to-Nick path is proven and routes correctly; SMS-to-Sandra fails loudly (visible stub, not a silent no-op) until the Twilio adapter is real.
 
 **Verification Method:**
-1. [NICK] Live: W2 Hot lead → Twilio SMS to Sandra. Evidence: screenshot.
+1. [NICK] Live: [[SPEC:W2]] Hot lead → Twilio SMS to Sandra. Evidence: screenshot.
 2. [AUTO] Channel rule: actionable → SMS, non-urgent → ntfy, per D10. Evidence: code-search.
 3. [AUTO] Logging: every notification logged. Evidence: query.
 
@@ -1191,7 +1191,7 @@ The system shall load all service endpoints, ports, API keys, and inference back
 .env file, systemd unit definitions, current N100 service ports
 
 **Outputs:**  
-Env-var-driven endpoints (SW-001 mandatory) consumed by every module: PROD-27 DB layer connection string, PROD-20 event bus, PROD-10 LLM client endpoint (reconciles legacy OLLAMA_BASE_URL naming), PROD-25 notifier (ZEBRA_HOST/PORT), cache path settings for PROD-24
+Env-var-driven endpoints ([[SPEC:SW-001]] mandatory) consumed by every module: [[SPEC:PROD-27]] DB layer connection string, [[SPEC:PROD-20]] event bus, [[SPEC:PROD-10]] LLM client endpoint (reconciles legacy OLLAMA_BASE_URL naming), [[SPEC:PROD-25]] notifier (ZEBRA_HOST/PORT), cache path settings for [[SPEC:PROD-24]]
 
 **Trigger:**  
 Service start / systemd unit boot
@@ -1227,19 +1227,19 @@ System Infrastructure
 Need: every part of the system reads and writes the database through the same guarded path — enforced connection limits, safe queries, and an audit trail — so no module can bypass safety and quietly corrupt or leak data.
 
 **Functional Requirement Specification:**  
-The system shall route all PostgreSQL reads and writes through a single database access layer that enforces: connection pooling (config from INFRA 1), query parameterisation (no string interpolation into SQL), an ALLOWED_TABLES allowlist derived from information_schema after schema stabilisation, and an audit trigger that fires CLOSE 35 on every write. No module opens a raw psycopg2/asyncpg connection directly.
+The system shall route all PostgreSQL reads and writes through a single database access layer that enforces: connection pooling (config from INFRA 1), query parameterisation (no string interpolation into SQL), an ALLOWED_TABLES allowlist derived from information_schema after schema stabilisation, and an audit trigger that fires [[SPEC:PROD-22]] on every write. No module opens a raw psycopg2/asyncpg connection directly.
 
 **Inputs:**  
-PROD-26 runtime config (connection string)
+[[SPEC:PROD-26]] runtime config (connection string)
 
 **Outputs:**  
-DB connections/queries -> PROD-01 task engine, PROD-20 event bus, PROD-22 audit log, and every other module reading/writing PostgreSQL
+DB connections/queries -> [[SPEC:PROD-01]] task engine, [[SPEC:PROD-20]] event bus, [[SPEC:PROD-22]] audit log, and every other module reading/writing PostgreSQL
 
 **Trigger:**  
 Any module needing a DB connection or query
 
 **Dependency Notes:**  
-Distinct from CLOSE 34's schema DDL — this is the connection layer.
+Distinct from [[SPEC:PROD-19]]'s schema DDL — this is the connection layer.
 
 **Acceptance Criteria:**
 NORMAL: All DB access through the layer with parameterized queries.
@@ -1276,10 +1276,10 @@ As the owner running a lights-out box in a kitchen, I need one always-on health 
 The system shall run a health-monitoring service that continuously collects and displays the state of every event-critical resource — services, UPS/power, CPU temp, memory, disk, thermal history, display-fleet network presence, AI-engine readiness, printer, and backup freshness — with per-signal timestamps and fail-visible semantics (never default healthy). It shall be systemd-managed, auto-start on reboot, and be reachable on LAN and via the approved private remote path.
 
 **Inputs:**  
-systemd unit list, N100 temp/UPS sensors, llama-server /health endpoint, PROD-26 runtime config for service names/ports
+systemd unit list, N100 temp/UPS sensors, llama-server /health endpoint, [[SPEC:PROD-26]] runtime config for service names/ports
 
 **Outputs:**  
-Health status -> PROD-25 notifier (alert on failure/threshold breach), PROD-04 dashboard state (status tile)
+Health status -> [[SPEC:PROD-25]] notifier (alert on failure/threshold breach), [[SPEC:PROD-04]] dashboard state (status tile)
 
 **Trigger:**  
 Scheduled health-check tick (systemd timer) or service failure event
@@ -1288,7 +1288,7 @@ Scheduled health-check tick (systemd timer) or service failure event
 Silent infrastructure failure invisible until it damages an event (the 08-21 dnsmasq outage that read 'active' the whole time).
 
 **Acceptance Criteria:**  
-All configured signals render with timestamp + explicit state; stale/unreadable signals show degraded not healthy (URS-HEALTH-005); service auto-starts healthy after cold reboot (URS-HEALTH-004); reachable on LAN + Tailscale.
+All configured signals render with timestamp + explicit state; stale/unreadable signals show degraded not healthy ([[SPEC:URS-HEALTH-005]]); service auto-starts healthy after cold reboot ([[SPEC:URS-HEALTH-004]]); reachable on LAN + Tailscale.
 
 **Verification Method:**
 1. [AUTO] Service-down: kill a service → alert fires. Evidence: log.
@@ -1356,13 +1356,13 @@ Event Execution
 Need: crew can set a timer or get a trip-hazard warning hands-free — no tapping a screen mid-task.
 
 **Functional Requirement Specification:**  
-The system shall deploy three V1.x NPU capabilities on the MT8390 via MediaTek NeuroPilot SDK (TF/PyTorch/ONNX → MDLA 3.0 INT8, ADB sideloaded, 100% offline): (1) V1.1 — Voice Timer: crew speaks a timer, NPU classifies and starts it on-device; (2) V1.2 — Trip Hazard Detection: ambient floor-area camera monitoring via TFLite; (3) V1.1/V1.2 shared infrastructure — the voice/camera close infrastructure from NPU 5. V1.0 NPU scope is passive mood-ring logging only (already decided). V2.0 capabilities are in PROD-35.
+The system shall deploy three V1.x NPU capabilities on the MT8390 via MediaTek NeuroPilot SDK (TF/PyTorch/ONNX → MDLA 3.0 INT8, ADB sideloaded, 100% offline): (1) V1.1 — Voice Timer: crew speaks a timer, NPU classifies and starts it on-device; (2) V1.2 — Trip Hazard Detection: ambient floor-area camera monitoring via TFLite; (3) V1.1/V1.2 shared infrastructure — the voice/camera close infrastructure from NPU 5. V1.0 NPU scope is passive mood-ring logging only (already decided). V2.0 capabilities are in [[SPEC:PROD-35]].
 
 **Inputs:**  
 MT1/MT2 MicroTouch NPU (MDLA 3.0 Deep Learning Accelerator + Tensilica VP6 Vision Processor, confirmed hardware per 2026-07-13 research), mic array, front camera
 
 **Outputs:**  
-Vibe/timer/hazard signals -> PROD-04 kitchen displays (alert overlay), PROD-25 notifier (hazard alerts)
+Vibe/timer/hazard signals -> [[SPEC:PROD-04]] kitchen displays (alert overlay), [[SPEC:PROD-25]] notifier (hazard alerts)
 
 **Trigger:**  
 Continuous passive monitoring during kitchen operation
@@ -1371,7 +1371,7 @@ Continuous passive monitoring during kitchen operation
 Kitchen stress signals and hands-full moments (need a timer, spot a trip hazard) currently require either nothing happening or interrupting someone — the NPU sits unused hardware capable of catching these passively.
 
 **Dependency Notes:**  
-Shares NPU 5's NPU authority boundary (verifies/assists, humans authoritative) — same code guard should gate V1.1/V1.2, not a separate one. See PROD-35 for V2.0 tier (6 capabilities, hardware-gated).
+Shares NPU 5's NPU authority boundary (verifies/assists, humans authoritative) — same code guard should gate V1.1/V1.2, not a separate one. See [[SPEC:PROD-35]] for V2.0 tier (6 capabilities, hardware-gated).
 
 **Rationale:**  
 10-capability MT8390 NPU roadmap locked 2026-07-13 (confidence 0.85), split V1.0/V1.x/V2.0.
@@ -1401,16 +1401,16 @@ Production Core
 As the owner, I want accurate, fully-traceable inventory to fall out of the crew simply closing their kanban cards — every thaw/repack/portion/consume automatically updates stock and lot lineage, every lot traces back to where it came from, and MT2 shows me the trustworthy live picture — without anyone running a separate inventory count.
 
 **Functional Requirement Specification:**  
-The system shall maintain parent-child lot lineage across the full inventory lot lifecycle (thaw/repack/portion/refreeze/consume/waste/overbuy), decrementing parent lots and creating child lots on split, and shall present the MT2 inventory dashboard (drawdown rate, lot age, bin map, stock state, alerts) reconciling to the canonical lot + transaction ledger. Close events fire via CLOSE 1 close_kind=INVENTORY_LOT. MT2 is the designated inventory dashboard surface. V1.x.
+The system shall maintain parent-child lot lineage across the full inventory lot lifecycle (thaw/repack/portion/refreeze/consume/waste/overbuy), decrementing parent lots and creating child lots on split, and shall present the MT2 inventory dashboard (drawdown rate, lot age, bin map, stock state, alerts) reconciling to the canonical lot + transaction ledger. Close events fire via [[SPEC:PROD-38]] close_kind=INVENTORY_LOT. MT2 is the designated inventory dashboard surface. V1.x.
 
 **Intent / User Need:**  
 Turn accurate, fully-traceable inventory into a free byproduct of the crew closing cards — no separate counting step — with MT2 as the shared inventory picture.
 
 **Inputs:**  
-PROD-02 LKL completion-gate closures (bin/location + quantity captured at task close)
+[[SPEC:PROD-02]] LKL completion-gate closures (bin/location + quantity captured at task close)
 
 **Outputs:**  
-MT2 inventory dashboard display; future barcode/NPU predictive-prep-counting (PROD-33) as an alternate input path
+MT2 inventory dashboard display; future barcode/NPU predictive-prep-counting ([[SPEC:PROD-33]]) as an alternate input path
 
 **Trigger:**  
 Kanban card close where the task type implies a lot transformation (repack, freeze, portion, split)
@@ -1419,10 +1419,10 @@ Kanban card close where the task type implies a lot transformation (repack, free
 Inventory drift and lost traceability — physical stock diverging from the system, and inability to trace a portion back to its source lot — plus buying/using on stale stock data.
 
 **Acceptance Criteria:**  
-Every qualifying card close creates exactly one inventory transaction (URS-INV-001); parent-child lineage is reconstructable without cycles (URS-INV-002); lot records carry the full field set and reconcile to transactions (URS-INV-003); inventory closures propose (not auto-print) labels (URS-INV-004); the MT2 dashboard reconciles to the ledger and marks stale data (URS-INV-005).
+Every qualifying card close creates exactly one inventory transaction ([[SPEC:URS-INV-001]]); parent-child lineage is reconstructable without cycles ([[SPEC:URS-INV-002]]); lot records carry the full field set and reconcile to transactions ([[SPEC:URS-INV-003]]); inventory closures propose (not auto-print) labels ([[SPEC:URS-INV-004]]); the MT2 dashboard reconciles to the ledger and marks stale data ([[SPEC:URS-INV-005]]).
 
 **Dependency Notes:**  
-NPU sub-tier V1.3. Distinct from CLOSE 2: CLOSE 2/LKL = WHERE; CLOSE 5/inventory = HOW MUCH/WHICH LOT.
+NPU sub-tier V1.3. Distinct from [[SPEC:PROD-02]]: [[SPEC:PROD-02]]/LKL = WHERE; CLOSE 5/inventory = HOW MUCH/WHICH LOT.
 
 **Open Questions:**  
 MT2 dashboard aspect is a candidate for its own SCREEN-* row.
@@ -1448,25 +1448,25 @@ Production Core
 Need: crew can close a card by voice or by showing the camera the finished item, instead of always tapping — but the NPU only advises, the crew's own claim still decides.
 
 **Functional Requirement Specification:**  
-The system shall provide two alternative card-close modalities on top of CLOSE 1's canonical TaskCloseEvent: (1) V1.1 — Voice close: crew speaks the close command; Chrome Web Speech API on MT1/MT2 captures audio, N100 processes it, sets close_method=VOICE + voice_transcript on the TaskCloseEvent; (2) V1.2 — Camera-verified close: crew holds up the completed item; MT8390 camera captures and NPU classifies it, sets close_method=CAMERA_VERIFIED + verification_thumbnail_path + classification_confidence. NPU output is a plausibility check only — humanClaim remains the authority (NPU cannot override a crew close).
+The system shall provide two alternative card-close modalities on top of [[SPEC:PROD-38]]'s canonical TaskCloseEvent: (1) V1.1 — Voice close: crew speaks the close command; Chrome Web Speech API on MT1/MT2 captures audio, N100 processes it, sets close_method=VOICE + voice_transcript on the TaskCloseEvent; (2) V1.2 — Camera-verified close: crew holds up the completed item; MT8390 camera captures and NPU classifies it, sets close_method=CAMERA_VERIFIED + verification_thumbnail_path + classification_confidence. NPU output is a plausibility check only — humanClaim remains the authority (NPU cannot override a crew close).
 
 **Inputs:**  
-PROD-02 completion-gate schema (already pre-wired for null closed_by_method/verification_thumbnail_path/voice_transcript fields per V1.0 design); PROD-34 NPU capability base
+[[SPEC:PROD-02]] completion-gate schema (already pre-wired for null closed_by_method/verification_thumbnail_path/voice_transcript fields per V1.0 design); [[SPEC:PROD-34]] NPU capability base
 
 **Outputs:**  
-Card close events -> PROD-02 (alternate close modality alongside tap/PIN) and PROD-36 (voice/camera as a lot-transaction input path)
+Card close events -> [[SPEC:PROD-02]] (alternate close modality alongside tap/PIN) and [[SPEC:PROD-36]] (voice/camera as a lot-transaction input path)
 
 **Trigger:**  
 Crew member closes a kanban card via voice command or camera gesture instead of tap+PIN
 
 **Dependency Notes:**  
-CONFORMS TO CLOSE 1.
+CONFORMS TO [[SPEC:PROD-38]].
 
 **Open Questions:**  
-RESOLVED 2026-09-02 (Nick, agnostic — prefers local NPU edge compute for intent classification but doesn't need it for V1.0): this spec's Chrome Web Speech API + N100 approach ships for V1.0. KIT-017's NPU wake-word approach is Nick's preferred long-term direction — treat it as the V1.x/V2 upgrade path once tested and proven, not a launch blocker.
+RESOLVED 2026-09-02 (Nick, agnostic — prefers local NPU edge compute for intent classification but doesn't need it for V1.0): this spec's Chrome Web Speech API + N100 approach ships for V1.0. [[SPEC:KIT-017]]'s NPU wake-word approach is Nick's preferred long-term direction — treat it as the V1.x/V2 upgrade path once tested and proven, not a launch blocker.
 
 **Rationale:**  
-Cites D-051 OVERTURNED (2026-07-09, NPU confirmed accessible via NNAPI/NeuroPilot) as technical foundation; confirms NPU 1/PROD-35's NeuroPilot assumption.
+Cites D-051 OVERTURNED (2026-07-09, NPU confirmed accessible via NNAPI/NeuroPilot) as technical foundation; confirms NPU 1/[[SPEC:PROD-35]]'s NeuroPilot assumption.
 
 **Acceptance Criteria:**  
 Deferred — V2.0 ask. No AC/VM until promoted.
@@ -1496,7 +1496,7 @@ The system shall define a canonical, frozen TaskCloseEvent dataclass (fields: ta
 Crew PIN, task_id, close method (tap/voice/camera/supervisor override), and kind-specific fields (bin_id, qty/unit, lot_id, allergen_flag, voice_transcript, verification_thumbnail_path)
 
 **Outputs:**  
-TaskCloseEvent consumed by: PROD-02 (LKL), PROD-19 (equipment/allergen/van/portion), PROD-36 (inventory lots), PROD-37 (voice/camera close), PROD-22 (audit), PROD-20 (event bus emit)
+TaskCloseEvent consumed by: [[SPEC:PROD-02]] (LKL), [[SPEC:PROD-19]] (equipment/allergen/van/portion), [[SPEC:PROD-36]] (inventory lots), [[SPEC:PROD-37]] (voice/camera close), [[SPEC:PROD-22]] (audit), [[SPEC:PROD-20]] (event bus emit)
 
 **Trigger:**  
 Any crew member closes a task card, by any method (tap/voice/camera/supervisor override)

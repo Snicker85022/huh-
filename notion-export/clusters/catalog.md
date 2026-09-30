@@ -19,7 +19,7 @@ Need: the system understands each menu item — servings, pricing basis, allerge
 The system shall define, on the Square catalog, a set of custom attributes (6 visible + 5 hidden as enumerated in the Design Spec) and shall populate validated values for all active Catering items, such that every value is retrievable via the Square SearchCatalogItems endpoint by the automation layer.
 
 **Functional Requirement Specification:**  
-Tier 1 intrinsic item facts as Square custom attributes — 7 visible (Sandra-editable): serves_min, serves_max, pricing_unit, dietary_flags, allergen_notes, station_type; and 5 hidden (API/RAG only): hot_hold_max_min, cold_hold_max_min, prep_advance_max_hr, quality_risk, default_pan_footprint. 12 of Square's 20-definition cap used, 8 in reserve. Populated for all active Catering items. These attributes feed INVOICE 13 invoice pre-fill confidence, CATALOG 10 sync, W15 BEO timing, and the packing/backward-scheduler solver. Read via SearchCatalogItems (only endpoint returning custom attribute values). Governing principle: the LLM retrieves these parameters and narrates; a deterministic function does the hold-time/packing arithmetic — never let the LLM reason about pan geometry or hold-time math.
+Tier 1 intrinsic item facts as Square custom attributes — 7 visible (Sandra-editable): serves_min, serves_max, pricing_unit, dietary_flags, allergen_notes, station_type; and 5 hidden (API/RAG only): hot_hold_max_min, cold_hold_max_min, prep_advance_max_hr, quality_risk, default_pan_footprint. 12 of Square's 20-definition cap used, 8 in reserve. Populated for all active Catering items. These attributes feed [[SPEC:PROD-07]] invoice pre-fill confidence, [[SPEC:SW-011]] sync, [[SPEC:W15]] BEO timing, and the packing/backward-scheduler solver. Read via SearchCatalogItems (only endpoint returning custom attribute values). Governing principle: the LLM retrieves these parameters and narrates; a deterministic function does the hold-time/packing arithmetic — never let the LLM reason about pan geometry or hold-time math.
 
 **Intent / User Need:**  
 Every downstream workflow (invoicing, BEO timing, packing, scheduling) reads the same authoritative catalog data rather than re-deriving or hallucinating it.
@@ -28,22 +28,22 @@ Every downstream workflow (invoicing, BEO timing, packing, scheduling) reads the
 Sandra's product knowledge (serves counts, dietary/allergen facts, station placement); Nick/Sandra-validated food-safety hold times, prep-advance windows, quality-risk classes, and pan footprints (from the Square Menu RAG Tuning + Equipment & Capacity deliverables).
 
 **Outputs:**  
-Per-item custom-attribute values on every active Square Catering item, retrievable by the automation layer via SearchCatalogItems; consumed by W7 (invoice pre-fill + confidence), W9 (menu sync), W15 (BEO timing), SW-011 (local menu cache), and the CAT-002..006 / PROD-16-V2 packing & scheduling layer.
+Per-item custom-attribute values on every active Square Catering item, retrievable by the automation layer via SearchCatalogItems; consumed by [[SPEC:W7]] (invoice pre-fill + confidence), [[SPEC:W9]] (menu sync), [[SPEC:W15]] (BEO timing), [[SPEC:SW-011]] (local menu cache), and the [[SPEC:CAT-002]]..006 / [[SPEC:PROD-16-V2]] packing & scheduling layer.
 
 **Trigger:**  
-Definition step: one-time Square custom-attribute-definition creation via MCP/API. Population step: manual/assisted enrichment of all ~50 active Catering items. Read: on every W7/W9/W15 run and every SW-011 nightly cache sync.
+Definition step: one-time Square custom-attribute-definition creation via MCP/API. Population step: manual/assisted enrichment of all ~50 active Catering items. Read: on every [[SPEC:W7]]/[[SPEC:W9]]/[[SPEC:W15]] run and every [[SPEC:SW-011]] nightly cache sync.
 
 **Invariants:**  
 Every active Catering item carries a non-null serves_min, pricing_unit, station_type, and (for anything hot/cold-held) the relevant hold-time value. Attribute definitions are never deleted while any item references them. The visible/hidden split is fixed: hidden attributes never surface in the Sandra-facing Dashboard.
 
 **Failure Behavior:**  
-Missing/blank attribute on an item → downstream workflow flags low confidence and routes to human review rather than guessing (never fabricate a hold time or serves count). SearchCatalogItems unreachable → fall back to the SW-011 local PostgreSQL menu cache; if that is also stale, block the affected plan and alert rather than produce an unverified plan.
+Missing/blank attribute on an item → downstream workflow flags low confidence and routes to human review rather than guessing (never fabricate a hold time or serves count). SearchCatalogItems unreachable → fall back to the [[SPEC:SW-011]] local PostgreSQL menu cache; if that is also stale, block the affected plan and alert rather than produce an unverified plan.
 
 **Failure Mode Addressed:**  
 Sparse or absent catalog data producing vague/wrong prep instructions (the 'system doesn't understand food' trust-debt failure); LLM hallucinating hold-time or pan-geometry arithmetic; allergen/dietary data living in an un-queryable category workaround instead of a machine-readable attribute.
 
 **Out of Scope:**  
-Order-level event-logistics attributes (setup_type/tables_count/linens_tier/kitchen_departure) — those are CX-006. Mode-dependent packing geometry — CAT-002. Bill-of-materials explosion — CAT-003. Equipment occupancy — CAT-004. SOP wiring — CAT-005. The deterministic solver/scheduler itself — PROD-16-V2 / CAT-006. Do NOT populate the legacy 'Dietary & Allergy Flags' REGULAR_CATEGORY — dietary_flags replaces it.
+Order-level event-logistics attributes (setup_type/tables_count/linens_tier/kitchen_departure) — those are [[SPEC:CX-006]]. Mode-dependent packing geometry — [[SPEC:CAT-002]]. Bill-of-materials explosion — [[SPEC:CAT-003]]. Equipment occupancy — [[SPEC:CAT-004]]. SOP wiring — [[SPEC:CAT-005]]. The deterministic solver/scheduler itself — [[SPEC:PROD-16-V2]] / [[SPEC:CAT-006]]. Do NOT populate the legacy 'Dietary & Allergy Flags' REGULAR_CATEGORY — dietary_flags replaces it.
 
 **Acceptance Criteria:**  
 NORMAL:
@@ -65,10 +65,10 @@ SILENT FAILURE:
 1) Schema test: confirm all 12 attributes exist and are correctly typed on the Square catalog. 2) Completeness audit: query all active Catering items, confirm 100% have all 12 attributes populated (not just spot-checked). 3) Endpoint-usage code search: confirm SearchCatalogObjects is never used to read these attributes anywhere in the codebase. 4) Governing-principle enforcement test: confirm no LLM-facing code path performs pan-geometry/hold-time math directly — verify via code review plus a test that feeds the LLM ambiguous geometry and confirms it defers to the deterministic function. 5) Resolve the count-discrepancy open question with Nick before this ships to debate. 6) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Maintenance Requirements:**  
-Sandra maintains the 6 visible attributes in the Square Dashboard as the menu evolves. Nick/Sandra own the 5 hidden values (food-safety and packing facts) — reviewed when a recipe or service mode changes. New Catering item added to Square → its attributes must be populated before it can be quoted (enforced by the W7 flag-for-review path). Attribute-definition changes are rare and require confirming the account still sits under the Square cap.
+Sandra maintains the 6 visible attributes in the Square Dashboard as the menu evolves. Nick/Sandra own the 5 hidden values (food-safety and packing facts) — reviewed when a recipe or service mode changes. New Catering item added to Square → its attributes must be populated before it can be quoted (enforced by the [[SPEC:W7]] flag-for-review path). Attribute-definition changes are rare and require confirming the account still sits under the Square cap.
 
 **Dependency Notes:**  
-FEEDS: INVOICE 13 (invoice pre-fill + confidence), CATALOG 10 (Square→NocoDB sync carries these 12 attributes), W15 (BEO timing uses prep_advance_max_hr/hot_hold_max_min/station_type), CATALOG 8 (local PostgreSQL menu cache stores them for hot-path reads), CATALOG 3/CATALOG 5 (packing/equipment tables key off station_type + default_pan_footprint), CATALOG 7 + PACK 2 (TCS + backward scheduler consume hold-times). RECONCILE IN DEBATE: this catalog-level Tier-1 schema vs INVOICE 9's 4 order-level attributes (separate namespace, keep both) and vs CATALOG 1 (which references 'Tier 2 BOM/Packing/Equipment' as a package — CATALOG 2 is Tier 1, distinct).
+FEEDS: [[SPEC:PROD-07]] (invoice pre-fill + confidence), [[SPEC:SW-011]] (Square→NocoDB sync carries these 12 attributes), [[SPEC:W15]] (BEO timing uses prep_advance_max_hr/hot_hold_max_min/station_type), CATALOG 8 (local PostgreSQL menu cache stores them for hot-path reads), CATALOG 3/CATALOG 5 (packing/equipment tables key off station_type + default_pan_footprint), CATALOG 7 + [[SPEC:PROD-16-V2]] (TCS + backward scheduler consume hold-times). RECONCILE IN DEBATE: this catalog-level Tier-1 schema vs [[SPEC:PROD-08]]'s 4 order-level attributes (separate namespace, keep both) and vs [[SPEC:CAT-001]] (which references 'Tier 2 BOM/Packing/Equipment' as a package — [[SPEC:CAT-002]] is Tier 1, distinct).
 
 **External Dependencies:**  
 Square Catalog API (custom attribute definitions + SearchCatalogItems read path); Square account tier's custom-attribute-definition cap; MCP/API write access to create the definitions.
@@ -98,13 +98,13 @@ Production Core
 Need: the system knows that the same dish packs differently depending on how it's served (delivery vs. staffed buffet), so packing instructions are always right for the actual event, not a generic default.
 
 **Functional Requirement Specification:**  
-NocoDB table keyed (item_id, service_mode) holding pan_footprint (full/half/third/sixth), pan_depth_in (2/4/6), fill_qty_per_pan, container_override, notes. Encodes how the same item packs differently by service mode (e.g. broccoli: delivery → disposable half; staffed buffet → 4" third-or-half by co-occupants). Feeds the deterministic packing solver (PACK 2). Target: top 15 frequency items populated before V1 launch.
+NocoDB table keyed (item_id, service_mode) holding pan_footprint (full/half/third/sixth), pan_depth_in (2/4/6), fill_qty_per_pan, container_override, notes. Encodes how the same item packs differently by service mode (e.g. broccoli: delivery → disposable half; staffed buffet → 4" third-or-half by co-occupants). Feeds the deterministic packing solver ([[SPEC:PROD-16-V2]]). Target: top 15 frequency items populated before V1 launch.
 
 **Acceptance Criteria:**  
 Table exists with the keyed schema; top-15 items populated; packing solver reads pan geometry from here, not from LLM inference.
 
 **Open Questions:**  
-Reconcile scope with CATALOG 1 during debate: break out as own table vs. keep as CATALOG 1 child.
+Reconcile scope with [[SPEC:CAT-001]] during debate: break out as own table vs. keep as [[SPEC:CAT-001]] child.
 
 **Verification Method:**
 1. [AUTO] Schema: `item_packing_profiles` exists keyed (item_id, service_mode) with pan_footprint/pan_depth_in/fill_qty_per_pan. Evidence: psql \d.
@@ -138,7 +138,7 @@ NocoDB BOM table (parent_item_id, component_item_id, qty_per_parent, notes) so c
 BOM table exists; the ~6 composite parents populated; closing a parent order explodes into the correct component prep tasks.
 
 **Open Questions:**  
-Reconcile scope with CATALOG 1 during debate (this BOM table is currently listed under the CATALOG 1 package).
+Reconcile scope with [[SPEC:CAT-001]] during debate (this BOM table is currently listed under the [[SPEC:CAT-001]] package).
 
 **Verification Method:**
 1. [AUTO] Schema: `item_components` BOM table exists (parent_item_id, component_item_id, qty_per_parent). Evidence: psql \d.
@@ -172,7 +172,7 @@ NocoDB table (item_id, equipment_id → equipment_list, occupancy_min, notes) ca
 Table exists and joins to equipment_list; scheduler can detect oven/burner/carrier contention and branch accordingly.
 
 **Open Questions:**  
-Reconcile scope with CATALOG 1 during debate (this equipment-contention table is currently listed under the CATALOG 1 package).
+Reconcile scope with [[SPEC:CAT-001]] during debate (this equipment-contention table is currently listed under the [[SPEC:CAT-001]] package).
 
 **Verification Method:**
 1. [AUTO] Schema: `item_equipment` table exists and joins to equipment_list. Evidence: psql.
@@ -220,7 +220,7 @@ SILENT FAILURE:
 1) Join-integrity test: every procedure_id referenced resolves to a real SOP record. 2) Mode-resolution test: item with mode-specific SOPs correctly resolves per service_mode, confirmed against the null/all-modes fallback case too. 3) Staleness test: confirm SOP timing/dependency data is always read live from the SOP record, never cached/duplicated in this join table. 4) Composite-item test: BOM item with multiple component SOPs surfaces all of them correctly. 5) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Open Questions:**  
-Reconcile scope with CATALOG 1 during debate (this SOP-wiring table is currently listed under the CATALOG 1 package).
+Reconcile scope with [[SPEC:CAT-001]] during debate (this SOP-wiring table is currently listed under the [[SPEC:CAT-001]] package).
 
 **Required for Release:**  
 YES
@@ -258,13 +258,13 @@ NEGATIVE:
 SILENT FAILURE:
 6. This is explicitly 'liability protection' — a scheduling bug here isn't a UX annoyance, it's a food-safety and legal risk. Verify with adversarial test cases specifically designed to violate the constraint (tight timelines, long transit) and confirm the system always catches it, never silently produces an unsafe plan that 'looks fine.'
 7. The branch to 'assemble/sear on-site' or 'substitute hold-stable item' must be an actual actionable output crew can follow, not just an internal flag with no visible instruction — verify it surfaces clearly.
-8. Open question flags this needs reconciling with PACK 2 (backward scheduler) — resolve whether this constraint lives here or there as the source of truth before debate builds both independently.
+8. Open question flags this needs reconciling with [[SPEC:PROD-16-V2]] (backward scheduler) — resolve whether this constraint lives here or there as the source of truth before debate builds both independently.
 
 **Verification Method:**  
-1) Boundary tests: exactly-at-limit and just-over-limit cases, confirm deterministic pass/fail. 2) Adversarial scheduling test: construct tight-timeline/long-transit scenarios specifically designed to violate hold times, confirm the system always catches and branches correctly, never silently produces an unsafe plan. 3) Multi-item test: multiple TCS items with different limits on one event, confirm independent evaluation. 4) Missing-data test: TCS item with no hot_hold_max_min configured is flagged, not defaulted to unlimited. 5) Output-actionability check: confirm the on-site-assemble/substitute branch produces a clear, crew-visible instruction. 6) Resolve the CATALOG 7 / PACK 2 scope-overlap open question before parallel debate work begins on both. 7) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
+1) Boundary tests: exactly-at-limit and just-over-limit cases, confirm deterministic pass/fail. 2) Adversarial scheduling test: construct tight-timeline/long-transit scenarios specifically designed to violate hold times, confirm the system always catches and branches correctly, never silently produces an unsafe plan. 3) Multi-item test: multiple TCS items with different limits on one event, confirm independent evaluation. 4) Missing-data test: TCS item with no hot_hold_max_min configured is flagged, not defaulted to unlimited. 5) Output-actionability check: confirm the on-site-assemble/substitute branch produces a clear, crew-visible instruction. 6) Resolve the CATALOG 7 / [[SPEC:PROD-16-V2]] scope-overlap open question before parallel debate work begins on both. 7) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Open Questions:**  
-Reconcile with PACK 2 during debate (TCS danger-zone constraint currently partly implicit there).
+Reconcile with [[SPEC:PROD-16-V2]] during debate (TCS danger-zone constraint currently partly implicit there).
 
 **Required for Release:**  
 YES

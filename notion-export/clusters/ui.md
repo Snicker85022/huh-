@@ -22,7 +22,7 @@ CRM Session PWA (port 3001): customer dropdown, chat, Record mic, End Session; m
 Fallback: Sandra types notes in NocoDB.
 
 **Acceptance Criteria:**  
-NOTE: this row is flagged for recon (possible duplicate of SCREEN-10/CRM 2, same PWA on port 3001) — resolve before debate builds against both in parallel.
+NOTE: this row is flagged for recon (possible duplicate of [[SPEC:SCREEN-10]]/CRM 2, same PWA on port 3001) — resolve before debate builds against both in parallel.
 
 NORMAL:
 1. PWA provides customer dropdown, chat, Record mic, End Session, mobile-responsive.
@@ -35,13 +35,13 @@ NEGATIVE:
 4. End Session with no customer selected is blocked with a clear prompt, not allowed to submit an orphaned session.
 
 SILENT FAILURE:
-5. End Session appearing to succeed in the UI while the backend extraction/write (W4/CRM 3) actually fails must not be possible — verify End Session's success state is gated on confirmed backend completion, not just the UI action being tapped.
+5. End Session appearing to succeed in the UI while the backend extraction/write ([[SPEC:W4]]/CRM 3) actually fails must not be possible — verify End Session's success state is gated on confirmed backend completion, not just the UI action being tapped.
 
 **Verification Method:**  
-1) Recon step (precondition): confirm with Nick and against the live gflip/N100 service on port 3001 whether this row or SCREEN-10 is authoritative before further build work. 2) Unit tests: customer selection required before End Session, mic record/stop handling. 3) Backend-confirmation test: force the CRM 3 extraction/write to fail, confirm End Session does not report false success. 4) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
+1) Recon step (precondition): confirm with Nick and against the live gflip/N100 service on port 3001 whether this row or [[SPEC:SCREEN-10]] is authoritative before further build work. 2) Unit tests: customer selection required before End Session, mic record/stop handling. 3) Backend-confirmation test: force the CRM 3 extraction/write to fail, confirm End Session does not report false success. 4) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Open Questions:**  
-RECON NEEDED: UI-001 and SCREEN-10 (CRM 2) both describe the same CRM Session PWA (port 3001). Recon team: (a) check the live gflip/N100 service on port 3001 to confirm which spec matches deployed reality; (b) confirm with Nick whether UI-001 is safe to deprecate in favor of SCREEN-10, or whether the two cover genuinely distinct scope worth keeping separate.
+RECON NEEDED: [[SPEC:UI-001]] and [[SPEC:SCREEN-10]] (CRM 2) both describe the same CRM Session PWA (port 3001). Recon team: (a) check the live gflip/N100 service on port 3001 to confirm which spec matches deployed reality; (b) confirm with Nick whether [[SPEC:UI-001]] is safe to deprecate in favor of [[SPEC:SCREEN-10]], or whether the two cover genuinely distinct scope worth keeping separate.
 
 **Required for Release:**  
 YES
@@ -68,7 +68,7 @@ Invoice Form PWA (port 3002): 8 sections — Customer, Event, Timing, Dispatch, 
 Fallback: Manual Square invoice.
 
 **Acceptance Criteria:**  
-NOTE: this row is flagged for recon (possible duplicate of SCREEN-09/INVOICE 3, same PWA on port 3002) — AC below applies if recon confirms this row stands; resolve the recon flag before debate builds against this in parallel with SCREEN-09.
+NOTE: this row is flagged for recon (possible duplicate of [[SPEC:SCREEN-09]]/INVOICE 3, same PWA on port 3002) — AC below applies if recon confirms this row stands; resolve the recon flag before debate builds against this in parallel with [[SPEC:SCREEN-09]].
 
 NORMAL:
 1. All 8 sections (Customer, Event, Timing, Dispatch, SKUs, Payment, Title, Future) render and are usable on a mobile-responsive layout.
@@ -84,10 +84,10 @@ SILENT FAILURE:
 5. A section that silently fails to save (network blip during multi-step form fill) must not let the user believe the whole form saved when only part did.
 
 **Verification Method:**  
-1) Recon step (precondition): confirm with Nick and against the live gflip/N100 service on port 3002 whether this row or SCREEN-09 is authoritative before further build work. 2) Unit tests per section: field validation, required-field errors. 3) Persistence test: partial fill, background/reopen, confirm no data loss. 4) Mobile usability test: one-handed real-device test, not just responsive breakpoints. 5) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
+1) Recon step (precondition): confirm with Nick and against the live gflip/N100 service on port 3002 whether this row or [[SPEC:SCREEN-09]] is authoritative before further build work. 2) Unit tests per section: field validation, required-field errors. 3) Persistence test: partial fill, background/reopen, confirm no data loss. 4) Mobile usability test: one-handed real-device test, not just responsive breakpoints. 5) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Open Questions:**  
-RECON NEEDED: UI-002 and SCREEN-09 (INVOICE 3) both describe the same Invoice Form PWA (port 3002). Recon team: (a) check the live gflip/N100 service on port 3002 to confirm which spec matches deployed reality; (b) confirm with Nick whether UI-002 is safe to deprecate in favor of SCREEN-09, or whether the two cover genuinely distinct scope worth keeping separate.
+RECON NEEDED: [[SPEC:UI-002]] and [[SPEC:SCREEN-09]] (INVOICE 3) both describe the same Invoice Form PWA (port 3002). Recon team: (a) check the live gflip/N100 service on port 3002 to confirm which spec matches deployed reality; (b) confirm with Nick whether [[SPEC:UI-002]] is safe to deprecate in favor of [[SPEC:SCREEN-09]], or whether the two cover genuinely distinct scope worth keeping separate.
 
 **Required for Release:**  
 YES
@@ -178,7 +178,7 @@ Production Core
 As a crew member using MicroTouch 1 or 2, I need the device to boot straight into NocoDB with the voice-feedback page reachable, and require a PIN to exit kiosk mode, so that the tablet stays locked to its intended function and can't be accidentally backed out of or reconfigured.
 
 **Functional Requirement Specification:**  
-MicroTouch 1+2: Fully Kiosk Browser with NocoDB loading on boot and the voice-feedback page accessible for W14; PIN required to exit kiosk mode.
+MicroTouch 1+2: Fully Kiosk Browser with NocoDB loading on boot and the voice-feedback page accessible for [[SPEC:W14]]; PIN required to exit kiosk mode.
 
 **Failure Behavior:**  
 Fallback: Chrome without kiosk lock.
@@ -187,7 +187,7 @@ Fallback: Chrome without kiosk lock.
 NOTE: this row is flagged for recon (likely stale pre-build draft contradicting KANBAN 2's actual MT1/MT2 kanban-app behavior) — resolve before debate builds against it.
 
 NORMAL:
-1. MicroTouch 1+2 run Fully Kiosk Browser, load NocoDB on boot, expose the W14 voice-feedback page, and require a PIN to exit kiosk mode.
+1. MicroTouch 1+2 run Fully Kiosk Browser, load NocoDB on boot, expose the [[SPEC:W14]] voice-feedback page, and require a PIN to exit kiosk mode.
 
 EDGE:
 2. Kiosk PIN-exit is tested to actually prevent casual/accidental exit (e.g. multi-finger gesture, accidental long-press) while still allowing intentional authorized exit.

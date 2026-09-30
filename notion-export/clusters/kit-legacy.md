@@ -27,7 +27,7 @@ NORMAL:
 
 EDGE:
 2. Two zones with structurally similar naming (e.g. WIC vs WIF) never produce colliding IDs — the zone code alone disambiguates.
-3. A newly added shelf/bin after go-live follows the same ID convention and gets a physical label before it's referenced by any other spec (URS-LKL-001 depends on this).
+3. A newly added shelf/bin after go-live follows the same ID convention and gets a physical label before it's referenced by any other spec ([[SPEC:URS-LKL-001]] depends on this).
 
 NEGATIVE:
 4. Attempting to create a bin ID that duplicates an existing one is rejected at the data layer, not just caught by convention/discipline.
@@ -278,7 +278,7 @@ SILENT FAILURE:
 7. Marking an execution 'failed' must actually exclude it from the staff member's competency score calculation — verify this isn't just a status flag with no real effect downstream.
 
 **Verification Method:**  
-1) Unit tests: full error-log flow, blank-note rejection, permission gate. 2) Idempotency test: duplicate error-log submission on same task, confirm no double-increment. 3) Attribution test: multi-crew task, confirm error logged against the correct responsible party. 4) Downstream-effect test: confirm a 'failed' execution is actually excluded from the competency score computation (KIT-010/CLOSE 27), not just flagged. 5) Fault-injection test: force the retraining-note write to fail after error_count increments, confirm this surfaces as an error. 6) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
+1) Unit tests: full error-log flow, blank-note rejection, permission gate. 2) Idempotency test: duplicate error-log submission on same task, confirm no double-increment. 3) Attribution test: multi-crew task, confirm error logged against the correct responsible party. 4) Downstream-effect test: confirm a 'failed' execution is actually excluded from the competency score computation ([[SPEC:KIT-010]]/[[SPEC:URS-KIT-METHOD-004]]), not just flagged. 5) Fault-injection test: force the retraining-note write to fail after error_count increments, confirm this surfaces as an error. 6) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Required for Release:**  
 YES
@@ -370,7 +370,7 @@ Need: close a kanban card hands-free by voice ("Hey Taza, [completion statement]
 Voice card closing: crew says "Hey Taza, [completion statement]" at MT1/MT2. Wake word on NPU (<100ms). Android on-device STT transcribes. System matches to active card, confirms, awards points, moves to done pile. Replaces tap for card closing.
 
 **Open Questions:**  
-RESOLVED 2026-09-02: this is Nick's preferred long-term approach (local NPU edge compute for intent classification) but is not required for V1.0 — NPU 5 (PROD-37, Chrome Web Speech API + N100) ships for V1.0. Revisit this as the V1.x/V2 upgrade once the NPU wake-word path is tested and proven.
+RESOLVED 2026-09-02: this is Nick's preferred long-term approach (local NPU edge compute for intent classification) but is not required for V1.0 — NPU 5 ([[SPEC:PROD-37]], Chrome Web Speech API + N100) ships for V1.0. Revisit this as the V1.x/V2 upgrade once the NPU wake-word path is tested and proven.
 
 **Rationale:**  
 Game mechanic IS the inventory capture.

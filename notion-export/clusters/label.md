@@ -22,13 +22,13 @@ An internal Type A label shall contain item, quantity, event/customer, batch or 
 An internal Type A label shall contain in human-readable or QR-linked form: item, quantity, event/customer, batch or lot identifier, prep date, responsible crew identity, use-by date/time, and storage location. All fields shall be sourced from the canonical lot record — no manual re-entry. The label is crew-facing and internal only (Type B customer label is V2.0, URS-LABEL-002).
 
 **Inputs:**  
-Canonical lot record (URS-INV-003): item, qty, event/customer, batch/lot ID, prep date, crew identity (PIN resolved to name), use-by, bin/location.
+Canonical lot record ([[SPEC:URS-INV-003]]): item, qty, event/customer, batch/lot ID, prep date, crew identity (PIN resolved to name), use-by, bin/location.
 
 **Outputs:**  
 A fully-populated Type A ZPL label payload with all required fields and a scannable QR.
 
 **Trigger:**  
-Crew confirms a label proposal (URS-LABEL-006 / URS-INV-004).
+Crew confirms a label proposal ([[SPEC:URS-LABEL-006]] / [[SPEC:URS-INV-004]]).
 
 **Invariants:**  
 All required fields sourced from canonical data; no manual re-entry on the label path; Type A is internal-only (never exposed to customers as a primary label).
@@ -46,7 +46,7 @@ A generated Type A test label contains every required field and scans to the mat
 Printed-label inspection and QR resolution test.
 
 **Maintenance Requirements:**  
-Keep the field list aligned with the lot record schema (URS-INV-003); verify all fields populate correctly when new item types are added.
+Keep the field list aligned with the lot record schema ([[SPEC:URS-INV-003]]); verify all fields populate correctly when new item types are added.
 
 **Dependency Notes:**  
 Content sourced from the lot record (CLOSE 8) + kanban close (LABEL 7 confirm step). QR resolves via LABEL 4. Print path via LABEL 6 (Ethernet ZPL). CROSS-REF: KIT-018 label-on-close. Part of BUNDLE-SMART-LABELS. Parent LABEL 1. Type B (customer) = URS-LABEL-002 V2.0.
@@ -202,13 +202,13 @@ A complete ZPL payload + the Zebra printer's LAN IP.
 A raw ZPL job delivered over TCP port 9100 to the Zebra printer.
 
 **Trigger:**  
-A confirmed print request (URS-LABEL-006).
+A confirmed print request ([[SPEC:URS-LABEL-006]]).
 
 **Invariants:**  
 Print path is Ethernet TCP port 9100 only; no USB branch exists in the code; no CUPS or spool layer on the N100.
 
 **Failure Behavior:**  
-An attempt to print via USB — whether code error or misconfiguration — is a build bug, not a runtime fallback. The print path code shall not contain a USB branch. Ethernet unavailable → queue/flag per URS-LABEL-006.
+An attempt to print via USB — whether code error or misconfiguration — is a build bug, not a runtime fallback. The print path code shall not contain a USB branch. Ethernet unavailable → queue/flag per [[SPEC:URS-LABEL-006]].
 
 **Failure Mode Addressed:**  
 A label system that silently breaks after a hardware reshuffle (USB occupied by AKiTiO) because it was written against the USB path; or a print that requires a driver/spool layer that adds latency and failure surface.
@@ -253,13 +253,13 @@ The label service shall require confirmation for automatic proposals, log every 
 The label service shall (1) require explicit crew confirmation before printing any automatically-proposed label, (2) log every print attempt with timestamp, crew, lot, and outcome, (3) support controlled reprints as a linked, distinguishable record, and (4) queue or flag jobs when the printer is unavailable without losing the payload. Cancel prints nothing and creates no log entry; a successful confirm logs one attempt; a reprint creates a linked attempt distinct from the original.
 
 **Inputs:**  
-Crew confirm or cancel; the pre-populated label payload (URS-LABEL-001); printer availability status.
+Crew confirm or cancel; the pre-populated label payload ([[SPEC:URS-LABEL-001]]); printer availability status.
 
 **Outputs:**  
-On confirm: one logged print attempt + one ZPL job to URS-LABEL-005. On cancel: nothing. On offline: one queued/flagged exception with full payload preserved. On reprint: one linked log entry + one ZPL job.
+On confirm: one logged print attempt + one ZPL job to [[SPEC:URS-LABEL-005]]. On cancel: nothing. On offline: one queued/flagged exception with full payload preserved. On reprint: one linked log entry + one ZPL job.
 
 **Trigger:**  
-Crew confirms or cancels a label proposal (URS-INV-004 / URS-LABEL-006); reprint request; printer-unavailability detection.
+Crew confirms or cancels a label proposal ([[SPEC:URS-INV-004]] / [[SPEC:URS-LABEL-006]]); reprint request; printer-unavailability detection.
 
 **Invariants:**  
 No print without explicit confirmation; every print attempt (including failed) is logged; reprints are linked and distinct; offline printer never silently drops a job.
@@ -277,10 +277,10 @@ Cancel prints nothing; confirm logs one attempt; reprint creates a linked attemp
 Happy-path, reprint, retry, and offline-printer tests.
 
 **Maintenance Requirements:**  
-Keep the print-attempt log fields aligned with PROD-22 audit schema; verify queue persistence survives service restarts (a dropped queue means lost label jobs on reboot).
+Keep the print-attempt log fields aligned with [[SPEC:PROD-22]] audit schema; verify queue persistence survives service restarts (a dropped queue means lost label jobs on reboot).
 
 **Dependency Notes:**  
-This is the service-layer contract wrapping LABEL 6 (print transport). Confirm step follows from CLOSE 9 (label proposal). Print attempts are logged to the audit trail (CLOSE 35). Offline-printer exceptions route through EXCEPT 1 (Exception Router). Part of BUNDLE-SMART-LABELS. Parent LABEL 1.
+This is the service-layer contract wrapping LABEL 6 (print transport). Confirm step follows from CLOSE 9 (label proposal). Print attempts are logged to the audit trail ([[SPEC:PROD-22]]). Offline-printer exceptions route through EXCEPT 1 (Exception Router). Part of BUNDLE-SMART-LABELS. Parent LABEL 1.
 
 **Required for Release:**  
 YES

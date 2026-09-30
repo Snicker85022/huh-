@@ -46,10 +46,10 @@ Each supported action maps to one transaction; retry does not duplicate it.
 Action-matrix and idempotent replay test.
 
 **Maintenance Requirements:**  
-Keep the action→transaction-type map current as new card kinds are added; keep the idempotency key aligned with PROD-38.
+Keep the action→transaction-type map current as new card kinds are added; keep the idempotency key aligned with [[SPEC:PROD-38]].
 
 **Dependency Notes:**  
-Fires off the canonical task close (CLOSE 12 / CLOSE 1, close_kind=INVENTORY_LOT) through EXCEPT 2 (Event Bus). The transaction updates lot state (CLOSE 7/CLOSE 8). CROSS-REF: overlaps KIT-018 (inventory-as-side-effect) — reconcile in debate. Part of BUNDLE-INVENTORY-LOT-TRACKING. Parent CLOSE 5. Star printer prints a use-by label (date/item/qty/bin/packed-by/use-by + QR) on qualifying closes — see CLOSE 9.
+Fires off the canonical task close (CLOSE 12 / [[SPEC:PROD-38]], close_kind=INVENTORY_LOT) through EXCEPT 2 (Event Bus). The transaction updates lot state (CLOSE 7/CLOSE 8). CROSS-REF: overlaps KIT-018 (inventory-as-side-effect) — reconcile in debate. Part of BUNDLE-INVENTORY-LOT-TRACKING. Parent CLOSE 5. Star printer prints a use-by label (date/item/qty/bin/packed-by/use-by + QR) on qualifying closes — see CLOSE 9.
 
 **Required for Release:**  
 NO
@@ -187,7 +187,7 @@ A configured inventory-related card closure shall propose a pre-populated label 
 A configured inventory-related card closure shall PROPOSE a pre-populated label (lot/item/quantity/bin) without printing, until the crew confirms. Cancel prints nothing; confirm creates exactly one print request. The proposal is pre-filled from canonical lot data — crew confirm, they don't re-enter.
 
 **Inputs:**  
-The closing inventory lot record (URS-INV-003); crew confirm/cancel.
+The closing inventory lot record ([[SPEC:URS-INV-003]]); crew confirm/cancel.
 
 **Outputs:**  
 A pre-populated label proposal, and on confirm exactly one print request to the label subsystem.
@@ -211,7 +211,7 @@ Proposal contains lot/item/quantity/bin data; cancel prints nothing; confirm cre
 Inventory-to-label integration test.
 
 **Maintenance Requirements:**  
-Keep the proposal template aligned with the Type A label spec (URS-LABEL-001) and the printer path (URS-LABEL-005).
+Keep the proposal template aligned with the Type A label spec ([[SPEC:URS-LABEL-001]]) and the printer path ([[SPEC:URS-LABEL-005]]).
 
 **Dependency Notes:**  
 Proposal is populated from the lot record (CLOSE 8). Confirmed print request goes to the label subsystem (URS-LABEL family / LABEL 1). CROSS-REF: KIT-018 (label print on inventory close). Part of BUNDLE-INVENTORY-LOT-TRACKING. Parent CLOSE 5.
@@ -241,13 +241,13 @@ The MT2 inventory view shall show current drawdown, lot age, bin map, and active
 The MT2 inventory view shall show current drawdown, lot age, bin map, and active inventory alerts, computed from canonical lot and transaction data. Dashboard totals shall reconcile to the lot ledger, and stale data shall be visibly identified (never shown as current).
 
 **Inputs:**  
-Canonical lot records + transaction ledger (URS-INV-001/002/003); configured alert thresholds (age, low-stock).
+Canonical lot records + transaction ledger ([[SPEC:URS-INV-001]]/002/003); configured alert thresholds (age, low-stock).
 
 **Outputs:**  
 A rendered MT2 inventory dashboard: drawdown rate, lot age (green/yellow/red), bin map, stock state, alerts — reconciling to the ledger.
 
 **Trigger:**  
-Continuous display; refresh on inventory-transaction events (URS-INV-001).
+Continuous display; refresh on inventory-transaction events ([[SPEC:URS-INV-001]]).
 
 **Invariants:**  
 Displayed totals always reconcile to the lot ledger; stale data is always visibly marked; MT2 is the canonical inventory surface (MT1=kanban, z33=scoreboard).

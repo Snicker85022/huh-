@@ -40,7 +40,7 @@ SILENT FAILURE:
 1) Unit tests: exactly 3 blocks present, correct order, correct position relative to food items, price hard-locked at $0. 2) Regeneration test: regenerate an existing invoice, confirm no duplicate blocks. 3) Pre-publish gate test: simulate a partial-generation failure (one block missing), confirm publish is blocked. 4) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Open Questions:**  
-CONSOLIDATION CANDIDATE: CX-001..007 (7 rows, one invoice-block feature) — consider merging.
+CONSOLIDATION CANDIDATE: [[SPEC:CX-001]]..007 (7 rows, one invoice-block feature) — consider merging.
 
 **Required for Release:**  
 YES
@@ -125,7 +125,7 @@ SILENT FAILURE:
 6. Kitchen departure time silently using stale/cached drive-time data (traffic pattern changes, venue changes) must be caught — verify it's computed fresh at generation time, not cached from an earlier draft.
 
 **Verification Method:**  
-1) Unit tests: full-data render, missing-address blocks computation, missing-access-notes clean render. 2) Data-leak test: confirm gate codes/access notes never appear on any customer-facing surface (cross-check against CX-001..007's customer-visible blocks). 3) Freshness test: confirm kitchen_departure recomputes from current data at generation time, not a stale cached value. 4) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
+1) Unit tests: full-data render, missing-address blocks computation, missing-access-notes clean render. 2) Data-leak test: confirm gate codes/access notes never appear on any customer-facing surface (cross-check against [[SPEC:CX-001]]..007's customer-visible blocks). 3) Freshness test: confirm kitchen_departure recomputes from current data at generation time, not a stale cached value. 4) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Required for Release:**  
 YES
@@ -164,10 +164,10 @@ NEGATIVE:
 
 SILENT FAILURE:
 5. Setup type silently defaulting to a wrong value (e.g. Indoor) when the source data is actually ambiguous/missing would misinform kitchen_departure and logistics planning downstream — verify there's no silent default, only explicit values or a blocking error.
-6. This block feeds CX-006's backend setup_type attribute — verify the customer-visible text and the backend attribute value never disagree (single source, not two independently-set values that can drift).
+6. This block feeds [[SPEC:CX-006]]'s backend setup_type attribute — verify the customer-visible text and the backend attribute value never disagree (single source, not two independently-set values that can drift).
 
 **Verification Method:**  
-1) Unit tests: full-data render, missing-decor-notes clean render, missing-required-field blocks generation. 2) Consistency test: confirm this block's setup_type text and CX-006's backend setup_type attribute are derived from the same source value, never independently divergent. 3) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
+1) Unit tests: full-data render, missing-decor-notes clean render, missing-required-field blocks generation. 2) Consistency test: confirm this block's setup_type text and [[SPEC:CX-006]]'s backend setup_type attribute are derived from the same source value, never independently divergent. 3) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Required for Release:**  
 YES
@@ -238,10 +238,10 @@ NEGATIVE:
 
 SILENT FAILURE:
 5. These attributes must genuinely never appear on any customer-visible surface (Square customer view, printed invoice) — verify this with an actual customer-view render check, not just 'not customer-visible' as a design intent.
-6. kitchen_departure (timestamp) drifting out of sync with the customer-visible VENUE & LOGISTICS block's departure time (CX-003) would mean routing/timeline logic operates on a different value than what the crew sees — verify these are the same source value, not independently computed.
+6. kitchen_departure (timestamp) drifting out of sync with the customer-visible VENUE & LOGISTICS block's departure time ([[SPEC:CX-003]]) would mean routing/timeline logic operates on a different value than what the crew sees — verify these are the same source value, not independently computed.
 
 **Verification Method:**  
-1) Unit tests: each attribute's valid values including edge values (zero, None), invalid-value rejection. 2) Customer-view render test: render the actual customer-facing Square invoice, confirm none of these four attributes appear anywhere on it. 3) Consistency test: confirm kitchen_departure here is byte-identical to the value shown in CX-003, sourced from the same computation, not two independent ones. 4) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
+1) Unit tests: each attribute's valid values including edge values (zero, None), invalid-value rejection. 2) Customer-view render test: render the actual customer-facing Square invoice, confirm none of these four attributes appear anywhere on it. 3) Consistency test: confirm kitchen_departure here is byte-identical to the value shown in [[SPEC:CX-003]], sourced from the same computation, not two independent ones. 4) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Required for Release:**  
 YES

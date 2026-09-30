@@ -110,7 +110,7 @@ NEGATIVE:
 
 SILENT FAILURE:
 6. The procedure going stale (system architecture changes since it was last tested) is the biggest risk to a DR plan — verify there's a re-test cadence, not a single successful test that's then trusted indefinitely.
-7. 'Rebuilds from backups' assumes the backups themselves are good — this DR test is only meaningful if it's run using the actual current backup artifacts (see OPS-001's tested-restore), not a hand-picked known-good snapshot.
+7. 'Rebuilds from backups' assumes the backups themselves are good — this DR test is only meaningful if it's run using the actual current backup artifacts (see [[SPEC:OPS-001]]'s tested-restore), not a hand-picked known-good snapshot.
 
 **Verification Method:**  
 1) Full DR drill: execute the documented procedure on spare hardware, using real current backups, timed end-to-end, confirm under 4 hours AND functional correctness of the rebuilt system. 2) Independent-operator test: have someone other than the procedure's author follow it, confirm it's actually sufficient documentation. 3) Recurring re-test cadence: schedule periodic DR drills (e.g. quarterly) so the procedure doesn't go stale against real system changes. 4) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.

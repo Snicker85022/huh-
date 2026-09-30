@@ -43,7 +43,7 @@ SILENT FAILURE:
 Umbrella/container spec for the AI prompt library mechanism, governing PROMPT 2..PROMPT 8 collectively: PROMPT 2 (lead parser), PROMPT 3 (lead scoring), PROMPT 4 (voice note parser), PROMPT 5 (invoice postprocess), PROMPT 6 (CRM session opener), PROMPT 7 (precall brief) — 6 prompt files — plus PROMPT 8 (command_registry.json, voice command routing; a JSON config, not a text prompt).
 
 **Open Questions:**  
-FRS previously stated "8 prompt files" but only 6 are documented as individual specs (AI-002..007), plus 1 JSON registry (PROMPT 8) that isn't a prompt file — confirm the real count on /opt/taza/prompts/ (are 2 prompts undocumented?) or correct the stale "8" figure.
+FRS previously stated "8 prompt files" but only 6 are documented as individual specs ([[SPEC:AI-002]]..007), plus 1 JSON registry (PROMPT 8) that isn't a prompt file — confirm the real count on /opt/taza/prompts/ (are 2 prompts undocumented?) or correct the stale "8" figure.
 
 **Required for Release:**  
 YES
@@ -82,10 +82,10 @@ NEGATIVE:
 
 SILENT FAILURE:
 5. Silent misparse (extracts a real-looking but wrong name/date/guest-count from a genuine lead email) is worse than an outright failure — verify against a set of real historical lead emails with known-correct expected output, not just structurally-valid-JSON checking.
-6. This feeds W1/CRM 21 (Lead Capture) directly — verify the two specs' expected schemas actually match, not independently drifted.
+6. This feeds [[SPEC:W1]]/CRM 21 (Lead Capture) directly — verify the two specs' expected schemas actually match, not independently drifted.
 
 **Verification Method:**  
-1) Golden-set test: real historical Wix/Gmail lead emails with known-correct expected JSON, verify exact field accuracy, not just valid-JSON-ness. 2) Template-drift test: a reformatted/unusual email structure, confirm graceful failure or correct adaptation, not silent misparse. 3) False-positive test: non-lead emails that superficially resemble lead notifications, confirm no fabricated lead created. 4) Schema-consistency check against CRM 21 (W1)'s expected lead record shape. 5) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
+1) Golden-set test: real historical Wix/Gmail lead emails with known-correct expected JSON, verify exact field accuracy, not just valid-JSON-ness. 2) Template-drift test: a reformatted/unusual email structure, confirm graceful failure or correct adaptation, not silent misparse. 3) False-positive test: non-lead emails that superficially resemble lead notifications, confirm no fabricated lead created. 4) Schema-consistency check against CRM 21 ([[SPEC:W1]])'s expected lead record shape. 5) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Required for Release:**  
 YES
@@ -124,10 +124,10 @@ NEGATIVE:
 
 SILENT FAILURE:
 5. Classification drift over time (if the underlying model changes) without anyone noticing the scoring behavior shifted would silently change which leads get prioritized — verify against a fixed golden-set of example leads with known-correct classifications, re-run periodically, not just validated once at launch.
-6. This directly feeds W2/CRM 22's SMS-to-Sandra trigger for Hot leads — verify the full path (score → SMS) is tested end-to-end, not just this prompt's output in isolation.
+6. This directly feeds [[SPEC:W2]]/CRM 22's SMS-to-Sandra trigger for Hot leads — verify the full path (score → SMS) is tested end-to-end, not just this prompt's output in isolation.
 
 **Verification Method:**  
-1) Golden-set test: a fixed set of real/representative leads with Nick-confirmed correct classifications, verify accuracy, and re-run this set periodically to catch drift. 2) Consistency test: repeated runs of the same borderline input, confirm stable classification. 3) Sparse-data test: minimal-info lead still classifies without error. 4) End-to-end test: confirm a Hot classification actually triggers the CRM 22 (W2) SMS-to-Sandra path. 5) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
+1) Golden-set test: a fixed set of real/representative leads with Nick-confirmed correct classifications, verify accuracy, and re-run this set periodically to catch drift. 2) Consistency test: repeated runs of the same borderline input, confirm stable classification. 3) Sparse-data test: minimal-info lead still classifies without error. 4) End-to-end test: confirm a Hot classification actually triggers the CRM 22 ([[SPEC:W2]]) SMS-to-Sandra path. 5) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Required for Release:**  
 YES
@@ -166,10 +166,10 @@ NEGATIVE:
 
 SILENT FAILURE:
 5. A wrong linked-record match (voice note about Customer A gets linked to Customer B's record due to a name-similarity error) would corrupt CRM data in a way that's hard to notice until a customer complains — verify with a specific test using similarly-named customers/accounts.
-6. This feeds the nightly deep analysis (CRM 5/W6) and CRM record promotion — a bad extraction here propagates forward; verify with an end-to-end test through to the actual NocoDB write, not just the prompt's isolated JSON output.
+6. This feeds the nightly deep analysis (CRM 5/[[SPEC:W6]]) and CRM record promotion — a bad extraction here propagates forward; verify with an end-to-end test through to the actual NocoDB write, not just the prompt's isolated JSON output.
 
 **Verification Method:**  
-1) Golden-set test: real anonymized voice-note transcripts with known-correct expected extraction, verify field accuracy. 2) Similarity-confusion test: similarly-named customers/accounts, confirm correct linked-record resolution, not cross-contamination. 3) Transcription-noise test: inputs with realistic Whisper transcription errors, confirm resilience. 4) End-to-end test: voice note through to actual NocoDB write via CRM 5 (W6), confirm the full pipeline lands correct data, not just the prompt's isolated output. 5) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
+1) Golden-set test: real anonymized voice-note transcripts with known-correct expected extraction, verify field accuracy. 2) Similarity-confusion test: similarly-named customers/accounts, confirm correct linked-record resolution, not cross-contamination. 3) Transcription-noise test: inputs with realistic Whisper transcription errors, confirm resilience. 4) End-to-end test: voice note through to actual NocoDB write via CRM 5 ([[SPEC:W6]]), confirm the full pipeline lands correct data, not just the prompt's isolated output. 5) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Required for Release:**  
 YES
@@ -283,10 +283,10 @@ Atomic Requirement
 Production Core
 
 **User Requirement Statement:**  
-Need: registry of recognized voice commands so W14 Path A matches spoken commands to actions without invoking a model.
+Need: registry of recognized voice commands so [[SPEC:W14]] Path A matches spoken commands to actions without invoking a model.
 
 **Functional Requirement Specification:**  
-command_registry.json: voice commands for W14 Path A
+command_registry.json: voice commands for [[SPEC:W14]] Path A
 
 **Failure Behavior:**  
 Fallback: reduce to 5 core commands.
@@ -295,7 +295,7 @@ Fallback: reduce to 5 core commands.
 NOTE: this is the command registry for Path A (on-device NPU classification, PROMPT 9) — same V1.0 scoping caveat applies: preferred long-term, not required for V1.0.
 
 NORMAL:
-1. command_registry.json defines the voice commands recognized by W14 Path A, and every registered command routes to its correct action.
+1. command_registry.json defines the voice commands recognized by [[SPEC:W14]] Path A, and every registered command routes to its correct action.
 
 EDGE:
 2. Two registered commands with similar phrasing don't ambiguously overlap in matching — each phrase maps deterministically to exactly one command.

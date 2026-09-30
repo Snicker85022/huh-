@@ -48,7 +48,7 @@ Event Execution
 Need: mini-tutorial on every task card (auto-shown below competency threshold) explaining industry-default vs. Taza way and why it matters — training at the point of work.
 
 **Functional Requirement Specification:**  
-Instructional panel system: NocoDB table storing 3–5 panel visual mini-tutorials per practice (industry default / Taza way / client-experience difference / Lexicon term). Linked to task_type_id. On every task kanban card, a tap-to-view icon is always visible. For crew below competency threshold (CLOSE 27), the panel auto-surfaces inline before task start. Panels authored by Nick and Sandra; the V1 visual training asset.
+Instructional panel system: NocoDB table storing 3–5 panel visual mini-tutorials per practice (industry default / Taza way / client-experience difference / Lexicon term). Linked to task_type_id. On every task kanban card, a tap-to-view icon is always visible. For crew below competency threshold ([[SPEC:URS-KIT-METHOD-004]]), the panel auto-surfaces inline before task start. Panels authored by Nick and Sandra; the V1 visual training asset.
 
 **Failure Behavior:**  
 Fallback: panels as static Notion images (no auto-surfacing, no competency gating).
@@ -56,7 +56,7 @@ Fallback: panels as static Notion images (no auto-surfacing, no competency gatin
 **Acceptance Criteria:**  
 NORMAL:
 1. Tap-to-view icon is always visible on every task kanban card, linking to the correct panel(s) for that task_type_id.
-2. Crew below the competency threshold (CLOSE 27) automatically sees the panel surfaced inline before task start, without tapping.
+2. Crew below the competency threshold ([[SPEC:URS-KIT-METHOD-004]]) automatically sees the panel surfaced inline before task start, without tapping.
 
 EDGE:
 3. A crew member crossing the competency threshold mid-shift stops getting the auto-surface behavior on their very next task of that type, without requiring an app restart.
@@ -66,11 +66,11 @@ NEGATIVE:
 5. A crew member above threshold attempting to tap-view the panel manually still can (opt-in access is not gated by competency, only the automatic surfacing is).
 
 SILENT FAILURE:
-6. Auto-surface logic silently failing to trigger for a genuinely below-threshold crew member (integration gap with CLOSE 27's experience score) would defeat the entire training-safety purpose of this row — verify with a real below-threshold test account, not just a mocked flag.
+6. Auto-surface logic silently failing to trigger for a genuinely below-threshold crew member (integration gap with [[SPEC:URS-KIT-METHOD-004]]'s experience score) would defeat the entire training-safety purpose of this row — verify with a real below-threshold test account, not just a mocked flag.
 7. Panel content going stale (SOP changes but panel isn't updated) is a content-maintenance risk, not a code risk — flag as needing a periodic content-audit process tied to SOP changes, not assumed to stay in sync automatically.
 
 **Verification Method:**  
-1) Unit tests: tap-to-view always present, auto-surface triggers correctly for below-threshold accounts, opt-in view available for above-threshold accounts. 2) Integration test: real below-threshold test crew account, confirm actual CLOSE 27 experience score correctly drives the auto-surface behavior end-to-end. 3) Threshold-crossing test: confirm behavior changes on the very next task after crossing. 4) Content-gap test: task_type with no panels shows a graceful state. 5) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
+1) Unit tests: tap-to-view always present, auto-surface triggers correctly for below-threshold accounts, opt-in view available for above-threshold accounts. 2) Integration test: real below-threshold test crew account, confirm actual [[SPEC:URS-KIT-METHOD-004]] experience score correctly drives the auto-surface behavior end-to-end. 3) Threshold-crossing test: confirm behavior changes on the very next task after crossing. 4) Content-gap test: task_type with no panels shows a graceful state. 5) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Required for Release:**  
 YES
@@ -172,7 +172,7 @@ NEGATIVE:
 
 SILENT FAILURE:
 5. If the event record is missing entirely (edge case, data gap), the screen must not silently show generic/wrong content that looks like it's for this event — verify a defined fallback (skip screen, or clear 'data unavailable' state) rather than a plausible-looking but wrong summary.
-6. This screen is brand/culture content, easy to deprioritize in a rebuild — flag alongside KANBAN 1's D-KIT-001 concern: verify this doesn't quietly disappear in a future UI refresh.
+6. This screen is brand/culture content, easy to deprioritize in a rebuild — flag alongside KANBAN 1's D-[[SPEC:KIT-001]] concern: verify this doesn't quietly disappear in a future UI refresh.
 
 **Verification Method:**  
 1) Unit test: screen renders correct 3-4 lines sourced from a real event record, timed at ~10s. 2) Data-gap test: incomplete or missing event record, confirm a defined graceful fallback rather than fabricated-looking content. 3) Real-event walkthrough: Nick/Sandra confirm the displayed summary accurately reflects an actual real event's data. 4) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
@@ -262,13 +262,13 @@ Event Execution
 Need: searchable notes field on events/menu items/setups/tasks/equipment capturing reasoning behind Taza-specific decisions; task cards show an indicator when a note exists.
 
 **Functional Requirement Specification:**  
-KB taza_way_notes field: every relevant NocoDB table (event_templates, menu_items, setup_specs, task_types, equipment) gains a taza_way_notes text field storing the reasoning behind Taza-specific decisions. Written by Sandra/Nick directly, CULT-006, or CULT-007. Searchable; task cards show an indicator when a note exists.
+KB taza_way_notes field: every relevant NocoDB table (event_templates, menu_items, setup_specs, task_types, equipment) gains a taza_way_notes text field storing the reasoning behind Taza-specific decisions. Written by Sandra/Nick directly, [[SPEC:CULT-006]], or [[SPEC:CULT-007]]. Searchable; task cards show an indicator when a note exists.
 
 **Failure Behavior:**  
 Fallback: no rationale capture — Taza-way knowledge stays in Sandra's head.
 
 **Acceptance Criteria:**  
-taza_way_notes field added to all specified tables; content written by CULT-006/CULT-007 pipelines; field searchable; task cards show indicator when a note exists
+taza_way_notes field added to all specified tables; content written by [[SPEC:CULT-006]]/[[SPEC:CULT-007]] pipelines; field searchable; task cards show indicator when a note exists
 
 **Verification Method:**
 1. [AUTO] Schema: taza_way_notes field present on event_templates, menu_items, setup_specs, task_types, equipment. Evidence: psql \d.
@@ -294,7 +294,7 @@ Event Execution
 Need: TV dashboard header rotates through Lexicon terms + definitions every 8-10 min — passive vocabulary reinforcement.
 
 **Functional Requirement Specification:**  
-TV dashboard Lexicon header rotation: the TV dashboard header rotates through Taza Lexicon terms and definitions, one at a time, every 8–10 minutes, styled subtly to match the dashboard. Pulled live from the CULT-001 Lexicon table.
+TV dashboard Lexicon header rotation: the TV dashboard header rotates through Taza Lexicon terms and definitions, one at a time, every 8–10 minutes, styled subtly to match the dashboard. Pulled live from the [[SPEC:CULT-001]] Lexicon table.
 
 **Failure Behavior:**  
 Fallback: no ambient vocabulary reinforcement.

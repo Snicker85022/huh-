@@ -154,16 +154,16 @@ N100-served dashboard HTML/SSE/WebSocket pushes over LAN; for the 55" Fire TV, t
 Glanceable operational dashboards (NOW/NEXT/PREP-ALERTS) on the operational cluster; spoken Alexa alerts + cache answers on the Fire TV; full-screen onboarding panels on the 50".
 
 **Failure Behavior:**  
-TV offline → network-presence monitor (TV-002) sends SMS naming the screen. N100 serving failure → each TV falls back to local page (TV-004). 50" onboarding is non-critical.
+TV offline → network-presence monitor ([[SPEC:TV-002]]) sends SMS naming the screen. N100 serving failure → each TV falls back to local page ([[SPEC:TV-004]]). 50" onboarding is non-critical.
 
 **Out of Scope:**  
-TV-001 (WoL/auto-boot), TV-002 (presence monitoring), TV-003/011 (voice nav), TV-004 (fallback), SSB-001..007 (dashboard content), ALC-001..006 (Alexa), SCREEN-12/CULT-002 (crew-training content). HW-004 = physical display fleet only.
+[[SPEC:TV-001]] (WoL/auto-boot), [[SPEC:TV-002]] (presence monitoring), [[SPEC:TV-003]]/011 (voice nav), [[SPEC:TV-004]] (fallback), [[SPEC:SSB-001]]..007 (dashboard content), [[SPEC:ALC-001]]..006 (Alexa), [[SPEC:SCREEN-12]]/[[SPEC:CULT-002]] (crew-training content). [[SPEC:HW-004]] = physical display fleet only.
 
 **Acceptance Criteria:**  
 Each TV displays 1080p content for at least five minutes without dropout and remains awake during configured operating hours.
 
 **Verification Method:**  
-Confirm all 4 TVs mounted and (once the 50" is networked) reachable on LAN; each operational TV renders its assigned dashboard legibly from a primary work position (SSB-002 glanceability); Fire TV runs the Alexa skill; 50" loads the onboarding panel set.
+Confirm all 4 TVs mounted and (once the 50" is networked) reachable on LAN; each operational TV renders its assigned dashboard legibly from a primary work position ([[SPEC:SSB-002]] glanceability); Fire TV runs the Alexa skill; 50" loads the onboarding panel set.
 
 **Maintenance Requirements:**  
 Update DHCP reservations + maintain scripts when a TV is added/swapped; network the 50"; keep TV→role mapping documented so a swap doesn't silently move the Alexa role off the Fire TV.
@@ -286,7 +286,7 @@ SILENT FAILURE:
 1) Network test: confirm NAT, static IP binding, SPI firewall active. 2) Power-cycle recovery drill: physically power-cycle the router, trigger the known IP-reversion issue, execute the documented 30s touchscreen restore, confirm the LAN returns to the exact expected IP. 3) Backup-restore drill: restore router config from the FAT32 USB backup, confirm it actually works, not just that the backup file exists. 4) Router-failure alerting: confirm there's a monitoring signal if the router itself goes offline. 5) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Dependency Notes:**  
-Prior docs used informal HW-00X numbering that collides across documents; this HW-007 is the canonical registry ID for the router — not previously in the HW-001..006 series despite being a hard V1.0 dependency.
+Prior docs used informal HW-00X numbering that collides across documents; this [[SPEC:HW-007]] is the canonical registry ID for the router — not previously in the [[SPEC:HW-001]]..006 series despite being a hard V1.0 dependency.
 
 **Open Questions:**  
 FLAGGED OUT OF DATE by Nick, specifics TBD. Confirm: ER605 V2 still live? Static IP/MAC-binding workaround, power-cycle/Cox quirk still accurate?
@@ -331,7 +331,7 @@ SILENT FAILURE:
 1) Real power-down test: pull wall power, confirm ONBATTERY event fires, emergency-print triggers, extended-outage graceful shutdown triggers with correct timing. 2) Runtime-measurement test: timed discharge test under actual measured idle load, confirm real runtime matches the 30-40 min claim. 3) USB-monitoring health check: verify the UPS→N100 monitoring link is itself checked periodically, not assumed permanently working. 4) Battery-health check: periodic UPS self-test/health check beyond the initial QA pass. 5) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Dependency Notes:**  
-Required by EPR-001..007 architecture. Prior docs numbered this hardware "HW-002" informally — collides with the registry's actual INFRA 3 (21.5" touchscreen); INFRA 9 is the canonical ID.
+Required by [[SPEC:EPR-001]]..007 architecture. Prior docs numbered this hardware "[[SPEC:HW-002]]" informally — collides with the registry's actual INFRA 3 (21.5" touchscreen); INFRA 9 is the canonical ID.
 
 **Required for Release:**  
 YES
