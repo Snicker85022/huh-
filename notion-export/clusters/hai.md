@@ -16,7 +16,7 @@ Production Core
 As Sandra, I need a single-tap override with just my PIN — no reason field required — on every system recommendation, so that I can act on my own judgment quickly without the system demanding I justify myself.
 
 **Functional Requirement Specification:**  
-Sandra override path: every system recommendation presented to Sandra must include a single-tap override. Override requires Sandra's PIN (from [[SPEC:URS-KIT-METHOD-003]] PIN table) — tap override, enter PIN, confirm. Zero explanation or reason field. PIN is authentication, not justification. Override logged automatically for retrospective analysis by Nick only.
+Sandra override path: every system recommendation presented to Sandra must include a single-tap override. Override requires Sandra's PIN (from [[SPEC:PROD-12]] PIN table) — tap override, enter PIN, confirm. Zero explanation or reason field. PIN is authentication, not justification. Override logged automatically for retrospective analysis by Nick only.
 
 **Failure Behavior:**  
 Fallback: Sandra verbally tells Nick; Nick manually applies.

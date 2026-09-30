@@ -19,7 +19,7 @@ The on-screen kanban card board crew tap to run and close tasks — realizes the
 Live kitchen kanban on MT1 (East) and MT2 (West). Three-state card flow, per-card signals, PIN-gated close, Short Stop, Mom's Table game/brand layer. Reads ?board=East/West (default West).
 
 **Dependency Notes:**  
-IMPLEMENTS: [[SPEC:URS-KANBAN-001]]..005 (state/close/signals/short-stop/publish), URS-KIT-METHOD-* (Taza Method cards), [[SPEC:URS-KIT-METHOD-003]] (PIN). Parent feature KANBAN 1.
+IMPLEMENTS: [[SPEC:URS-KANBAN-001]]..005 (state/close/signals/short-stop/publish), URS-KIT-METHOD-* (Taza Method cards), [[SPEC:PROD-12]] (PIN). Parent feature KANBAN 1.
 
 **Verification Method:**
 1. [NICK] Live: crew taps a card through all three states on MT1. Evidence: screenshot.

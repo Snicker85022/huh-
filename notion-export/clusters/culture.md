@@ -172,7 +172,7 @@ NEGATIVE:
 
 SILENT FAILURE:
 5. If the event record is missing entirely (edge case, data gap), the screen must not silently show generic/wrong content that looks like it's for this event — verify a defined fallback (skip screen, or clear 'data unavailable' state) rather than a plausible-looking but wrong summary.
-6. This screen is brand/culture content, easy to deprioritize in a rebuild — flag alongside KANBAN 1's D-[[SPEC:KIT-001]] concern: verify this doesn't quietly disappear in a future UI refresh.
+6. This screen is brand/culture content, easy to deprioritize in a rebuild — flag alongside KANBAN 1's D-KIT-001 concern: verify this doesn't quietly disappear in a future UI refresh.
 
 **Verification Method:**  
 1) Unit test: screen renders correct 3-4 lines sourced from a real event record, timed at ~10s. 2) Data-gap test: incomplete or missing event record, confirm a defined graceful fallback rather than fabricated-looking content. 3) Real-event walkthrough: Nick/Sandra confirm the displayed summary accurately reflects an actual real event's data. 4) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.

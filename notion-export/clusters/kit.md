@@ -49,7 +49,7 @@ Configuration audit and end-of-day workflow test.
 Keep the equipment obligation configuration current as kitchen kit changes; verify card generation after any task-engine update ([[SPEC:PROD-01]]).
 
 **Dependency Notes:**  
-Generated as a close_kind=EQUIPMENT_CLEANING card per [[SPEC:PROD-38]]/CLOSE 4. Closure writes equipment ID, crew PIN ([[SPEC:URS-KIT-METHOD-003]]), and timestamp to the audit log ([[SPEC:PROD-22]]). Configuration drives which equipment items have end-of-day obligations. Part of BUNDLE-KANBAN-EXECUTION. Parent CLOSE 4.
+Generated as a close_kind=EQUIPMENT_CLEANING card per [[SPEC:PROD-38]]/CLOSE 4. Closure writes equipment ID, crew PIN ([[SPEC:PROD-12]]), and timestamp to the audit log ([[SPEC:PROD-22]]). Configuration drives which equipment items have end-of-day obligations. Part of BUNDLE-KANBAN-EXECUTION. Parent CLOSE 4.
 
 **Required for Release:**  
 YES
@@ -118,7 +118,7 @@ SILENT FAILURE:
 Keep the configured major-allergen list current (aligned with Taza's menu and the [[SPEC:CAT-001]] allergen_notes attribute); verify flag-clear behaviour after any close-path change; re-test multi-surface visibility after any display/push change.
 
 **Dependency Notes:**  
-Allergen detection keyed against the catalog allergen attribute ([[SPEC:CAT-002]] dietary_flags + allergen_notes). Flag surfaced on: kanban card signals (KANBAN 4 allergen dot), TCL East situational display (DISPLAY 23), and staff mobile situational view (SHOP 7). Clear only on structured consume/remove close (CLOSE 11 / [[SPEC:PROD-38]] close_kind=ALLERGEN_RECEIVING). Cross-ref: KIT-002 (task gate) overlaps CLOSE 11. Part of BUNDLE-KANBAN-EXECUTION. Parent CLOSE 4.
+Allergen detection keyed against the catalog allergen attribute ([[SPEC:CAT-001]] dietary_flags + allergen_notes). Flag surfaced on: kanban card signals (KANBAN 4 allergen dot), TCL East situational display (DISPLAY 23), and staff mobile situational view (SHOP 7). Clear only on structured consume/remove close (CLOSE 11 / [[SPEC:PROD-38]] close_kind=ALLERGEN_RECEIVING). Cross-ref: KIT-002 (task gate) overlaps CLOSE 11. Part of BUNDLE-KANBAN-EXECUTION. Parent CLOSE 4.
 
 **Rationale:**  
 P0, highest-priority row in the KIT-10x cluster — food-safety and liability requirement, not a UX nicety.
@@ -469,7 +469,7 @@ UI inspection and automated component test.
 Keep the brand assets version-controlled; test the three-identifier assertion on every kanban renderer release.
 
 **Dependency Notes:**  
-Visual identity applied by the kanban renderer (KANBAN 1/KANBAN 2). The gold border + diamond-filigree mark + TAZA METHOD label are the same brand language as the Mom's Table card-game visual system (D-[[SPEC:KIT-001]]). Part of BUNDLE-TAZA-METHOD. Parent KANBAN 11. Hex: #c7ae59.
+Visual identity applied by the kanban renderer (KANBAN 1/KANBAN 2). The gold border + diamond-filigree mark + TAZA METHOD label are the same brand language as the Mom's Table card-game visual system (D-KIT-001). Part of BUNDLE-TAZA-METHOD. Parent KANBAN 11. Hex: #c7ae59.
 
 **Required for Release:**  
 YES
@@ -523,7 +523,7 @@ Automated state test plus UI demonstration.
 Keep the animation asset version-controlled; re-test the once-per-crew-method state after any crew-record schema change.
 
 **Dependency Notes:**  
-First-encounter state stored per crew member + method ID (KANBAN 7 writes the acknowledgment record that marks the encounter as seen). Animation plays before acknowledgment. State stored in the local device or the canonical crew record — reconcile in debate (local vs server). Part of BUNDLE-TAZA-METHOD. Parent KANBAN 11. Animation: ~2s fish-and-starburst (D-[[SPEC:KIT-001]]).
+First-encounter state stored per crew member + method ID (KANBAN 7 writes the acknowledgment record that marks the encounter as seen). Animation plays before acknowledgment. State stored in the local device or the canonical crew record — reconcile in debate (local vs server). Part of BUNDLE-TAZA-METHOD. Parent KANBAN 11. Animation: ~2s fish-and-starburst (D-KIT-001).
 
 **Required for Release:**  
 YES
@@ -580,7 +580,7 @@ Database inspection and end-to-end UI test.
 Keep the acknowledgment schema aligned with [[SPEC:PROD-22]] audit log; verify SOP-gating logic after any card-rendering change.
 
 **Dependency Notes:**  
-Acknowledgment record is written to the audit log ([[SPEC:PROD-22]]) with crew ID (from PIN/[[SPEC:URS-KIT-METHOD-003]]), method/card ID, and timestamp. The SOP remains gated until this acknowledgment is recorded. Feeds the leaderboard/streak system (KANBAN 10) as a qualifying encounter. Part of BUNDLE-TAZA-METHOD. Parent KANBAN 11.
+Acknowledgment record is written to the audit log ([[SPEC:PROD-22]]) with crew ID (from PIN/[[SPEC:PROD-12]]), method/card ID, and timestamp. The SOP remains gated until this acknowledgment is recorded. Feeds the leaderboard/streak system (KANBAN 10) as a qualifying encounter. Part of BUNDLE-TAZA-METHOD. Parent KANBAN 11.
 
 **Rationale:**  
 Phrasing "I understand — show me how" is a first-class UX requirement (not generic "OK") — frames as seeking guidance, not dismissing a warning.
@@ -694,7 +694,7 @@ Keep point values configurable; verify atomic write after any scoring-ledger cha
 Both point transactions written to the scoring ledger via [[SPEC:PROD-22]] (audit log) with learner crew ID, teacher crew ID, and interaction ID. The interaction ID provides the idempotency key (retry creates no duplicate). Points feed the leaderboard (KANBAN 10). Part of BUNDLE-TAZA-METHOD. Parent KANBAN 11.
 
 **Rationale:**  
-"Awards both asker and teacher" is a first-class cultural design decision (D-[[SPEC:KIT-001]]), not a nice-to-have.
+"Awards both asker and teacher" is a first-class cultural design decision (D-KIT-001), not a nice-to-have.
 
 **Required for Release:**  
 YES
@@ -745,7 +745,7 @@ Counts 1–9 do not award the badge; count 10 awards it once; leaderboard reflec
 Boundary-value test and display inspection.
 
 **Maintenance Requirements:**  
-Keep the qualifying-closure definition aligned with [[SPEC:URS-KIT-METHOD-003]] acknowledgment requirements; verify leaderboard push after any display-push change ([[SPEC:PROD-04]]).
+Keep the qualifying-closure definition aligned with [[SPEC:PROD-12]] acknowledgment requirements; verify leaderboard push after any display-push change ([[SPEC:PROD-04]]).
 
 **Dependency Notes:**  
 Counts qualifying correct Taza Method closures per crew member from the scoring ledger ([[SPEC:PROD-22]]). Badge award is idempotent at count 10 (count 11+ does not create a second badge for the same streak). Leaderboard ranking displayed on MT1/MT2 (KANBAN 1/KANBAN 2 gamemaster view). Part of BUNDLE-TAZA-METHOD. Parent KANBAN 11.
@@ -787,7 +787,7 @@ Proprietary techniques executed casually without pause, guidance, or accountabil
 Standard (non-Method) kanban mechanics (URS-KANBAN family); operational-capture cards ([[SPEC:URS-KIT-101]]..107). This package is the proprietary Taza Method experience layer only.
 
 **Acceptance Criteria:**  
-Method cards render with gold border/mark/label ([[SPEC:URS-KIT-METHOD-001]]); first-encounter animation plays unskippably ([[SPEC:URS-KIT-METHOD-002]]); acknowledgment is logged before SOP access ([[SPEC:URS-KIT-METHOD-003]]); Show Me panel opens non-blocking from the card ([[SPEC:URS-KIT-METHOD-004]]); question interactions award both learner and teacher atomically ([[SPEC:URS-KIT-METHOD-005]]); 10 qualifying closures produce exactly one streak badge and update the leaderboard ([[SPEC:URS-KIT-METHOD-006]]).
+Method cards render with gold border/mark/label ([[SPEC:URS-KIT-METHOD-001]]); first-encounter animation plays unskippably ([[SPEC:URS-KIT-METHOD-002]]); acknowledgment is logged before SOP access ([[SPEC:PROD-12]]); Show Me panel opens non-blocking from the card ([[SPEC:URS-KIT-METHOD-004]]); question interactions award both learner and teacher atomically ([[SPEC:URS-KIT-METHOD-005]]); 10 qualifying closures produce exactly one streak badge and update the leaderboard ([[SPEC:URS-KIT-METHOD-006]]).
 
 **Verification Method:**  
 End-to-end test covering all six child requirements; plus a cultural validation that the game framing is preserved and the tone is aspirational throughout.
@@ -796,7 +796,7 @@ End-to-end test covering all six child requirements; plus a cultural validation 
 Does a Short Stop on a Method card count as a qualifying closure for the streak? Does an exception-routed close count? The qualifying definition needs to be locked in debate before this can be implemented.
 
 **Rationale:**  
-The method-experience design philosophy (the homage IS the mechanic, not the paint) is a Founding Design principle from D-[[SPEC:KIT-001]] that governs any future redesign.
+The method-experience design philosophy (the homage IS the mechanic, not the paint) is a Founding Design principle from D-KIT-001 that governs any future redesign.
 
 **Required for Release:**  
 YES

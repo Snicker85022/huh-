@@ -115,7 +115,7 @@ Production Core
 Need: a kitchen task board ("Mom's Table") that is a card game — makes the right way the fun way, teaches the Taza standard through play, carries our brand, feels calm under pressure — while reliably tracking every task through not-started / in-progress / done.
 
 **Functional Requirement Specification:**  
-Card-based kanban on MT1/MT2/z33 implementing: three-state flow (KANBAN 3), accountable close capture (CLOSE 11), per-card operational signals (KANBAN 4), Short Stop (CLOSE 33), commit-then-emit downstream events (CLOSE 12). The card-game mechanic is the mechanism itself, not a skin: brand/visual language (gold #c7ae59, diamond-filigree, LB monogram) and gamification (first-encounter fish animation 2s logged w/ timestamp+crew ID, question-awards-both-parties, compliance streak badge at 10, quality scoring 40% food quality / 40% food safety / 20% appearance) are first-class requirements per D-[[SPEC:KIT-001]]. Any rebuild preserves the game framing + brand language.
+Card-based kanban on MT1/MT2/z33 implementing: three-state flow (KANBAN 3), accountable close capture (CLOSE 11), per-card operational signals (KANBAN 4), Short Stop (CLOSE 33), commit-then-emit downstream events (CLOSE 12). The card-game mechanic is the mechanism itself, not a skin: brand/visual language (gold #c7ae59, diamond-filigree, LB monogram) and gamification (first-encounter fish animation 2s logged w/ timestamp+crew ID, question-awards-both-parties, compliance streak badge at 10, quality scoring 40% food quality / 40% food safety / 20% appearance) are first-class requirements per D-KIT-001. Any rebuild preserves the game framing + brand language.
 
 **Inputs:**  
 Task rows from PostgreSQL; SSE pushes; staff card actions (game-night design language per CONFIRMED homage page)
@@ -135,17 +135,17 @@ NORMAL:
 2. Brand/visual language (gold #c7ae59, diamond-filigree, LB monogram) and gamification elements (first-encounter animation, question-award, streak badge, quality scoring) are present and functioning, not treated as optional polish.
 
 EDGE:
-3. A rebuild or redesign of any single piece (e.g. a UI refresh) preserves the game framing and brand language per D-[[SPEC:KIT-001]] — verify this constraint is actually checked in any future redesign, not just true at initial build.
+3. A rebuild or redesign of any single piece (e.g. a UI refresh) preserves the game framing and brand language per D-KIT-001 — verify this constraint is actually checked in any future redesign, not just true at initial build.
 
 NEGATIVE:
 4. Any of the 5 referenced child behaviors failing its own acceptance criteria means this package-level row cannot be considered passing — this row's own AC is not separable from its children's.
 
 SILENT FAILURE:
-5. The gamification/brand elements being quietly stripped out during a future 'simplification' pass (common failure mode — engineers deprioritizing 'decoration' under time pressure) would violate D-[[SPEC:KIT-001]]'s explicit first-class-requirement status — verify there's a way to catch this in review, e.g. a checklist item tied to D-[[SPEC:KIT-001]] for any future PR touching this surface.
+5. The gamification/brand elements being quietly stripped out during a future 'simplification' pass (common failure mode — engineers deprioritizing 'decoration' under time pressure) would violate D-KIT-001's explicit first-class-requirement status — verify there's a way to catch this in review, e.g. a checklist item tied to D-KIT-001 for any future PR touching this surface.
 6. Quality scoring (40% food quality / 40% food safety / 20% appearance) computing but never actually surfacing/affecting anything downstream would make it decorative math instead of a real mechanic — verify it has a real, tested downstream effect.
 
 **Verification Method:**  
-1) Integration test: full kanban surface exercised end-to-end across all 5 child behaviors on real MT1/MT2/z33 hardware. 2) Brand/gamification checklist: verify each D-[[SPEC:KIT-001]] element (animation, streak badge, quality scoring, visual language) is present and functioning, not just visually similar. 3) Downstream-effect test: confirm quality scoring actually feeds a real downstream consumer (leaderboard, review flag), not just computed and discarded. 4) Regression gate: document a required D-[[SPEC:KIT-001]] checklist item for any future PR touching this surface. 5) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
+1) Integration test: full kanban surface exercised end-to-end across all 5 child behaviors on real MT1/MT2/z33 hardware. 2) Brand/gamification checklist: verify each D-KIT-001 element (animation, streak badge, quality scoring, visual language) is present and functioning, not just visually similar. 3) Downstream-effect test: confirm quality scoring actually feeds a real downstream consumer (leaderboard, review flag), not just computed and discarded. 4) Regression gate: document a required D-KIT-001 checklist item for any future PR touching this surface. 5) Nick will test manually. Verification will be by 100% inspection and hands-on interaction, where user intent is verified to produce the desired output. Proof (screenshots, reports, etc.) will be captured and documented.
 
 **Dependency Notes:**  
 CONFORMS TO [[SPEC:PROD-38]]. See [[SPEC:PROD-05-V2]] for a related dead-ternary bug note.

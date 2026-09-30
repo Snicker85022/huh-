@@ -131,7 +131,7 @@ SILENT FAILURE:
 Keep the required-field set aligned with [[SPEC:PROD-38]]'s close contract as task kinds evolve; verify idempotency after any close-path change.
 
 **Dependency Notes:**  
-CONFORMS TO [[SPEC:PROD-38]] (Canonical Task Close Contract, Spec Drafted). PIN identity from [[SPEC:URS-KIT-METHOD-003]]/KIT-009 (Staff PIN). LKL capture per URS-LKL family / [[SPEC:PROD-02]]. Emits the downstream event via CLOSE 12 + EXCEPT 2 (Event Bus, Spec Drafted). CROSS-REF: overlaps KIT-002 (task completion form gate) — reconcile in debate.
+CONFORMS TO [[SPEC:PROD-38]] (Canonical Task Close Contract, Spec Drafted). PIN identity from [[SPEC:PROD-12]]/KIT-009 (Staff PIN). LKL capture per URS-LKL family / [[SPEC:PROD-02]]. Emits the downstream event via CLOSE 12 + EXCEPT 2 (Event Bus, Spec Drafted). CROSS-REF: overlaps KIT-002 (task completion form gate) — reconcile in debate.
 
 **Required for Release:**  
 YES
@@ -322,7 +322,7 @@ SILENT FAILURE:
 Keep the consumer list and their idempotency keys current as new consumers (e.g. new label types, new dashboards) are added; verify commit-then-emit ordering after any close-path change.
 
 **Dependency Notes:**  
-Emitted through EXCEPT 2 (System Event Bus, Spec Drafted) and governed by [[SPEC:PROD-38]] (Canonical Task Close Contract, Spec Drafted). Consumers: LKL ([[SPEC:PROD-02]]/URS-LKL), inventory (URS-INV/CLOSE 5), competency scoring ([[SPEC:URS-KIT-METHOD-003]]), labels (LABEL 1/URS-LABEL), displays (DISPLAY 1/SSB). The commit-then-emit ordering is the same transactional-integrity pattern as EXCEPT 4/EXCEPT 5.
+Emitted through EXCEPT 2 (System Event Bus, Spec Drafted) and governed by [[SPEC:PROD-38]] (Canonical Task Close Contract, Spec Drafted). Consumers: LKL ([[SPEC:PROD-02]]/URS-LKL), inventory (URS-INV/CLOSE 5), competency scoring ([[SPEC:PROD-12]]), labels (LABEL 1/URS-LABEL), displays (DISPLAY 1/SSB). The commit-then-emit ordering is the same transactional-integrity pattern as EXCEPT 4/EXCEPT 5.
 
 **Required for Release:**  
 YES
