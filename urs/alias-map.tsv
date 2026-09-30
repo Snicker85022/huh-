@@ -1,4 +1,5 @@
 alias	canonical_id	class	status
+alias	canonical_id	class	status
 CATALOG 1	CAT-001	family	proposed — verify at cluster audit
 CATALOG 10	SW-011	family	proposed — verify at cluster audit
 CATALOG 2	CAT-002	family	proposed — verify at cluster audit
@@ -25,7 +26,7 @@ D-028		legacy-decision-ref	old Notion decision numbering — resolve or drop
 D-057		legacy-decision-ref	old Notion decision numbering — resolve or drop
 D-062		legacy-decision-ref	old Notion decision numbering — resolve or drop
 DISP-002	URS-DISP-002	short-form	resolved
-EPR-006		dangling	referenced by EPR-007 (UPS sizing blocker)
+EPR-006	EPR-007	family	resolved 2026-10-01 (allocation locked in EPR-007)
 EVENT-001	URS-EVENT-001	short-form	resolved
 HEALTH-005	URS-HEALTH-005	short-form	resolved
 INV-001	URS-INV-001	short-form	resolved
@@ -46,11 +47,11 @@ LABEL-005	URS-LABEL-005	short-form	resolved
 LKL-001	URS-LKL-001	short-form	resolved
 LKL-002	URS-LKL-002	short-form	resolved
 PACK 2	PROD-16-V2	family	proposed — verify at cluster audit
-PROD-33		dangling	referenced by PROD-36 (barcode/NPU prep-counting)
+PROD-33		deferred	deferred to V1.x (Nick 2026-10-01)
 PROD-35		dangling	referenced by PROD-34 (V2.0 NPU tier)
 SHOP 1	PROD-05-V2	family	proposed — verify at cluster audit
 SHOP 11	PROD-05-V2	family	proposed — verify at cluster audit
 SHOP 3	URS-KIT-105	family	proposed — verify at cluster audit
-SW-016		dangling	referenced by SW-013 (replay-DOE)
-SW-019		dangling	referenced by SW-013 (retrospective mining)
+SW-016	REQ-CI-003	family	resolved 2026-10-01 (replay-DOE + TQAI scorer)
+SW-019	REQ-CI-003	family	resolved 2026-10-01 (retrospective mining)
 V2-FEAT-006	PROD-16-V2	family	proposed — verify at cluster audit

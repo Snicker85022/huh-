@@ -1410,7 +1410,7 @@ Turn accurate, fully-traceable inventory into a free byproduct of the crew closi
 [[SPEC:PROD-02]] LKL completion-gate closures (bin/location + quantity captured at task close)
 
 **Outputs:**  
-MT2 inventory dashboard display; future barcode/NPU predictive-prep-counting ([[SPEC:PROD-33]]) as an alternate input path
+MT2 inventory dashboard display; barcode/NPU predictive-prep-counting deferred to V1.x (Nick 2026-10-01) as an alternate input path
 
 **Trigger:**  
 Kanban card close where the task type implies a lot transformation (repack, freeze, portion, split)

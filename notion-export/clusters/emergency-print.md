@@ -81,7 +81,7 @@ Operational Monitoring
 Need: whatever else goes dark in an outage, the brain (N100 + router + switch) stays up longest — everything else depends on it.
 
 **Functional Requirement Specification:**  
-N100-priority power. The N100 + ER605 router + 8-port switch (the 'brain') must remain powered longest. A stronger UPS for this group is under evaluation (sizing TBD).
+N100-priority power, two-UPS allocation (Nick 2026-10-01). UPS 1 (existing APC BE600M1): N100 + ER605 router + 8-port switch — the 'brain', longest runtime. UPS 2 (new APC BE600M1): Alexa TV (Insignia), TCL1 (East), MT1 (East), 5-port switch — smart-dimming + graceful shutdown, ~65 min runtime. West Wall (MT2 + West Google TV) accepts no backup power ([[SPEC:EPR-004]]).
 
 **Acceptance Criteria:**
 NORMAL: N100 + ER605 + 8-port switch stay powered longest on UPS.
@@ -143,7 +143,7 @@ Operational Monitoring
 Need: a final, settled answer for which device is backed up by which UPS — not an open question during an actual outage.
 
 **Functional Requirement Specification:**  
-Final UPS allocation map (which devices on which of the existing two 600VA APCs vs. a possible third/stronger unit). Blocked on [[SPEC:EPR-006]].
+Final UPS allocation map (LOCKED, Nick 2026-10-01): UPS 1 = N100 + ER605 + 8-port switch (longest). UPS 2 (new BE600M1) = Alexa TV + TCL1 + MT1 + 5-port switch. West Wall (MT2 + West Google TV) = no backup. Graceful-shutdown sequence on power loss: all screens drop to minimum backlight; TCL1 soft-shuts-down 10 min after the emergency print prints; Alexa TV stays up until UPS reaches 25% capacity then soft-shuts-down; MT1 + 5-port switch stay up till the bitter end. Estimated UPS-2 runtime ~65 min.
 
 **Acceptance Criteria:**
 NORMAL: settled device→UPS allocation map (which devices on the two 600VA APCs vs a possible third/stronger unit).

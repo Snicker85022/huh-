@@ -375,10 +375,10 @@ This row has no FRS — Notes content was only a conceptual analogy, not a testa
 Framed via Fourier/basis-function analogy: [[SPEC:PROD-07]]/[[SPEC:W11]]/[[SPEC:W15]] are simple basis functions, NocoDB is the superposition.
 
 **Acceptance Criteria:**  
-Deferred — Idea stage, no FRS — no AC/VM until real FRS written.
+Deferred — Superseded: refined into REQ-TELE-001/002 (capture) + REQ-CI-002/003 (analysis). No FRS of its own; kept for history.
 
 **Verification Method:**  
-Deferred — Idea stage, no FRS — no AC/VM until real FRS written.
+Deferred — Superseded: refined into REQ-TELE-001/002 (capture) + REQ-CI-002/003 (analysis). No FRS of its own; kept for history.
 
 **Required for Release:**  
 NO
@@ -473,7 +473,7 @@ Need: the system captures its own performance data as a matter of course, not as
 All workflow run metadata (timing, tokens, outcome)
 
 **Outputs:**  
-Append-only telemetry tables. Feeds [[SPEC:SW-016]] replay-DOE + TQAI scorer, [[SPEC:SW-019]] retrospective mining
+Append-only telemetry tables — SUPERSEDED by [[SPEC:REQ-TELE-001]] (capture) + [[SPEC:REQ-TELE-002]] (logging); analysis consumers are [[SPEC:REQ-CI-002]] (SPC health monitor) + [[SPEC:REQ-CI-003]] (replay-DOE + TQAI scorer + retrospective mining).
 
 **Trigger:**  
 Every workflow execution, N100-side
@@ -488,10 +488,10 @@ Logged by Claude Code (Opus 4.8), decisions D-044/D-045/D-046, 2026-06-26.
 V1.0 scope, capture-now/analyze-later — history is the only irreplaceable input.
 
 **Acceptance Criteria:**  
-Deferred — Idea stage, no FRS — no AC/VM until real FRS written.
+Deferred — Superseded: refined into REQ-TELE-001/002 (capture) + REQ-CI-002/003 (analysis). No FRS of its own; kept for history.
 
 **Verification Method:**  
-Deferred — Idea stage, no FRS — no AC/VM until real FRS written.
+Deferred — Superseded: refined into REQ-TELE-001/002 (capture) + REQ-CI-002/003 (analysis). No FRS of its own; kept for history.
 
 **Required for Release:**  
 NO
