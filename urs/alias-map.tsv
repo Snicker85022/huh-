@@ -58,9 +58,6 @@ CREW 6	URS-CREW-004	family	resolved 2026-10-01 (Notion ID.2)
 CREW 7	CULT-005	family	resolved 2026-10-01 (Notion ID.2)
 CREW 8	CULT-011	family	resolved 2026-10-01 (Notion ID.2)
 CREW 9	CULT-012	family	resolved 2026-10-01 (Notion ID.2)
-CREW-002	URS-CREW-002	short-form	resolved
-CREW-003	URS-CREW-003	short-form	resolved
-CREW-004	URS-CREW-004	short-form	resolved
 CRM 1	UI-001	family	resolved 2026-10-01 (Notion ID.2)
 CRM 10	URS-CRM-005	family	resolved 2026-10-01 (Notion ID.2)
 CRM 11	URS-CRM-006	family	resolved 2026-10-01 (Notion ID.2)
@@ -99,7 +96,6 @@ D-060		legacy-decision-ref	old Notion decision numbering — resolve or drop
 D-061		legacy-decision-ref	old Notion decision numbering — resolve or drop
 D-062		legacy-decision-ref	old Notion decision numbering — resolve or drop
 D-KIT-001		legacy-decision-ref	old Notion decision numbering — resolve or drop
-DISP-002	URS-DISP-002	short-form	resolved
 DISPLAY 1	PROD-04	family	resolved 2026-10-01 (Notion ID.2)
 DISPLAY 10	SSB-004	family	resolved 2026-10-01 (Notion ID.2)
 DISPLAY 11	SSB-005	family	resolved 2026-10-01 (Notion ID.2)
@@ -131,8 +127,6 @@ DISPLAY 6	SCREEN-12	family	resolved 2026-10-01 (Notion ID.2)
 DISPLAY 7	SSB-001	family	resolved 2026-10-01 (Notion ID.2)
 DISPLAY 8	SSB-002	family	resolved 2026-10-01 (Notion ID.2)
 DISPLAY 9	SSB-003	family	resolved 2026-10-01 (Notion ID.2)
-EPR-006	EPR-007	family	resolved 2026-10-01 (allocation locked in EPR-007)
-EVENT-001	URS-EVENT-001	short-form	resolved
 EXCEPT 1	PROD-23	family	resolved 2026-10-01 (Notion ID.2)
 EXCEPT 2	PROD-20	family	resolved 2026-10-01 (Notion ID.2)
 EXCEPT 3	PROD-25	family	resolved 2026-10-01 (Notion ID.2)
@@ -152,7 +146,6 @@ HEALTH 6	URS-HEALTH-002	family	resolved 2026-10-01 (Notion ID.2)
 HEALTH 7	URS-HEALTH-003	family	resolved 2026-10-01 (Notion ID.2)
 HEALTH 8	URS-HEALTH-004	family	resolved 2026-10-01 (Notion ID.2)
 HEALTH 9	URS-HEALTH-005	family	resolved 2026-10-01 (Notion ID.2)
-HEALTH-005	URS-HEALTH-005	short-form	resolved
 INFERENCE 1	PROD-10	family	resolved 2026-10-01 (Notion ID.2)
 INFERENCE 10	SW-012	family	resolved 2026-10-01 (Notion ID.2)
 INFERENCE 11	SW-010	family	resolved 2026-10-01 (Notion ID.2)
@@ -190,8 +183,6 @@ INFRA 6	HW-005	family	resolved 2026-10-01 (Notion ID.2)
 INFRA 7	HW-006	family	resolved 2026-10-01 (Notion ID.2)
 INFRA 8	HW-007	family	resolved 2026-10-01 (Notion ID.2)
 INFRA 9	HW-008	family	resolved 2026-10-01 (Notion ID.2)
-INV-001	URS-INV-001	short-form	resolved
-INV-003	URS-INV-003	short-form	resolved
 INVOICE 1	PROD-07	family	resolved 2026-10-01 (Notion ID.2)
 INVOICE 10	CX-007	family	resolved 2026-10-01 (Notion ID.2)
 INVOICE 11	DOC-004	family	resolved 2026-10-01 (Notion ID.2)
@@ -218,8 +209,6 @@ KANBAN 6	URS-KIT-METHOD-002	family	resolved 2026-10-01 (Notion ID.2)
 KANBAN 7	URS-KIT-METHOD-003	family	resolved 2026-10-01 (Notion ID.2)
 KANBAN 8	URS-KIT-METHOD-004	family	resolved 2026-10-01 (Notion ID.2)
 KANBAN 9	URS-KIT-METHOD-005	family	resolved 2026-10-01 (Notion ID.2)
-KANBAN-002	URS-KANBAN-002	short-form	resolved
-KANBAN-005	URS-KANBAN-005	short-form	resolved
 KB 1	CULT-006	family	resolved 2026-10-01 (Notion ID.2)
 KB 2	CULT-007	family	resolved 2026-10-01 (Notion ID.2)
 KB 3	CULT-008	family	resolved 2026-10-01 (Notion ID.2)
@@ -232,11 +221,6 @@ KIT-011		archived	archived 2026-09-02 (Nick)
 KIT-018		archived	archived 2026-09-02 (Nick)
 KIT-019		archived	archived 2026-09-02 (Nick)
 KIT-021		archived	archived 2026-09-02 (Nick)
-KIT-101	URS-KIT-101	short-form	resolved
-KIT-102	URS-KIT-102	short-form	resolved
-KIT-103	URS-KIT-103	short-form	resolved
-KIT-104	URS-KIT-104	short-form	resolved
-KIT-105	URS-KIT-105	short-form	resolved
 LABEL 1	PROD-13	family	resolved 2026-10-01 (Notion ID.2)
 LABEL 2	HW-009	family	resolved 2026-10-01 (Notion ID.2)
 LABEL 3	URS-LABEL-001	family	resolved 2026-10-01 (Notion ID.2)
@@ -244,10 +228,6 @@ LABEL 4	URS-LABEL-003	family	resolved 2026-10-01 (Notion ID.2)
 LABEL 5	URS-LABEL-004	family	resolved 2026-10-01 (Notion ID.2)
 LABEL 6	URS-LABEL-005	family	resolved 2026-10-01 (Notion ID.2)
 LABEL 7	URS-LABEL-006	family	resolved 2026-10-01 (Notion ID.2)
-LABEL-001	URS-LABEL-001	short-form	resolved
-LABEL-005	URS-LABEL-005	short-form	resolved
-LKL-001	URS-LKL-001	short-form	resolved
-LKL-002	URS-LKL-002	short-form	resolved
 META-001		archived	archived 2026-09-02 (Nick)
 META-002		archived	archived 2026-09-02 (Nick)
 MT-003		archived	archived 2026-09-02 (Nick)
@@ -290,8 +270,6 @@ SHOP 6	URS-MOB-002	family	resolved 2026-10-01 (Notion ID.2)
 SHOP 7	URS-MOB-003	family	resolved 2026-10-01 (Notion ID.2)
 SHOP 8	URS-MOB-004	family	resolved 2026-10-01 (Notion ID.2)
 SHOP 9	URS-MOB-005	family	resolved 2026-10-01 (Notion ID.2)
-SW-016	REQ-CI-003	family	resolved 2026-10-01 (replay-DOE + TQAI scorer)
-SW-019	REQ-CI-003	family	resolved 2026-10-01 (retrospective mining)
 SW-020		archived	archived 2026-09-02 (Nick)
 TELEMETRY 1	REQ-TELE-001	family	resolved 2026-10-01 (Notion ID.2)
 TELEMETRY 2	REQ-TELE-002	family	resolved 2026-10-01 (Notion ID.2)

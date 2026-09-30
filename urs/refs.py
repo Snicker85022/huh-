@@ -18,9 +18,12 @@ Usage:
 import csv, glob, os, re, sys
 
 REG = {}
-for p in ['notion-export/master-urs.csv','notion-export/planner-urs-rows.csv']:
-    for r in csv.DictReader(open(p, encoding='utf-8')):
-        REG[r['Spec ID'].strip()] = r['Name'].strip()
+for path in glob.glob('master-urs.md'):
+    for block in re.split(r'(?m)^## ', open(path, encoding='utf-8').read()):
+        head = block.split('\n', 1)[0].strip()
+        if ' — ' in head:
+            sid, name = head.split(' — ', 1)
+            REG[sid.strip()] = name.strip()
 
 ALIAS = {}
 for row in csv.reader(open('urs/alias-map.tsv', encoding='utf-8'), delimiter='\t'):
@@ -28,7 +31,7 @@ for row in csv.reader(open('urs/alias-map.tsv', encoding='utf-8'), delimiter='\t
         ALIAS[row[0]] = row[1]
 
 CLUSTER = {}
-for path in glob.glob('notion-export/clusters/*.md'):
+for path in ['master-urs.md']:
     cl = os.path.basename(path)[:-3]
     for line in open(path, encoding='utf-8'):
         if line.startswith('## '):
@@ -58,7 +61,7 @@ def render(text):
 
 def check():
     problems = []
-    for path in sorted(glob.glob('notion-export/clusters/*.md')):
+    for path in sorted(['master-urs.md']):
         text = open(path, encoding='utf-8').read()
         for m in TOKEN.finditer(text):
             rid = m.group(1)
@@ -81,7 +84,7 @@ if __name__ == '__main__':
     elif cmd == 'render':
         sid = sys.argv[2]
         # find the spec block
-        for path in glob.glob('notion-export/clusters/*.md'):
+        for path in ['master-urs.md']:
             text = open(path, encoding='utf-8').read()
             for block in re.split(r'(?m)^## ', text)[1:]:
                 code = block.split('\n',1)[0].split(' — ',1)[0].strip()
