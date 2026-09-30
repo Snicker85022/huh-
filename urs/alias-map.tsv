@@ -1,0 +1,56 @@
+alias	canonical_id	class	status
+CATALOG 1	CAT-001	family	proposed — verify at cluster audit
+CATALOG 10	SW-011	family	proposed — verify at cluster audit
+CATALOG 2	CAT-002	family	proposed — verify at cluster audit
+CLOSE 1	PROD-38	family	proposed — verify at cluster audit
+CLOSE 15	URS-KIT-103	family	proposed — verify at cluster audit
+CLOSE 2	PROD-02	family	proposed — verify at cluster audit
+CLOSE 27	URS-KIT-METHOD-004	family	proposed — verify at cluster audit
+CLOSE 3	URS-KIT-METHOD-003	family	proposed — verify at cluster audit
+CLOSE 32	HAI-005	family	proposed — verify at cluster audit
+CLOSE 34	PROD-19	family	proposed — verify at cluster audit
+CLOSE 35	PROD-22	family	proposed — verify at cluster audit
+CREW-002	URS-CREW-002	short-form	resolved
+CREW-003	URS-CREW-003	short-form	resolved
+CREW-004	URS-CREW-004	short-form	resolved
+D-004		legacy-decision-ref	old Notion decision numbering — resolve or drop
+D-005		legacy-decision-ref	old Notion decision numbering — resolve or drop
+D-006		legacy-decision-ref	old Notion decision numbering — resolve or drop
+D-007		legacy-decision-ref	old Notion decision numbering — resolve or drop
+D-008		legacy-decision-ref	old Notion decision numbering — resolve or drop
+D-019		legacy-decision-ref	old Notion decision numbering — resolve or drop
+D-021		legacy-decision-ref	old Notion decision numbering — resolve or drop
+D-027		legacy-decision-ref	old Notion decision numbering — resolve or drop
+D-028		legacy-decision-ref	old Notion decision numbering — resolve or drop
+D-057		legacy-decision-ref	old Notion decision numbering — resolve or drop
+D-062		legacy-decision-ref	old Notion decision numbering — resolve or drop
+DISP-002	URS-DISP-002	short-form	resolved
+EPR-006		dangling	referenced by EPR-007 (UPS sizing blocker)
+EVENT-001	URS-EVENT-001	short-form	resolved
+HEALTH-005	URS-HEALTH-005	short-form	resolved
+INV-001	URS-INV-001	short-form	resolved
+INV-003	URS-INV-003	short-form	resolved
+INVOICE 1	PROD-07	family	proposed — verify at cluster audit
+INVOICE 12	SCREEN-09	family	proposed — verify at cluster audit
+INVOICE 13	PROD-07	family	proposed — verify at cluster audit
+INVOICE 9	PROD-08	family	proposed — verify at cluster audit
+KANBAN-002	URS-KANBAN-002	short-form	resolved
+KANBAN-005	URS-KANBAN-005	short-form	resolved
+KIT-101	URS-KIT-101	short-form	resolved
+KIT-102	URS-KIT-102	short-form	resolved
+KIT-103	URS-KIT-103	short-form	resolved
+KIT-104	URS-KIT-104	short-form	resolved
+KIT-105	URS-KIT-105	short-form	resolved
+LABEL-001	URS-LABEL-001	short-form	resolved
+LABEL-005	URS-LABEL-005	short-form	resolved
+LKL-001	URS-LKL-001	short-form	resolved
+LKL-002	URS-LKL-002	short-form	resolved
+PACK 2	PROD-16-V2	family	proposed — verify at cluster audit
+PROD-33		dangling	referenced by PROD-36 (barcode/NPU prep-counting)
+PROD-35		dangling	referenced by PROD-34 (V2.0 NPU tier)
+SHOP 1	PROD-05-V2	family	proposed — verify at cluster audit
+SHOP 11	PROD-05-V2	family	proposed — verify at cluster audit
+SHOP 3	URS-KIT-105	family	proposed — verify at cluster audit
+SW-016		dangling	referenced by SW-013 (replay-DOE)
+SW-019		dangling	referenced by SW-013 (retrospective mining)
+V2-FEAT-006	PROD-16-V2	family	proposed — verify at cluster audit
