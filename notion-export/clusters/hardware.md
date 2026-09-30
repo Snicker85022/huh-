@@ -240,6 +240,12 @@ The system shall provide two Samsung Galaxy Tab A8 tablets in rugged cases runni
 **Acceptance Criteria:**  
 Both tablets boot to full-screen display; event setup works; prompts auto-advance; wake lock prevents sleep for four hours; content is readable from six feet.
 
+**Verification Method:**
+1. [AUTO] Boot: both tablets boot to full-screen PWA. Evidence: screenshot.
+2. [AUTO] Wake-lock: screen stays awake through a 4-hour simulated event. Evidence: device log.
+3. [AUTO] Offline: prompts auto-advance with zero network. Evidence: airplane-mode test.
+4. [NICK] Live: crew reads the display from six feet during a real event. Evidence: photo + observation log.
+
 **Required for Release:**  
 YES
 
@@ -353,6 +359,11 @@ Emergency receipt prints from a single command on the N100 and when triggered by
 
 **Dependency Notes:**  
 HEALTH 10 corrected 2026-09-02 to match this row's printer path.
+
+**Verification Method:**
+1. [AUTO] Path: single command on N100 prints the emergency strip via StarTSPImage → /dev/usb/lp1, not lp/lpr. Evidence: test print + code-search.
+2. [AUTO] Hook: apcupsd ONBATTERY hook triggers the print. Evidence: log.
+3. [NICK] Live: Nick runs a real power-down test → receipt prints with auto-cut. Evidence: photo + observation log.
 
 **Required for Release:**  
 NO

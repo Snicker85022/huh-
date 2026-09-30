@@ -24,6 +24,11 @@ Fallback: informal vocabulary, no system enforcement (culture drift risk).
 **Acceptance Criteria:**  
 Lexicon table populated with ≥9 terms; every tablet prompt uses Lexicon terms; every task card confirmation uses Lexicon phrasing; TV header rotation pulls from Lexicon; zero generic industry phrasing where a Lexicon term exists
 
+**Verification Method:**
+1. [AUTO] Population: Lexicon table has ≥9 seeded terms (The Scan, Bus Pass, 90-Second Rule, Zone Ownership, The Taza Way, Anticipatory Service, Key Customer Vibe, Close Strong, We Sequence). Evidence: query.
+2. [AUTO] Enforcement: code search confirms no hardcoded industry phrasing where a Lexicon term exists. Evidence: code-search.
+3. [NICK] Live: Nick confirms a tablet prompt and a task-card confirmation use Lexicon phrasing. Evidence: screenshots.
+
 **Required for Release:**  
 NO
 
@@ -94,6 +99,10 @@ Fallback: handwritten list (functional but signals lower standard).
 **Acceptance Criteria:**  
 Poster printed and mounted in kitchen; visible from Sandra's and Edgar's primary work positions; design matches Taza OS visual system; text exactly matches the five principles
 
+**Verification Method:**
+1. [NICK] Live: Nick confirms the poster is mounted and visible from Sandra's and Edgar's primary work positions. Evidence: photo.
+2. [NICK] Text: five principles exactly match (We Scan, We Sequence, We Anticipate, We Close Strong, We Exceed and Delight). Evidence: photo.
+
 **Required for Release:**  
 NO
 
@@ -120,6 +129,11 @@ Fallback: per-interface styling (functional but culturally incoherent).
 
 **Acceptance Criteria:**  
 All interfaces visually consistent (fonts/colors/spacing/animation) across tablet, touchscreen, TV; design-tokens file exists and is referenced by all front-end code; anti-glare hoods installed on both TVs
+
+**Verification Method:**
+1. [AUTO] Tokens: a single design-token file exists and all front-end code references it. Evidence: code-search.
+2. [NICK] Live: Nick compares tablet, touchscreen, and TV interfaces side by side — fonts/colors/spacing consistent. Evidence: screenshots.
+3. [NICK] Hoods: anti-glare hoods installed on both TVs. Evidence: photo.
 
 **Required for Release:**  
 NO
@@ -190,6 +204,12 @@ Fallback: manual post-event notes by Sandra (inconsistent, no system learning).
 **Acceptance Criteria:**  
 Questionnaire sent within 25 minutes of event close; questions reference specific tonight's-event data, not generic templates; simple responses write to NocoDB within 30s; complex responses create enhancement note; questionnaire length decreases as KB coverage grows
 
+**Verification Method:**
+1. [AUTO] Timing: questionnaire sent within 25 min of event close. Evidence: log timestamp.
+2. [AUTO] Specificity: questions reference tonight's actual anomalies (partials, substitutions, timing), not generic templates. Evidence: sample output.
+3. [AUTO] Write: simple responses land in NocoDB <30s; complex ones create an enhancement note. Evidence: query.
+4. [NICK] Live: Nick reviews a real post-event questionnaire. Evidence: screenshot.
+
 **Required for Release:**  
 NO
 
@@ -216,6 +236,12 @@ Fallback: Sandra verbally explains decisions to Nick, manually logged (slow, non
 
 **Acceptance Criteria:**  
 Photo upload succeeds; overnight analysis generates 2–5 targeted questions referencing specific visible decisions (not generic); answers write to taza_way_notes on correct records; system does not re-ask a question already answered in KB
+
+**Verification Method:**
+1. [AUTO] Generation: photo upload → overnight analysis returns 2–5 targeted questions. Evidence: output sample.
+2. [AUTO] Specificity: questions reference visible decisions, not generic. Evidence: sample.
+3. [AUTO] Dedupe: a question already answered in KB is not re-asked. Evidence: log.
+4. [NICK] Live: Sandra uploads a real setup photo and reviews the questions. Evidence: screenshot.
 
 **Required for Release:**  
 NO
@@ -244,6 +270,11 @@ Fallback: no rationale capture — Taza-way knowledge stays in Sandra's head.
 **Acceptance Criteria:**  
 taza_way_notes field added to all specified tables; content written by CULT-006/CULT-007 pipelines; field searchable; task cards show indicator when a note exists
 
+**Verification Method:**
+1. [AUTO] Schema: taza_way_notes field present on event_templates, menu_items, setup_specs, task_types, equipment. Evidence: psql \d.
+2. [AUTO] Searchable: text search returns matches. Evidence: query.
+3. [NICK] Live: a task card shows the note indicator when a note exists. Evidence: screenshot.
+
 **Required for Release:**  
 NO
 
@@ -270,6 +301,11 @@ Fallback: no ambient vocabulary reinforcement.
 
 **Acceptance Criteria:**  
 Header bar rotates through Lexicon terms at configured interval; design integrated not disruptive; adding a new term to the Lexicon causes it to appear in rotation automatically
+
+**Verification Method:**
+1. [AUTO] Rotation: header rotates through Lexicon terms every 8–10 min. Evidence: timed screenshots.
+2. [AUTO] Auto-appear: adding a term to the Lexicon causes it to appear in rotation with no code change. Evidence: add + observe.
+3. [NICK] Live: Nick confirms the rotation is subtle, not disruptive. Evidence: observation log.
 
 **Required for Release:**  
 NO
@@ -340,6 +376,11 @@ Fallback: generic done screen (functional but misses cultural reinforcement).
 **Acceptance Criteria:**  
 Done screen displays real event data pulled from NocoDB, not static text; displays within 10s of event close; "That's the Taza standard." appears on every completion
 
+**Verification Method:**
+1. [AUTO] Data: done screen pulls real event data from NocoDB, not static text. Evidence: code-search + screenshot.
+2. [AUTO] Timing: screen displays within 10s of event close. Evidence: log.
+3. [NICK] Live: Nick confirms 'That's the Taza standard.' appears on a real completion. Evidence: screenshot.
+
 **Required for Release:**  
 NO
 
@@ -366,6 +407,11 @@ Fallback: no first-event declaration (culture absorbed only through environment)
 
 **Acceptance Criteria:**  
 Declaration displays on first-event tablet start for new crew (no prior PIN history); displays once automatically; accessible via icon on subsequent events; content matches five Lexicon principles; reads in ≤60 seconds
+
+**Verification Method:**
+1. [AUTO] Detection: new PIN with no prior history → declaration shows on first event start. Evidence: log.
+2. [AUTO] Once: displays once automatically; accessible afterward via settings icon. Evidence: log.
+3. [NICK] Live: Nick confirms the five statements read in ≤60s. Evidence: observation log.
 
 **Required for Release:**  
 NO

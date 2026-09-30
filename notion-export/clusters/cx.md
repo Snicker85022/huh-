@@ -196,6 +196,11 @@ Fallback: no WHY context, invoice contains logistics only.
 **Acceptance Criteria:**  
 When CRM notes contain a preference or decision, at least one WHY sentence appears on the invoice; no hallucinated facts; only confirmed CRM data used
 
+**Verification Method:**
+1. [AUTO] Trigger: a CRM note containing a preference/decision → at least one WHY sentence appears on the invoice. Evidence: test output.
+2. [AUTO] No-hallucination: empty CRM notes → zero WHY sentences. Evidence: test output.
+3. [NICK] Live: Nick reviews a real invoice and confirms WHY text matches the call record. Evidence: screenshot.
+
 **Required for Release:**  
 NO
 

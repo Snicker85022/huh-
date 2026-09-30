@@ -67,6 +67,11 @@ Fallback: manual docker ps daily.
 **Acceptance Criteria:**  
 Alert fires within 15min of failure; identifies which service
 
+**Verification Method:**
+1. [AUTO] Cadence: all services checked every 5 min. Evidence: log.
+2. [AUTO] Alert: service down >10 min → alert within 15 min naming the service. Evidence: test kill + log.
+3. [NICK] Live: Nick receives a health alert naming a specific service. Evidence: screenshot.
+
 **Required for Release:**  
 NO
 

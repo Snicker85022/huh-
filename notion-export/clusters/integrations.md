@@ -24,6 +24,12 @@ Fallback: manual Square console.
 **Acceptance Criteria:**  
 All 3 flows e2e; rate limits respected
 
+**Verification Method:**
+1. [AUTO] Sync: catalog sync (W9) completes end-to-end. Evidence: log + row count.
+2. [AUTO] Invoice: invoice creation via Square API succeeds. Evidence: test invoice.
+3. [AUTO] Webhook: payment webhook triggers the deposit flow. Evidence: test event.
+4. [AUTO] Rate limits: no 429s under normal volume. Evidence: log.
+
 **Required for Release:**  
 NO
 
@@ -54,6 +60,12 @@ SMS <60s; correct recipient; <300 chars; <$0.01/msg
 **Open Questions:**  
 TOOL CHOICE OPEN: Twilio requires install/registration on Nick's and Sandra's phones. Alternatives to evaluate: carrier SMS gateway, push instead of SMS, ntfy (already proven, PROD-25).
 
+**Verification Method:**
+1. [AUTO] Latency: SMS delivered <60s. Evidence: timestamp log.
+2. [AUTO] Cost: <$0.01/msg. Evidence: Twilio billing.
+3. [AUTO] Recipient: correct recipient, <300 chars. Evidence: log.
+4. [NICK] Live: Sandra receives a hot-alert SMS on her phone. Evidence: screenshot.
+
 **Required for Release:**  
 NO
 
@@ -80,6 +92,11 @@ Fallback: a backup AI provider for CRM and Path C.
 
 **Acceptance Criteria:**  
 Coherent responses; JSON extraction on 'done'; Path C <25s
+
+**Verification Method:**
+1. [AUTO] JSON: CRM session and Path C return valid JSON on 'done'. Evidence: test.
+2. [AUTO] Latency: Path C voice reasoning <25s. Evidence: timing log.
+3. [NICK] Live: Sandra runs a real CRM session. Evidence: screenshot.
 
 **Required for Release:**  
 NO
@@ -108,6 +125,11 @@ Fallback: "Type instead"; Web Speech API.
 **Acceptance Criteria:**  
 Accurate; <1s latency; budget compliant
 
+**Verification Method:**
+1. [AUTO] Latency: transcription <1s. Evidence: timing log.
+2. [AUTO] Accuracy: golden-set transcripts match. Evidence: test.
+3. [NICK] Live: Sandra dictates a real note. Evidence: screenshot.
+
 **Required for Release:**  
 NO
 
@@ -135,6 +157,11 @@ Fallback: on-device inference on WI-6 (LAN audio).
 **Acceptance Criteria:**  
 Runs on MT8390 NPU; no network audio; <3s short commands
 
+**Verification Method:**
+1. [AUTO] On-device: runs on MT8390 NPU; zero network audio. Evidence: code-search + network capture.
+2. [AUTO] Latency: short commands <3s. Evidence: timing log.
+3. [NICK] Live: crew issues a voice command on the MicroTouch. Evidence: observation log.
+
 **Required for Release:**  
 NO
 
@@ -161,6 +188,11 @@ Fallback: manual calendar; manual address entry.
 
 **Acceptance Criteria:**  
 Sync every 30min; Places returns Phoenix-area results
+
+**Verification Method:**
+1. [AUTO] Sync: calendar syncs every 30 min. Evidence: log.
+2. [AUTO] Places: address autocomplete returns Phoenix-area results. Evidence: test.
+3. [NICK] Live: Sandra types an address and gets Phoenix results. Evidence: screenshot.
 
 **Required for Release:**  
 NO

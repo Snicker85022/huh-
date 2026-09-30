@@ -119,6 +119,11 @@ Both TVs show correct views within 60s of reboot; no auto-sleep
 **Open Questions:**  
 FLAGGED FOR RECON 2026-09-02 — likely stale pre-build draft, contradicted by the built system (KANBAN 2/DISPLAY 2/DISPLAY 3). Recon team: (a) check the live gflip/N100 TV services to confirm what's actually running; (b) ask Nick whether to deprecate outright or whether any element (e.g. an event-calendar view) is still wanted and should be re-specced against the real architecture.
 
+**Verification Method:**
+1. [AUTO] Boot: both TVs reach their kiosk view within 60s of reboot, no manual step. Evidence: reboot + log.
+2. [NICK] Live: Nick confirms TV1=calendar, TV2=kanban after a real reboot. Evidence: screenshots.
+3. [NICK] Recon: resolve the stale-draft flag — confirm against live services or deprecate (see Open Questions). Evidence: recon note.
+
 **Required for Release:**  
 NO
 
@@ -148,6 +153,11 @@ Chrome loads on boot; bookmarks work; touch targets ≥44px
 
 **Open Questions:**  
 FLAGGED FOR RECON 2026-09-02 — likely stale pre-build draft, contradicted by the built system (DISPLAY 5, z33 5-tab setup). Recon team: (a) check the live z33 device config to confirm what's actually running; (b) ask Nick whether to deprecate outright or preserve any still-wanted element as a separate, correctly-specced row.
+
+**Verification Method:**
+1. [AUTO] Config: Chrome bookmarks for NocoDB/CRM/Invoice Form present, portrait orientation, no Notion app. Evidence: device config.
+2. [AUTO] Touch: touch targets ≥44px. Evidence: measurement.
+3. [NICK] Recon: resolve the stale-draft flag — confirm against live z33 config or deprecate (see Open Questions). Evidence: recon note.
 
 **Required for Release:**  
 NO

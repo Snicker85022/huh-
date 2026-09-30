@@ -202,6 +202,12 @@ Fallback: no passive monitoring (accept risk for V1).
 **Acceptance Criteria:**  
 Guard enabled and active; test alarm sound triggers phone notification within 60s; notification identifies alert type correctly; Guard active during all hours including overnight
 
+**Verification Method:**
+1. [AUTO] Arm: Alexa Guard enabled and active on the Insignia, including overnight hours. Evidence: Alexa app screenshot.
+2. [AUTO] Detection: play a smoke-alarm test tone → push notification to Nick's phone <60s, alert type correct. Evidence: phone screenshot + timestamp.
+3. [AUTO] Types: test smoke, CO, and glass-break tones → each identifies the correct alert type. Evidence: notification log.
+4. [NICK] Live: Nick receives a real Guard alert on his phone. Evidence: screenshot.
+
 **Required for Release:**  
 NO
 

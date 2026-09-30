@@ -186,6 +186,10 @@ Fallback: show as incomplete until fully done (loses partial visibility).
 **Acceptance Criteria:**  
 Partial items shown with distinct visual treatment; qty_completed/qty_target shown inline; distinguishable from complete and incomplete at 15ft
 
+**Verification Method:**
+1. [NICK] Live: partial item shows '◑ 19/24' inline, distinct from done and not-started at 15 ft. Evidence: screenshot.
+2. [AUTO] Data: qty_completed/qty_target shown inline. Evidence: screenshot.
+
 **Required for Release:**  
 NO
 
@@ -213,6 +217,11 @@ Fallback: task assignment visible on touchscreen only (requires approach).
 **Acceptance Criteria:**  
 Active task shows assigned staff name; name updates within 10s of PIN entry; no task shows two names at once; visible at 15ft
 
+**Verification Method:**
+1. [AUTO] Timing: name updates within 10s of PIN entry. Evidence: log.
+2. [AUTO] Exclusivity: no task shows two names at once. Evidence: query.
+3. [NICK] Live: crew sees 'Plating salmon — Sandra ▶' at 15 ft. Evidence: screenshot.
+
 **Required for Release:**  
 NO
 
@@ -239,6 +248,11 @@ Fallback: Sandra announces phase transitions verbally.
 
 **Acceptance Criteria:**  
 Timeline position shown in top bar; phase label updates automatically at transition times; time remaining counts down live; visible at 15ft
+
+**Verification Method:**
+1. [AUTO] Phase: phase label updates automatically at transition times. Evidence: log.
+2. [AUTO] Countdown: time remaining counts down live. Evidence: timed screenshots.
+3. [NICK] Live: Nick reads the cadence bar at 15 ft. Evidence: screenshot.
 
 **Required for Release:**  
 NO

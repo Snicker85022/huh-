@@ -24,6 +24,10 @@ Fallback: contractor retainer 30 days.
 **Acceptance Criteria:**  
 Nick can diagnose/fix common issues without contractor
 
+**Verification Method:**
+1. [NICK] Live: Nick, with no help, diagnoses and fixes a common failure using only the runbook. Evidence: observation log.
+2. [NICK] Coverage: runbook has daily ops, nightly SLA, per-workflow troubleshooting, escalation. Evidence: document review.
+
 **Required for Release:**  
 NO
 
@@ -50,6 +54,10 @@ Fallback: Notion docs hub as backup.
 
 **Acceptance Criteria:**  
 New contractor understands system within 30min
+
+**Verification Method:**
+1. [NICK] Live: a new contractor, reading only the README, locates services/ports/credentials/costs within 30 min. Evidence: timed observation log.
+2. [NICK] Coverage: README lists every service, port, credential location, cost profile. Evidence: document review.
 
 **Required for Release:**  
 NO
@@ -78,6 +86,10 @@ Fallback: screenshots, manual rebuild.
 **Acceptance Criteria:**  
 JSONs exported per job; each imports cleanly into a fresh deployment
 
+**Verification Method:**
+1. [AUTO] Export: each automation job exported as JSON. Evidence: file listing.
+2. [AUTO] Import: a fresh deployment imports each JSON cleanly. Evidence: import log.
+
 **Required for Release:**  
 NO
 
@@ -104,6 +116,9 @@ Fallback: Nick walks Sandra through live.
 
 **Acceptance Criteria:**  
 Sandra completes walkthrough <5min; no questions on core flow
+
+**Verification Method:**
+1. [NICK] Live: Sandra completes the invoice-form walkthrough in <5 min with no questions on core flow. Evidence: timed observation log.
 
 **Required for Release:**  
 NO

@@ -198,6 +198,11 @@ Fallback: skip post-processing, raw template.
 **Acceptance Criteria:**  
 Polished prose; zero data changes; amounts/dates/names untouched
 
+**Verification Method:**
+1. [AUTO] No-change: run postprocess over 10 invoices → amounts, dates, names byte-identical before/after. Evidence: diff.
+2. [AUTO] Polish: prose reads clearly; only description fields changed. Evidence: before/after sample.
+3. [NICK] Live: Nick reviews a polished invoice. Evidence: screenshot.
+
 **Required for Release:**  
 NO
 
@@ -225,6 +230,11 @@ Fallback: generic greeting.
 **Acceptance Criteria:**  
 AI opens with name + last event + preference
 
+**Verification Method:**
+1. [AUTO] Facts: greeting references 2–3 real customer facts pulled from the record, zero invented facts. Evidence: test output.
+2. [AUTO] Empty: no customer facts available → generic greeting (fallback), never fabricated. Evidence: test.
+3. [NICK] Live: Sandra sees a real session opener referencing a real fact. Evidence: screenshot.
+
 **Required for Release:**  
 NO
 
@@ -251,6 +261,11 @@ Fallback: Sandra checks profile manually.
 
 **Acceptance Criteria:**  
 Brief: who / last interaction / suggested angle; <300 chars
+
+**Verification Method:**
+1. [AUTO] Format: brief contains who / last interaction / suggested angle, <300 chars. Evidence: sample output + char count.
+2. [AUTO] Empty: no history → brief says so, never fabricated. Evidence: test.
+3. [NICK] Live: Sandra reads a real precall brief before dialing. Evidence: screenshot.
 
 **Required for Release:**  
 NO

@@ -63,6 +63,14 @@ End-to-end black-box test covering all 8 FRs in sequence; plus adversarial tests
 **Rationale:**
 The seating/layout/room-intelligence layer is the centerpiece of the Planner Portal's technological moat. The free-tier fork model drives organic discovery; the paid tier protects privacy. Offline capability is not optional for venues with poor connectivity. The three room-capture paths (AR/AI/upload) ensure no device or skill level is excluded from accurate room intelligence. Cloudflare's edge architecture (Durable Objects, Pages, Workers) provides the real-time, offline, globally-distributed backbone without managing servers.
 
+**Acceptance Criteria:**
+NORMAL: a planner or customer opens one link into a live shared command center — current layout, real-time collaboration, no email chain or static PDF.
+EDGE: offline at a rural venue → the tool still works (offline is a normal case, not an exception).
+EDGE: a device without AR → the app itself resolves the room via questions or a drawing; no one is shut out.
+NEGATIVE: an unauthenticated user sees a paid-tier event with real guest names → impossible (private-by-default, signed tokens).
+SILENT-FAILURE: a user views a stale layout believing it's current → caught (changes propagate in real time; staleness visible).
+CHALLENGE: two planners edit the same layout simultaneously from different devices → both see the other's changes live.
+
 **Required for Release:**
 YES
 

@@ -111,6 +111,11 @@ Fallback: Nick manually texts Sandra key open items each event morning.
 **Acceptance Criteria:**  
 Brief delivered by 7am; open issues ≤5 shown by default; confirmed items collapsed; each open issue has a recommended action; Sandra can expand confirmed items
 
+**Verification Method:**
+1. [AUTO] Delivery: brief delivered by 7am on every event day. Evidence: log + SMS.
+2. [AUTO] Format: ≤5 open items by default, confirmed collapsed, each open item has a recommended action. Evidence: sample output.
+3. [NICK] Live: Sandra receives a real event-day brief on her phone. Evidence: screenshot.
+
 **Required for Release:**  
 NO
 
@@ -138,6 +143,11 @@ Fallback: accept notification before write on NocoDB timeout only (log as except
 **Acceptance Criteria:**  
 Notifications trigger only after NocoDB write confirms; NocoDB timestamp precedes notification timestamp on every logged event; zero notifications referencing uncommitted state
 
+**Verification Method:**
+1. [AUTO] Ordering: on every logged event, NocoDB write timestamp precedes notification timestamp. Evidence: query over logs.
+2. [AUTO] Zero-uncommitted: no notification references uncommitted state. Evidence: audit query.
+3. [AUTO] Timeout: NocoDB write timeout → notification deferred + exception logged, never sent with uncommitted state. Evidence: log.
+
 **Required for Release:**  
 NO
 
@@ -164,6 +174,12 @@ Fallback: Nick manually adjudicates conflicts; Sandra calls Nick.
 
 **Acceptance Criteria:**  
 Conflict detection logic in automation; conflict notification names both sources and states which wins; Sandra override available; conflict and resolution logged in NocoDB
+
+**Verification Method:**
+1. [AUTO] Hierarchy: conflict detection names both sources and states which wins (NocoDB > vendor email > verbal). Evidence: test log.
+2. [AUTO] Override: Sandra can override via the documented path. Evidence: test.
+3. [AUTO] Log: every conflict + resolution logged. Evidence: query.
+4. [NICK] Live: Nick sees a real conflict notification with both sources named. Evidence: screenshot.
 
 **Required for Release:**  
 NO

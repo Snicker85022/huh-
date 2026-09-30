@@ -240,6 +240,12 @@ Direct answer if found (LLM never called); otherwise falls through to normal ext
 **Trigger:**  
 Any point W7/W15/etc. is about to call an LLM for a fact that might already be known (e.g. catalog price lookup)
 
+**Acceptance Criteria:**  
+Deferred — Idea stage — no AC/VM until promoted.
+
+**Verification Method:**  
+Deferred — Idea stage — no AC/VM until promoted.
+
 **Required for Release:**  
 NO
 
@@ -267,6 +273,12 @@ Fallback: no stress routing (all inputs treated equally).
 **Acceptance Criteria:**  
 Score computed automatically with no human input; routing rules applied correctly at each threshold; cloud API called only above the top threshold with mandatory Sandra review
 
+**Verification Method:**
+1. [AUTO] Score: messy input → high stress score; clean input → low. Evidence: test log.
+2. [AUTO] Routing: each threshold routes to the correct scrutiny tier. Evidence: test log.
+3. [AUTO] Cloud gate: cloud API called only above the top threshold, with mandatory review. Evidence: log.
+4. [NICK] Live: Sandra sees a confirmation card on a messy input. Evidence: screenshot.
+
 **Required for Release:**  
 NO
 
@@ -291,11 +303,14 @@ Formal two-model routing architecture: classification tasks route to the fast sm
 **Failure Behavior:**  
 Fallback: single model for all tasks (lower classification accuracy).
 
-**Acceptance Criteria:**  
-Routing logic correctly directs each task type to the correct model; both models simultaneously available; no cross-routing errors under concurrent load
-
 **Open Questions:**  
 DEPRECATED 2026-09-02: pure duplicate of INFERENCE 3 (SW-002) — same two-model routing architecture stated twice, no distinct scope. Consolidated into INFERENCE 3; this row is kept for history and is not an active debate target.
+
+**Acceptance Criteria:**  
+Deferred — Deprecated — duplicate of SW-002 (INFERENCE 3).
+
+**Verification Method:**  
+Deferred — Deprecated — duplicate of SW-002 (INFERENCE 3).
 
 **Required for Release:**  
 NO
@@ -323,6 +338,11 @@ Fallback: manual entry (Bayesian loop still works, slower).
 
 **Acceptance Criteria:**  
 Form pre-populated with predictions; submission writes within 5s; record complete; total submission time <60s for a typical event
+
+**Verification Method:**
+1. [AUTO] Pre-populate: form shows predicted quantities. Evidence: screenshot.
+2. [AUTO] Submit: write completes within 5s. Evidence: timing log.
+3. [NICK] Live: Sandra submits real post-event feedback in <60s. Evidence: observation log.
 
 **Required for Release:**  
 NO
@@ -354,6 +374,12 @@ This row has no FRS — Notes content was only a conceptual analogy, not a testa
 **Rationale:**  
 Framed via Fourier/basis-function analogy: INVOICE 13/W11/W15 are simple basis functions, NocoDB is the superposition.
 
+**Acceptance Criteria:**  
+Deferred — Idea stage, no FRS — no AC/VM until real FRS written.
+
+**Verification Method:**  
+Deferred — Idea stage, no FRS — no AC/VM until real FRS written.
+
 **Required for Release:**  
 NO
 
@@ -380,6 +406,11 @@ W7 invoice generation makes zero Square API calls during inference; PostgreSQL m
 
 **Dependency Notes:**  
 Distinct from CATALOG 10 (Square→NocoDB sync) and TELEMETRY 5 (NocoDB lookup-first cache of prior events).
+
+**Verification Method:**
+1. [AUTO] Zero-API: W7 invoice inference makes zero Square API calls. Evidence: code-search + log.
+2. [AUTO] Freshness: menu_items matches Square within 24h of a catalog change. Evidence: query.
+3. [AUTO] Fail: 2 consecutive nightly failures → SMS to Nick. Evidence: log + screenshot.
 
 **Required for Release:**  
 NO
@@ -455,6 +486,12 @@ Logged by Claude Code (Opus 4.8), decisions D-044/D-045/D-046, 2026-06-26.
 
 **Rationale:**  
 V1.0 scope, capture-now/analyze-later — history is the only irreplaceable input.
+
+**Acceptance Criteria:**  
+Deferred — Idea stage, no FRS — no AC/VM until real FRS written.
+
+**Verification Method:**  
+Deferred — Idea stage, no FRS — no AC/VM until real FRS written.
 
 **Required for Release:**  
 NO

@@ -24,6 +24,11 @@ Fallback: root-only access to audio dir.
 **Acceptance Criteria:**  
 Audio encrypted; .env in .gitignore; no PII in logs
 
+**Verification Method:**
+1. [AUTO] Encryption: voice audio encrypted at rest. Evidence: config + file inspection.
+2. [AUTO] Secrets: .env in .gitignore, never committed. Evidence: git log + grep.
+3. [AUTO] PII: no geo_location or PII in logs. Evidence: log scan.
+
 **Required for Release:**  
 NO
 
@@ -93,6 +98,12 @@ Fallback: IP whitelist as additional layer.
 
 **Acceptance Criteria:**  
 Login required; idle expires after 24h; failed logins logged
+
+**Verification Method:**
+1. [AUTO] Auth: NocoDB requires login. Evidence: unauthenticated curl → 401.
+2. [AUTO] Timeout: idle session expires after 24h. Evidence: test.
+3. [AUTO] Logging: failed logins logged. Evidence: log.
+4. [NICK] Live: Nick logs in and confirms 24h timeout. Evidence: screenshot.
 
 **Required for Release:**  
 NO
