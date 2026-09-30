@@ -121,16 +121,16 @@ _Notion: https://app.notion.com/p/Hourly-Review-Workflow-3b5e152fc19981f19281e11
 Operational Monitoring
 
 **Functional Requirement Specification:**  
-On W12 output and on morning/afternoon schedules, the system shall format a digest of outstanding items and deliver it to Nick and Sandra via email, logging outbound customer-facing communications to the Communications table.
+The system shall be the sole delivery layer for W6 digest + W12 alerts. On W12 output and the W6 digest, deliver via canonical channels per D10 (Twilio SMS to Sandra for actionable items; email to Nick), logging every outbound communication to the Communications table. One delivery path for the whole system.
 
 **Inputs:**  
 Alert from W12; digest from W6
 
 **Outputs:**  
-Digest email to Nick + Sandra; Communications log
+Twilio SMS to Sandra (actionable); email to Nick; Communications log
 
 **Trigger:**  
-W12 output or morning/afternoon schedule
+W12 alert; W6 digest ready; morning/afternoon schedule
 
 **Failure Behavior:**  
 Fallback: manual Slack/email check.
@@ -262,7 +262,7 @@ Customer Intelligence
 As Sandra, I need to talk through an update on a customer by voice or chat and have the system pull it into the right records itself, instead of me typing structured notes by hand.
 
 **Functional Requirement Specification:**  
-The system shall provide a multi-turn CRM session interface (SCREEN-10, port 3001) where Sandra selects a customer, and the system fetches the customer profile + recent voice notes + communications, opens a conversation with AI (cheapest capable/tested model for the task) as the CRM assistant, and manages the conversation turn-by-turn. On 'Done', the AI extracts structured updates as JSON; the system writes them to NocoDB Accounts/Contacts/Opportunities/Touchpoints and creates follow-up Tasks. The full conversation is stored in crm_sessions. Fallback: if the primary AI provider is down, use a backup AI provider.
+The system shall provide a multi-turn CRM session interface (SCREEN-10, port 3001) where Sandra selects a customer, and the system fetches the customer profile + recent voice notes + communications, opens a conversation with deepseek-v4-flash as the CRM assistant, and manages the conversation turn-by-turn. On 'Done', the AI extracts structured updates as JSON; the system writes them to NocoDB Accounts/Contacts/Opportunities/Touchpoints and creates follow-up Tasks. The full conversation is stored in crm_sessions. Fallback: backup AI provider — TBD, wire later.
 
 **Inputs:**  
 NocoDB Customer profile; Sandra's turns (text or via W5 voice)
@@ -318,8 +318,8 @@ NO
 _Notion: https://app.notion.com/p/CRM-Voice-Input-Handler-3b5e152fc19981cea6f8da10eef3955c_
 
 ---
-## W6 — Nightly CRM Deep Analysis
-**Status:** Deployed | **Priority:**  | **Release:** 
+## W6 — Morning CRM Digest
+**Status:** In Development (revising — digest only) | **Priority:**  | **Release:** 
 
 **Domain:**  
 Customer Intelligence
@@ -328,13 +328,13 @@ Customer Intelligence
 As Sandra, I need my voice notes and recent customer activity turned into a short morning briefing of what needs my attention today, without me reviewing everything myself overnight.
 
 **Functional Requirement Specification:**  
-At midnight, the system shall: throttle CPU, fetch all unprocessed voice notes + recent customer communications + all Active Accounts/Leads/Opportunities, run AI overnight analysis (intent tagging, entity extraction, CRM record promotion, opportunity flags, follow-up ranking), write results to NocoDB, compose a morning digest (top 5 follow-ups + hot opportunities), and schedule SMS to Sandra at 7:00am. Must complete by 5:00am. SLA failure triggers retry at 1am and an alert to Nick by 5am if still failing.
+At midnight, the system shall: aggregate the day's touchpoints + W2 scores + open tasks, rank follow-ups (who needs contacting today), compose a morning digest (top 5 follow-ups + hot opportunities), and write the digest to the changelog, triggering W13 for delivery. Must complete by 5:00am. SLA failure triggers retry at 1am and an alert to Nick by 5am if still failing. Lead scoring itself lives in W2 (real-time); this spec only ranks and composes.
 
 **Inputs:**  
-All Leads + Customer profiles from W1/W2/W4; Wix Shop Customers 30-day window
+W2 scores; touchpoints; open tasks from W12
 
 **Outputs:**  
-opportunity_flags, follow_up_rank, next_action_suggestion, reactivation_flag, upsell_angle; Wix conversion candidates; morning digest SMS 7am feeds W13
+Morning digest (top 5 follow-ups + hot opportunities) → feeds W13 for delivery
 
 **Trigger:**  
 Schedule midnight 00:00 UTC
