@@ -109,3 +109,10 @@ real-world effect). Critical-things-that-make-life-hell → NICK. See urs/acvm-s
   its canonical ID. Classes: CLOSE N / SHOP N / INVOICE N / CATALOG N / PACK N /
   short-forms (KIT-101→URS-KIT-101) / legacy D-XXX decision refs / dangling IDs.
 - Pass 1 per-cluster audits ADD ROWS to this map; they do not rename prose.
+
+## D25 — Bonus-card randomization cadence (Nick 2026-10-01)
+
+KIT-107 random temperature-sampling cards: semi-rare by design ("like catching a
+high-value Pokémon"). Bounds: 1–4 per high-cadence week, ~1 per low-cadence
+two-week cycle. Random within that envelope; never clumped into one shift.
+Loose defaults — tune as event cadence evolves.

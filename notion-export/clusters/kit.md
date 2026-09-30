@@ -382,7 +382,7 @@ Need: random bonus cards prompt crew for a physical temperature reading during s
 The system shall issue randomized bonus cards for physical temperature sampling, record entered readings, award points, and alert on threshold exceedance.
 
 **Functional Requirement Specification:**  
-The system shall issue randomised bonus cards during service for physical temperature sampling. On card close, the crew enters the actual measured temperature reading; the system stores it, awards points to the crew member, and triggers an immediate exception alert if the reading exceeds configured safe thresholds. Randomisation of timing and target item prevents predictable sampling patterns.
+The system shall issue randomised bonus cards during service for physical temperature sampling. On card close, the crew enters the actual measured temperature reading; the system stores it, awards points to the crew member, and triggers an immediate exception alert if the reading exceeds configured safe thresholds. Randomisation of timing and target item prevents predictable sampling patterns. Cadence (Nick 2026-10-01): semi-rare by design — 1 to 4 cards per high-cadence week, roughly 1 per low-cadence two-week cycle; random within that envelope, never clumped in one shift.
 
 **Inputs:**  
 Randomised trigger (time + target item); crew-entered measured temperature reading; configured safe-temperature thresholds.
@@ -394,7 +394,7 @@ A stored temperature reading; crew points; an immediate exception alert if the r
 Randomised system event during service; crew close with an entered reading.
 
 **Invariants:**  
-Sampling timing is randomised (not predictable); a reading that exceeds threshold triggers an immediate alert, not a deferred log entry; points awarded only on a completed, valid reading.
+Sampling timing is randomised within a bounded cadence (1–4/week high-cadence, ~1/two-week low-cadence — Nick 2026-10-01); a reading that exceeds threshold triggers an immediate alert, not a deferred log entry; points awarded only on a completed, valid reading.
 
 **Failure Behavior:**  
 An unsafe reading (outside configured thresholds) creates an immediate exception alert — not a logged-and-forgotten record. A duplicate card submission is idempotent. A card that generates no reading is not closed as a successful sampling.
@@ -403,7 +403,7 @@ An unsafe reading (outside configured thresholds) creates an immediate exception
 Temperature monitoring reduced to a paper-checklist exercise that crew fill in from memory rather than physical measurement — missing real exceedances and providing false compliance evidence.
 
 **Acceptance Criteria:**  
-Sampling is randomized; valid reading is stored and rewarded; unsafe reading creates an immediate alert.
+Sampling is randomized within the bounded cadence (1–4 per high-cadence week, ~1 per low-cadence two-week cycle); valid reading is stored and rewarded; unsafe reading creates an immediate alert.
 
 **Verification Method:**  
 Statistical scheduling test and threshold integration test.
