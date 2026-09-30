@@ -33,3 +33,22 @@ they override the frozen Notion export where they disagree.
 - security.md / health.md: remove WireGuard references (Tailscale-only).
 - prod.md PROD-08 deposit: keep fixed-dollar; add the 50%-default computation mechanism from decision 2.
 - master_urs duplicate: `public` (278) vs NocoDB base schema `pckp5o6vpkbml4e` (278) — pick canonical.
+
+## Pass 0.5 — spec-discovery artifacts (added 2026-09-29)
+
+Nick: `tcl1-east.html`, `tcl2-west.html`, `taza-card-table.html`, `gamemaster.html`,
+`van-loadout.html` are **static prototypes that never worked** — theme/brand/human-
+readability mockups. Good enough for v1.0, to be improved later. Therefore they are
+**design references, NOT operational reality**. The true operational ground truth is
+Nick's narration (above), not these files.
+
+## Pass 0.5 — alias-family finding (added 2026-09-29, per Claude review)
+
+The legacy reference families — `CLOSE N`, `SHOP N`, `INVOICE N`, `CATALOG N`,
+`PACK N` (e.g. CLOSE 1 = PROD-38 TaskCloseEvent, SHOP 1 = PROD-05-V2, PACK 2 =
+PROD-16-V2) — appear **in FRS prose only**, never in Inputs/Outputs. The Pass 0
+edge graph therefore **misses this entire reference class**. These are not in the
+identity matrix as edges; they are prose-level cross-references requiring semantic
+mapping. **Flag as a Pass 1 per-cluster audit target**: each cluster audit must
+extract every `CLOSE/SHOP/INVOICE/CATALOG/PACK N` mention and propose its canonical
+spec ID.
