@@ -21,6 +21,19 @@ Live kitchen kanban on MT1 (East) and MT2 (West). Three-state card flow, per-car
 **Dependency Notes:**  
 IMPLEMENTS: URS-KANBAN-001..005 (state/close/signals/short-stop/publish), URS-KIT-METHOD-* (Taza Method cards), CLOSE 3 (PIN). Parent feature KANBAN 1.
 
+**Verification Method:**
+1. [NICK] Live: crew taps a card through all three states on MT1. Evidence: screenshot.
+2. [AUTO] PIN gate: close without PIN is rejected. Evidence: test log.
+3. [AUTO] Board param: ?board=East vs West loads the correct board. Evidence: screenshots.
+4. [NICK] Brand: Mom's Table game/brand layer renders (gold, game state). Evidence: screenshot.
+
+**Acceptance Criteria:**
+NORMAL: MT1 (East) and MT2 (West) render the kanban board; three-state card flow works; cards tap-to-close with PIN gate.
+EDGE: ?board=East/West renders the correct board; no param defaults to West.
+NEGATIVE: Close attempt without PIN → rejected.
+SILENT-FAILURE: Board stops updating mid-service → caught by TV watchdog (TV-007), never a silently frozen board.
+CHALLENGE: 50+ open cards → board stays responsive and per-card signals remain readable.
+
 **Required for Release:**  
 NO
 
@@ -44,6 +57,19 @@ TCL East 75": event timeline, situational status, allergen board. Fetches /situa
 
 **Dependency Notes:**  
 IMPLEMENTS: DISPLAY 23 (East situational awareness by mode), SSB-001..007 (glanceable shared board). Parent feature DISPLAY 1.
+
+**Verification Method:**
+1. [NICK] Live: Nick reads the East display from across the kitchen. Evidence: photo + observation log.
+2. [AUTO] Data: /situational.json + /inventory.json fetch confirmed from N100. Evidence: curl + log.
+3. [AUTO] Watchdog: kill the page → auto-reloads. Evidence: log.
+4. [NICK] Allergen: allergen flag → red on the board. Evidence: screenshot.
+
+**Acceptance Criteria:**
+NORMAL: TCL East renders event timeline + situational status + allergen board from /situational.json + /inventory.json.
+EDGE: JSON fetch fails → display shows a stale/error state, never a blank wall.
+NEGATIVE: Allergen board silently missing → impossible: allergen population forces a visible red state.
+SILENT-FAILURE: Display goes blank mid-event → caught by TV watchdog (TV-007).
+CHALLENGE: Full event day with a long timeline → glanceable in <3s from across the kitchen.
 
 **Required for Release:**  
 NO
@@ -69,6 +95,17 @@ TCL West 75": prep-station checklist/progress. Fetches /situational.json from N1
 **Dependency Notes:**  
 IMPLEMENTS: DISPLAY 24 (West prep execution by mode), SSB-001..007. Parent feature DISPLAY 1.
 
+**Verification Method:**
+1. [NICK] Live: Edgar reads the West prep display from across the kitchen. Evidence: photo + observation log.
+2. [AUTO] Data: /situational.json fetch confirmed. Evidence: curl + log.
+3. [AUTO] Watchdog: kill the page → auto-reloads. Evidence: log.
+
+**Acceptance Criteria:**
+NORMAL: TCL West renders prep-station checklist/progress from /situational.json.
+EDGE: JSON fetch fails → stale/error state, never blank.
+SILENT-FAILURE: Display freezes mid-prep → caught by TV watchdog (TV-007).
+CHALLENGE: Heavy prep day with many stations → still glanceable per SSB standards.
+
 **Required for Release:**  
 NO
 
@@ -92,6 +129,19 @@ Insignia Fire TV: departure/loadout status by van/category. Fetches /van-loadout
 
 **Dependency Notes:**  
 IMPLEMENTS: DISPLAY 25 (Van Scoreboard loadout readiness by mode), CLOSE 15 (van-load departure checklist). Parent feature DISPLAY 1. Note: same physical TV runs the Alexa skill (ALC family).
+
+**Verification Method:**
+1. [NICK] Live: Edgar reads the scoreboard during an actual load. Evidence: photo.
+2. [AUTO] Dead zone: content avoids the right-edge 6%. Evidence: screenshot + measurement.
+3. [AUTO] Data: /van-loadout.json fetch confirmed. Evidence: curl + log.
+4. [NICK] Coexist: Alexa skill still works on the same TV. Evidence: observation log.
+
+**Acceptance Criteria:**
+NORMAL: Insignia Fire TV shows departure/loadout status by van and category from /van-loadout.json.
+EDGE: ~6% right-edge dead zone handled via CSS var — content stays out of it.
+NEGATIVE: Alexa skill on the same physical TV conflicts with the scoreboard → impossible: both coexist.
+SILENT-FAILURE: Scoreboard blank before departure → caught (departure-blocking surface).
+CHALLENGE: Full van loadout across two vans → every category visible at a glance.
 
 **Required for Release:**  
 NO
@@ -117,6 +167,19 @@ z33 (21.5" touchscreen) gamemaster view: live Mom's Table game state/scoreboard 
 **Dependency Notes:**  
 IMPLEMENTS: the gamemaster/scoreboard aspect of KANBAN 1 (Mom's Table) surfaced ambiently per DISPLAY 1. Parent feature DISPLAY 1.
 
+**Verification Method:**
+1. [NICK] Live: Nick sees the scoreboard update on a card close. Evidence: screenshot.
+2. [AUTO] SSE: live updates without refresh. Evidence: log.
+3. [AUTO] Tab-supervisor: the 5 tabs stay correct over 8h. Evidence: log.
+4. [NICK] Touch: gamemaster interactions respond on the 21.5" touchscreen. Evidence: observation log.
+
+**Acceptance Criteria:**
+NORMAL: z33 shows live Mom's Table game state/scoreboard via SSE.
+EDGE: all 5 tabs (kanban, health, gamemaster, board-master, LKL) reachable; ADB tab-supervisor keeps them on-target.
+NEGATIVE: z33 is intentionally NOT kiosk-locked, but tabs must not drift to junk pages.
+SILENT-FAILURE: SSE drops → scoreboard goes stale; caught by tab-supervisor/health.
+CHALLENGE: Full event → game state updates live with no manual refresh.
+
 **Required for Release:**  
 NO
 
@@ -141,6 +204,19 @@ Health dashboard: CPU temp, RAM/disk, UPS (apcaccess), service states, AI-engine
 **Dependency Notes:**  
 IMPLEMENTS: HEALTH 5 (signal set), HEALTH 8 (survives reboot), HEALTH 9 (fail-visible). Parent feature HEALTH 1.
 
+**Verification Method:**
+1. [NICK] Live: Nick reads health on his phone via Tailscale. Evidence: screenshot.
+2. [AUTO] UPS: apcaccess values match the dashboard readout. Evidence: query + screenshot.
+3. [AUTO] Fail drill: kill a service → board goes red within 60s. Evidence: screenshot.
+4. [AUTO] Refresh: data refreshes ≤30s. Evidence: log.
+
+**Acceptance Criteria:**
+NORMAL: :9000 shows CPU temp, RAM/disk, UPS (apcaccess), service states, AI-engine status, network presence, thermal history.
+EDGE: green-on-dark, ~30s auto-refresh.
+NEGATIVE: A service goes down → board shows a fail state, never a stale green.
+SILENT-FAILURE: A service silently drops off the board → caught (fail-visible per URS-HEALTH-003).
+CHALLENGE: Reboot the N100 → dashboard returns with correct live state.
+
 **Required for Release:**  
 NO
 
@@ -162,14 +238,23 @@ Phone-accessible crew/emergency page when screens are down — realizes URS-HEAL
 **Functional Requirement Specification:**  
 Phone-friendly crew/emergency web app: /emergency (power-outage brief), /siteguide (everyday crew ref), /status (live UPS via apcaccess). Two-tab HTML, 18px font, designed for a 45yo cook in AZ sunlight. LAN + Tailscale.
 
-**Verification Method:**  
-Built.
-
 **Dependency Notes:**  
 IMPLEMENTS: HEALTH 6 (phone emergency access). Related to HEALTH 7 (emergency print). Parent feature HEALTH 2.
 
 **Open Questions:**  
 Nick wants this always-on (not emergency-only); taza-crew.service exists as a loose file, intentionally not installed pending URS rewrite.
+
+**Verification Method:**
+1. [NICK] Live: Nick loads /emergency on a phone in sunlight. Evidence: screenshot.
+2. [AUTO] apcaccess: /status matches live UPS. Evidence: query.
+3. [NICK] Tailscale: reachable off-LAN. Evidence: screenshot.
+
+**Acceptance Criteria:**
+NORMAL: /emergency, /siteguide, /status reachable on a phone; 18px font, sunlight-readable.
+EDGE: reachable on LAN and via Tailscale when the wall screens are down.
+NEGATIVE: Power outage → /emergency brief still reachable (UPS-backed N100).
+SILENT-FAILURE: /status shows stale UPS → caught (apcaccess is live).
+CHALLENGE: a 45-year-old cook reads it on a phone in AZ sunlight.
 
 **Required for Release:**  
 NO
@@ -192,11 +277,20 @@ On-site crew tablet: client story + hospitality prompts — realizes PROD-29.
 **Functional Requirement Specification:**  
 Standalone offline HTML/PWA on Galaxy Tab A8: Mode 1 client-story reveal (pre-service), Mode 2 hospitality scanning prompts cycling event arc, Mode 3 wind-down. Wake Lock keeps screen awake; no network during events.
 
-**Verification Method:**  
-Delivered 2026-06-20.
-
 **Dependency Notes:**  
 IMPLEMENTS: CREW 3 (offline PWA), CREW 4 (event setup), CREW 5 (client story before prompts), CREW 6 (cycle prompts + stay awake). V2: URS-CREW-005 (auto-populate). Parent feature CREW 1.
+
+**Verification Method:**
+1. [NICK] Live: crew runs a real event on the tablet. Evidence: observation log.
+2. [AUTO] Offline: airplane-mode run → still works. Evidence: test log.
+3. [AUTO] Wake Lock: screen stays awake through service. Evidence: device log.
+
+**Acceptance Criteria:**
+NORMAL: Galaxy Tab runs offline; Mode 1 client story, Mode 2 hospitality prompts cycling the event arc, Mode 3 wind-down.
+EDGE: Wake Lock keeps the screen awake; zero network during events.
+NEGATIVE: Power loss → resumes at the correct mode.
+SILENT-FAILURE: Screen sleeps mid-service → caught (Wake Lock must stay active).
+CHALLENGE: Full event on airplane mode → all three modes work.
 
 **Required for Release:**  
 NO
@@ -219,11 +313,21 @@ Invoice form Sandra fills to produce event invoices — realizes UI-002 / PROD-0
 **Functional Requirement Specification:**  
 The staff invoice-form web app (mobile-responsive PWA, port 3002): 8 sections (Customer, Event, Timing, Dispatch, SKUs, Payment, Title, Future), auto-title generation, address autocomplete, deposit logic, and publish-to-Square. The form is the deterministic front-end for W2/INVOICE 13 invoice generation (97% deterministic coverage target).
 
-**Verification Method:**  
-Not yet built — listed in contractor brief as to-build.
-
 **Dependency Notes:**  
 IMPLEMENTS: INVOICE 12 (Invoice Form PWA requirement), CX-001..007 (invoice blocks), CATALOG 2 (reads catalog attributes). Feeds W2/INVOICE 13. Parent feature INVOICE 1.
+
+**Verification Method:**
+1. [NICK] Live: Sandra fills a real invoice on her phone. Evidence: screenshot.
+2. [AUTO] Sections: all 8 present and responsive. Evidence: screenshot.
+3. [AUTO] Deposit: fixed-dollar lock per D19 holds. Evidence: test log.
+4. [NICK] Publish: Nick reviews and publishes to Square. Evidence: observation log.
+
+**Acceptance Criteria:**
+NORMAL: 8 sections render; auto-title generates; address autocomplete; deposit logic; publish-to-Square.
+EDGE: mobile-responsive on a phone.
+NEGATIVE: publish without Nick/Sandra approval → blocked (W7 approval task).
+SILENT-FAILURE: A section silently missing → caught (all 8 required).
+CHALLENGE: Full invoice from an empty form → 97% deterministic coverage target.
 
 **Required for Release:**  
 NO
@@ -246,11 +350,21 @@ CRM session screen for customer calls — realizes UI-001 / W4/W13.
 **Functional Requirement Specification:**  
 The CRM session web app (mobile-responsive PWA, port 3001): customer dropdown, multi-turn chat with the AI-backed CRM assistant, Record (voice→Whisper), End Session (triggers JSON extraction + NocoDB write). The front-end for W4/W13 CRM interview sessions.
 
-**Verification Method:**  
-Not yet built.
-
 **Dependency Notes:**  
 IMPLEMENTS: UI-001 (CRM Session PWA requirement). Feeds/hosts W4 (CRM Interview Session) + W13 (consolidated CRM session) + W5 (voice input). No single PROD parent — tie to W4/W13 in debate.
+
+**Verification Method:**
+1. [NICK] Live: Sandra runs a real customer call. Evidence: screenshot.
+2. [AUTO] Voice: Record → Whisper transcript appears. Evidence: test log.
+3. [AUTO] Extraction: End Session → JSON lands in canonical tables. Evidence: psql.
+4. [NICK] Backup: primary AI down → backup provider takes over. Evidence: observation log.
+
+**Acceptance Criteria:**
+NORMAL: customer dropdown, multi-turn chat with the AI CRM assistant, Record (voice→Whisper), End Session → JSON extraction + write.
+EDGE: mobile-responsive on a phone.
+NEGATIVE: End Session with no usable data → no partial write.
+SILENT-FAILURE: Transcript lost → caught (stored in crm_sessions).
+CHALLENGE: Full customer call with voice notes → correct structured extraction.
 
 **Required for Release:**  
 NO
@@ -273,11 +387,21 @@ Staff mobile shopping app with vendor-grouped list and check-off — realizes PR
 **Functional Requirement Specification:**  
 The staff shopping web app (mobile): passkey auth, aggregated + vendor-grouped + frost-risk-first shopping list, check-off with substitution capture, one-source-of-truth updates with optimistic-update conflict recovery. The staff-facing front-end for SHOP 11/SHOP 1.
 
-**Verification Method:**  
-Not yet built — v2 shopping logic fully spec'd (PROD-05-V2), app build unconfirmed.
-
 **Dependency Notes:**  
 IMPLEMENTS: URS-MOB-001..005 (staff mobile surface), SHOP 1 (aggregated/vendor-grouped/frost-risk shopping), SHOP 3 (substitution capture at check-off). Parent feature SHOP 11.
+
+**Verification Method:**
+1. [NICK] Live: Sandra checks off on her phone. Evidence: screenshot.
+2. [AUTO] Frost-risk: item sorts last within its vendor group. Evidence: test log.
+3. [AUTO] Conflict: two devices → revert works. Evidence: test log.
+4. [AUTO] Passkey: auth works. Evidence: log.
+
+**Acceptance Criteria:**
+NORMAL: passkey auth; aggregated vendor-grouped frost-risk-first list; check-off with substitution capture.
+EDGE: offline → optimistic update; conflict recovery on reconnect.
+NEGATIVE: conflict → revert, never silent overwrite.
+SILENT-FAILURE: substitution not captured at check-off → caught (SHOP 3).
+CHALLENGE: two staff check off the same item simultaneously → conflict recovery works.
 
 **Required for Release:**  
 NO
@@ -300,11 +424,19 @@ Dedicated display for new-crew onboarding/orientation without tying up an operat
 **Functional Requirement Specification:**  
 50" Ethernet smart TV (mounted, not yet networked) showing onboarding panels (TV-009 Crew Training SOP mode + KANBAN 12 instructional panels). Once networked, added to DHCP reservations + display self-heal automation.
 
-**Verification Method:**  
-Not yet built. Hardware mounted, awaiting network connection (URS-DISP-PKG open item 4).
-
 **Dependency Notes:**  
 Previously mis-referenced as SHOP 2 in DISPLAY 21 — corrected; SHOP 2 is the Shopping Staff Web App.
+
+**Verification Method:**
+1. [NICK] Live: new crew watches onboarding end-to-end. Evidence: observation log.
+2. [AUTO] Network: DHCP reservation + self-heal added. Evidence: config diff.
+3. [NICK] Content: TV-009 + KANBAN 12 panels correct. Evidence: screenshot.
+
+**Acceptance Criteria:**
+NORMAL: 50" TV shows onboarding panels (TV-009 crew training SOP + KANBAN 12 instructional panels).
+EDGE: not yet networked — pending DHCP reservation + display self-heal automation.
+SILENT-FAILURE: once networked, covered by TV watchdog (TV-007).
+CHALLENGE: onboard a new crew member end-to-end from one screen.
 
 **Required for Release:**  
 NO

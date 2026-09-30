@@ -195,6 +195,12 @@ TTS alert fires within 10s of trigger; audible at Sandra's primary work position
 **Open Questions:**  
 OVERLAP: same alert conditions (allergen/departure/timer) as ALEXA 4, both may fire on Insignia's speakers. Intentional redundancy or conflict? Reconcile in debate.
 
+**Verification Method:**
+1. [AUTO] Latency: trigger allergen flag → TTS fires ≤10s. Evidence: log timestamp.
+2. [AUTO] Coverage: allergen population fires every time; departure countdown fires at configured time. Evidence: test log.
+3. [NICK] Live: Sandra hears the alert at her primary work position under normal kitchen ambient noise. Evidence: observation log.
+4. [NICK] Overlap: confirm TTS and Alexa (ALC-004) both firing on the Insignia is not a conflict. Evidence: observation log.
+
 **Required for Release:**  
 NO
 
@@ -222,6 +228,12 @@ Fallback: manual URL navigation for mode changes.
 **Acceptance Criteria:**  
 Mode switches complete in <2s; schedule-based switching fires within 60s of trigger time; event-state switching fires within 30s of NocoDB write; ambient mode activates within 5 min of event close
 
+**Verification Method:**
+1. [AUTO] Latency: mode switch completes <2s. Evidence: timing log.
+2. [AUTO] Schedule: fires within 60s of trigger time. Evidence: log.
+3. [AUTO] Event-state: fires within 30s of the NocoDB write. Evidence: log.
+4. [NICK] Live: Nick switches a mode by voice. Evidence: observation log.
+
 **Required for Release:**  
 NO
 
@@ -248,6 +260,12 @@ Fallback: manual Chrome relaunch via ADB when TV-002 alerts.
 
 **Acceptance Criteria:**  
 Chrome crash on any TV triggers auto-relaunch within 45s; health reports visible in NocoDB with TV name/CPU/memory/state/URL/timestamp; APK survives TV reboot
+
+**Verification Method:**
+1. [AUTO] Crash drill: kill Chrome → auto-relaunch ≤45s. Evidence: log.
+2. [AUTO] Health: NocoDB shows TV name/CPU/mem/state/URL/timestamp every 60s. Evidence: query.
+3. [AUTO] Reboot: reboot the TV → APK survives and resumes. Evidence: log.
+4. [NICK] Live: Nick reads TV health in NocoDB without touching the TV. Evidence: screenshot.
 
 **Required for Release:**  
 NO
