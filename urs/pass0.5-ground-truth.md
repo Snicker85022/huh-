@@ -52,3 +52,27 @@ identity matrix as edges; they are prose-level cross-references requiring semant
 mapping. **Flag as a Pass 1 per-cluster audit target**: each cluster audit must
 extract every `CLOSE/SHOP/INVOICE/CATALOG/PACK N` mention and propose its canonical
 spec ID.
+
+## D20 — Canonical naming scheme (design LOCKED 2026-09-29; execute after Pass 1)
+
+Four mechanical rules, applied to 287 specs → 113 renamed, 174 unchanged, 0 collisions:
+
+| Rule | Before → After | Count |
+|---|---|---|
+| Drop `URS-` prefix | URS-KIT-101 → KIT-101, URS-CRM-007 → CRM-007 | 83 |
+| Drop `REQ-` prefix | REQ-CI-001 → CI-001, REQ-TELE-001 → TELE-001 | 5 |
+| Legacy kit family | KIT-001…KIT-023 → KITL-001…KITL-023 (bin master, kit-legacy) | 13 |
+| SCREEN zero-pad | SCREEN-01 → SCREEN-001 (3-digit, matches CAT-001 style) | 12 |
+
+**Rationale:** prose already uses short forms (Pass 0 found 19 short-form tokens resolving to URS- prefixed IDs). `URS-` carries no information the cluster code lacks. KITL eliminates the KIT-001-vs-KIT-101 semantic collision.
+
+**Timing: design now, execute after Pass 1 as mechanical Pass 1.5.** Pass 1's job is producing the *semantic* alias map (CLOSE N, SHOP N, INVOICE N, CATALOG N, PACK N → canonical). Renaming before that would destroy the drift evidence and leave prose aliases broken. Execute = one mechanical script (headers + CSV + prose aliases) in one commit; corpus untouched until then.
+
+**Deferred to Pass 1 (semantic, NOT mechanical):**
+- `V1.0-IG` (Input Grammar) — needs a real cluster home; do NOT guess AI-009
+- entire `uncategorized` cluster (CRM-*, CALL-*, SYS-INTENT-001) — needs homes
+- CLOSE/SHOP/INVOICE/CATALOG/PACK N → canonical mapping (Pass 1 discovery)
+
+**Numbering gaps are Pass 1 findings, not rename targets:** INT-002, LABEL-002, TV-008/009/010, PROD-30/31/32/33/35 missing. Do not renumber; flag.
+
+Map artifact: `urs/canonical-id-map.tsv` (287 rows, source_id → final_id).
