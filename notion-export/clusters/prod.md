@@ -24,8 +24,20 @@ Dependent tasks flipped LOCKED→PENDING with unlocked_at; recursive unlock down
 **Trigger:**  
 Task status UPDATE to COMPLETED fires AFTER UPDATE trigger; recursive chain unlock
 
-**Verification Method:**  
-Audit 2026-07-21 confirmed tables exist, 0 rows; wiring to watcher/kanban outputs unaudited.
+**Acceptance Criteria:**
+NORMAL: Parent task reaches COMPLETED → dependent task flips LOCKED→PENDING with unlocked_at set, recursively down the chain.
+EDGE: Chain deeper than 5 → unlock halts at depth 5; deeper tasks flagged, never silently dropped.
+EDGE: Task with no parent → closes normally, no unlock cascade.
+NEGATIVE: Any state transition performed by an LLM → BLOCKED (D-025: transitions are deterministic and LLM-free).
+SILENT-FAILURE: Parent COMPLETED but child still LOCKED after trigger → caught by orphan audit query.
+CHALLENGE: 100-task chain, kill the DB mid-unlock → restart resumes cleanly, no half-unlocked state.
+
+**Verification Method:**
+1. [AUTO] Chain test: 5-deep chain, complete root → all 5 flip with unlocked_at. Evidence: psql result.
+2. [AUTO] Depth-limit: 8-deep chain → unlock stops at 5, remainder flagged. Evidence: psql.
+3. [AUTO] Orphan audit: query finds zero LOCKED tasks whose parent is COMPLETED. Evidence: query + result.
+4. [AUTO] Crash test: kill DB mid-unlock, restart → no half-unlocked state. Evidence: log + psql.
+5. [NICK] Live: Mom's Table card close unlocks the dependent card on the touchscreen. Evidence: observation log + screenshot.
 
 **Required for Release:**  
 NO
@@ -180,6 +192,13 @@ TCL West=prep, TCL East=situational, Insignia=van loadout mode assignment mismat
 **Rationale:**  
 D-INF-001: reduce inference demand, don't speed it up.
 
+**Verification Method:**
+1. [AUTO] Lag test: fire a state change → display updates <4s. Evidence: timestamp log.
+2. [AUTO] Mode test: each TV renders its correct mode (EVENT/PREP/DEAD DAY/OVERNIGHT). Evidence: screenshot of each surface.
+3. [NICK] Stress-signal: leave board cluttered → intentional visual stress signal renders. Evidence: screenshot.
+4. [NICK] Allergen: CRITICAL allergen flag → red state reaches displays fast. Evidence: screenshot + observation log.
+5. [AUTO] Voice-gate: display-persistence.js wired to live frontends. Evidence: code-search + grep.
+
 **Required for Release:**  
 NO
 
@@ -212,6 +231,12 @@ V1 spec, retained as historical record only — not in active use. Superseded by
 
 **Rationale:**  
 Kept for reference: SHOP 1 added the locked aggregation rule, Task Verb Library integration, frost-risk-first ordering, and vendor grouping, none of which this V1 design accounted for.
+
+**Acceptance Criteria:**  
+Deferred — Superseded by PROD-05-V2 — historical record only.
+
+**Verification Method:**  
+Deferred — Superseded by PROD-05-V2 — historical record only.
 
 **Required for Release:**  
 NO
@@ -249,6 +274,21 @@ Supersedes-in-detail SHOP 11 v1 (kept, historical). Wired into CLOSE 34's task e
 **Rationale:**  
 Rewritten 2026-08-07 per RAG Operations Content discovery to incorporate the locked aggregation rule, Task Verb Library, and Task Governance Rules that v1 never incorporated.
 
+**Acceptance Criteria:**
+NORMAL: Deposit paid → aggregated shopping list across all events in the window, grouped by vendor.
+EDGE: Frost-risk item → pulled last within its vendor group.
+EDGE: Item quantity below safety-stock threshold → FLAG task generated, not silently re-ordered.
+NEGATIVE: Substitution at check-off → captured in the record, never silently dropped.
+SILENT-FAILURE: Item whose required quantity can't be determined → FLAG, never Buy (no guessed quantity).
+CHALLENGE: Two events share ingredients → one aggregated line, not two parallel buys.
+
+**Verification Method:**
+1. [AUTO] Aggregation: 2 overlapping events with shared ingredient → one merged line. Evidence: psql + screenshot.
+2. [AUTO] Frost-risk: frost-risk item sorts last within vendor group. Evidence: list-order log.
+3. [AUTO] Safety-stock: below-threshold item → FLAG task exists. Evidence: psql.
+4. [NICK] Staff app: Sandra checks off an item on phone → optimistic write-back, conflict-revert on clash. Evidence: screenshot + observation log.
+5. [AUTO] Substitution: substitute captured at check-off. Evidence: log.
+
 **Required for Release:**  
 YES
 
@@ -273,8 +313,19 @@ Shopping lists + task chains written to PostgreSQL; visible in Mom's Table withi
 **Trigger:**  
 Trigger A: deposit paid → shopping list + task chain scheduling. Trigger B: invoice update → recalculate. Weekly mirror cron via systemd timer
 
-**Verification Method:**  
-Sprint 2 scope; not started per audit.
+**Acceptance Criteria:**
+NORMAL: Deposit payment email parsed (D16) → event status CONFIRMED → task-chain generation + shopping list triggered.
+EDGE: Refund email → CONFIRMED rescinded; re-payment re-triggers, idempotent on invoice ID + Message-ID.
+NEGATIVE: Unparseable payment email → exceptions_queue + Sandra manual confirm; never auto-confirms.
+SILENT-FAILURE: Payment email missed by inbox poll → weekly mirror cron catches it.
+CHALLENGE: Two payments for the same invoice in quick succession → one task chain, no duplicate.
+
+**Verification Method:**
+1. [AUTO] Confirm flow: deposit email → event CONFIRMED + task chain rows exist. Evidence: psql.
+2. [AUTO] Refund drill: refund email → CONFIRMED rescinded; re-pay → exactly one re-trigger. Evidence: log.
+3. [AUTO] Idempotency: duplicate payment event → one chain. Evidence: count + log.
+4. [AUTO] Miss-recovery: force a missed poll → weekly mirror catches it. Evidence: log.
+5. [NICK] Live: real deposit → task chain visible in Mom's Table <2 min. Evidence: screenshot + observation log.
 
 **Required for Release:**  
 NO
@@ -306,6 +357,19 @@ Sandra initiates invoice draft; Nick review via SMS link; each delta opens voice
 **Rationale:**  
 THE SPINE of the system per architecture doc.
 
+**Acceptance Criteria:**
+NORMAL: Sandra's voice/text brain-dump → structured pre-fill of invoice fields, per-field confidence label.
+EDGE: Low-confidence field → flagged for pre-hand-off check, never silently accepted.
+NEGATIVE: AI computes kitchen_departure_time → BLOCKED (computed deterministically, not AI).
+SILENT-FAILURE: Field populated from a record that doesn't exist → confidence audit catches phantom pull.
+CHALLENGE: Empty brain-dump → form still loads, all fields blank with honest confidence.
+
+**Verification Method:**
+1. [NICK] Live: Sandra dictates a real brain-dump → watch fields pre-fill with confidence labels. Evidence: screenshot + observation log.
+2. [AUTO] Confidence audit: every Pulled label traces to a real PostgreSQL row. Evidence: query.
+3. [AUTO] Arithmetic guard: kitchen_departure computed by deterministic function, LLM only narrates. Evidence: code-search.
+4. [NICK] Delta review: Nick reviews AI draft vs Sandra's edits. Evidence: before/after screenshots.
+
 **Required for Release:**  
 NO
 
@@ -332,6 +396,19 @@ Three $0 line items before food: EVENT DETAILS / VENUE & LOGISTICS / SETUP SPECI
 
 **Trigger:**  
 Confirmed invoice ready for customer-facing generation
+
+**Acceptance Criteria:**
+NORMAL: All 7 CX invoice blocks generated — EVENT DETAILS, VENUE & LOGISTICS, SETUP SPECIFICATION, WHY lines, food line items, 4 Order Custom Attributes, deposit logic.
+EDGE: deposit_basis_cents locked at first publish; later invoice edits never move it (D19).
+NEGATIVE: Logistics data written to the Square catalog → BLOCKED (all logistics in line items only).
+SILENT-FAILURE: A block silently missing from a published invoice → completeness check catches it.
+CHALLENGE: Invoice published, then edited 3× → deposit figure unchanged throughout.
+
+**Verification Method:**
+1. [NICK] Live: generate a real invoice → all 7 blocks present, reads as a trust document. Evidence: screenshot.
+2. [AUTO] Deposit lock: edit invoice after publish → deposit_basis_cents unchanged. Evidence: psql.
+3. [AUTO] Catalog separation: zero logistics data in Square catalog. Evidence: code-search.
+4. [NICK] Brand review: Nick confirms invoice reads premium, not commodity. Evidence: screenshot + observation log.
 
 **Required for Release:**  
 NO
@@ -360,6 +437,19 @@ Packing profiles, prep sub-task explosion from BOM, equipment contention detecti
 **Trigger:**  
 Referenced at invoice RAG lookup time + task chain generation; maintained by kitchen team via NocoDB
 
+**Acceptance Criteria:**
+NORMAL: item_components BOM explodes a composite item into its correct component tasks.
+EDGE: Item with no BOM entry → flagged for enrichment, never exploded wrong.
+NEGATIVE: LLM computes pan geometry or BOM arithmetic → BLOCKED (deterministic lookup only).
+SILENT-FAILURE: BOM missing a component → reconciliation check catches the gap.
+CHALLENGE: Mediterranean Grill Package → correct prep tree generated from BOM.
+
+**Verification Method:**
+1. [AUTO] BOM explosion: composite item → correct component tree. Evidence: psql result.
+2. [AUTO] Missing-entry: item without BOM → flagged. Evidence: log.
+3. [AUTO] Geometry guard: no LLM path computes pan geometry. Evidence: code-search.
+4. [NICK] Live: Sandra verifies BOM for one package matches reality. Evidence: observation log.
+
 **Required for Release:**  
 NO
 
@@ -387,14 +477,24 @@ LLM outputs w/ logprobs; threshold 0.87
 **Trigger:**  
 Any daytime LLM output scored by avg token probability
 
-**Verification Method:**  
-llama-server live since Jul 13 on :8081 (audit-confirmed).
-
 **Open Questions:**  
 RESOLVED 2026-09-02 (Nick): local-vs-cloud is not an open architecture question — cloud-first for V1.0, pluggable-for-local by design. The underlying goal is great inference cheaply where appropriate; local hosting is aspirational, adopted only once it clears the excellence²×speed/dollar bar above the cloud default.
 
 **Rationale:**  
 Local AI hosting capability is an aspirational goal, not a V1.0 requirement — the actual goal is great AI inference cheaply where appropriate. Decided 2026-09-02 (Nick).
+
+**Acceptance Criteria:**
+NORMAL: LLM output avg token probability ≥0.87 → commit to PostgreSQL; <0.87 → escalate to AI API.
+EDGE: Nightly window 10pm–7am, 77k token budget, 06:50 safety cutoff → escalation after cutoff.
+NEGATIVE: A local model claimed faster/cheaper without clearing the excellence²×speed/dollar bar → not adopted.
+SILENT-FAILURE: Escalation result not written back → audit catches missing write.
+CHALLENGE: Big invoice draft running while a voice command arrives → voice stays fast (concurrency preserved).
+
+**Verification Method:**
+1. [AUTO] Threshold: outputs at 0.86 and 0.88 → escalate vs commit correctly. Evidence: log.
+2. [AUTO] Budget: nightly batch respects 77k token budget + 06:50 cutoff. Evidence: log + count.
+3. [AUTO] Backend swap: change env-var endpoint → no code change required. Evidence: code-search + config diff.
+4. [NICK] Live: voice command during invoice draft → no freeze. Evidence: observation log.
 
 **Required for Release:**  
 NO
@@ -480,6 +580,19 @@ Every task close signed by named staff; error attribution instant (task→PIN→
 **Trigger:**  
 Any task completion form submit; error logged by Sandra/Edgar/Nick against a past task
 
+**Acceptance Criteria:**
+NORMAL: Crew member enters PIN → authenticated; photo captured and gated by experience level.
+EDGE: 3 wrong PINs → lockout with a clear message, not a silent rejection.
+NEGATIVE: Photo of a task without valid PIN → rejected.
+SILENT-FAILURE: A task close recorded with no crew_pin_hash → audit catches the null.
+CHALLENGE: New crew member (no experience) → photo required; veteran → optional.
+
+**Verification Method:**
+1. [NICK] Live: crew member closes a card with PIN + photo on the touchscreen. Evidence: screenshot + observation log.
+2. [AUTO] Lockout: 3 wrong PINs → lockout. Evidence: log.
+3. [AUTO] PIN audit: zero closes with null crew_pin_hash. Evidence: query.
+4. [AUTO] Photo-gate: experience < threshold → photo mandatory. Evidence: code + log.
+
 **Required for Release:**  
 NO
 
@@ -552,6 +665,12 @@ Structured allergen flags → feeds PROD-02 task queue automatically (no staff i
 **Trigger:**  
 Customer selects an item with a nested modifier set during Wix/Square ordering flow
 
+**Acceptance Criteria:**  
+Deferred — Idea stage — no AC/VM until promoted to spec.
+
+**Verification Method:**  
+Deferred — Idea stage — no AC/VM until promoted to spec.
+
 **Required for Release:**  
 NO
 
@@ -581,6 +700,12 @@ This row has no FRS — needs real FRS text once enough of the recipe interview 
 
 **Rationale:**  
 This is the deterministic recipe backbone the system currently lacks — no dish-level ground truth exists yet.
+
+**Acceptance Criteria:**  
+Deferred — Idea stage — no AC/VM until promoted to spec.
+
+**Verification Method:**  
+Deferred — Idea stage — no AC/VM until promoted to spec.
 
 **Required for Release:**  
 NO
@@ -612,6 +737,18 @@ Task reaches PACK stage in the chain (post-cook, pre-load)
 **Dependency Notes:**  
 Pan Tetris packing-efficiency optimization remains draft/unextracted — candidate for PROD-18 knowledge graph.
 
+**Acceptance Criteria:**
+NORMAL: Packing plan maps items to pans and a 3-zone vehicle load.
+EDGE: Item with no pan footprint → flagged for enrichment, never guessed.
+NEGATIVE: LLM computes pan geometry → BLOCKED (deterministic lookup).
+SILENT-FAILURE: Item missing from van load → departure-blocking manifest catches it.
+CHALLENGE: Full event with mixed hot/cold/frozen → 3-zone load separates correctly.
+
+**Verification Method:**
+1. [AUTO] Pan mapping: items → correct pan footprints. Evidence: psql.
+2. [AUTO] Completeness: manifest vs invoice items → 100%. Evidence: query.
+3. [NICK] Live: Edgar loads van against manifest → nothing forgotten. Evidence: observation log + photo.
+
 **Required for Release:**  
 NO
 
@@ -642,6 +779,19 @@ Event confirmed / production planning stage, before task chain generation
 **Dependency Notes:**  
 Full-spec version of placeholder PACK 1 (kept separate, no-overwrite rule — see SHOP 11/SHOP 1). CATALOG 1 anticipated this as V2-FEAT-006.
 
+**Acceptance Criteria:**
+NORMAL: Backward schedule from service_start → pack_start → kitchen_exit, all deterministic.
+EDGE: TCS item → danger-zone exposure treated as HARD constraint, not soft preference.
+NEGATIVE: LLM reasons about hold-time math → BLOCKED (AI formats, deterministic computes).
+SILENT-FAILURE: Item with missing hold time → flagged low confidence, routes to review.
+CHALLENGE: 3 events same day → three schedules, zero cross-contamination, all deterministic.
+
+**Verification Method:**
+1. [AUTO] Math audit: kitchen_exit = crew_arrival − drive_time − pack_buffer for 5 events. Evidence: computed vs stored.
+2. [AUTO] TCS test: TCS item schedule respects danger-zone window. Evidence: schedule + log.
+3. [AUTO] Missing-data: item missing hold time → flagged, not guessed. Evidence: flag + review queue.
+4. [NICK] Live: Nick reviews one generated schedule against reality. Evidence: observation log.
+
 **Required for Release:**  
 NO
 
@@ -665,6 +815,18 @@ Operational + Scheduled staff counts; role assignments by service type; arrival/
 
 **Trigger:**  
 Deposit paid (same trigger as PROD-06) OR quote-stage estimate for pricing purposes
+
+**Acceptance Criteria:**
+NORMAL: Guest count → role counts via deterministic interpolation.
+EDGE: Count at an interpolation boundary → correct bucket.
+NEGATIVE: LLM invents a role count → BLOCKED (deterministic only).
+SILENT-FAILURE: Staffing row missing for a confirmed event → completeness check catches it.
+CHALLENGE: 150-guest wedding → role counts match Nick's manual estimate.
+
+**Verification Method:**
+1. [AUTO] Interpolation: counts at boundaries → correct buckets. Evidence: psql.
+2. [AUTO] Completeness: every confirmed event has a staffing row. Evidence: query.
+3. [NICK] Live: Nick compares generated staffing to his own estimate for one event. Evidence: observation log.
 
 **Required for Release:**  
 NO
@@ -696,6 +858,12 @@ RECON NEEDED: some elements already populated directly in Postgres — reconcile
 **Rationale:**  
 Direct response to Nick's framing that the classifier needs a knowledge graph, not a static lookup table; formalizes prior design work Nick recalled as "always been a core component."
 
+**Acceptance Criteria:**  
+Deferred — Idea stage — no AC/VM until promoted to spec.
+
+**Verification Method:**  
+Deferred — Idea stage — no AC/VM until promoted to spec.
+
 **Required for Release:**  
 NO
 
@@ -725,6 +893,19 @@ Task close attempt on: equipment-cleaning card, allergen-item receiving, van-loa
 
 **Dependency Notes:**  
 CONFORMS TO CLOSE 1 — fixed a routing gap that had silently dropped equipment-cleaning/allergen-receiving kinds. SHOP 3/SHOP 4 folded into SHOP 1 instead (shopping-flow specific).
+
+**Acceptance Criteria:**
+NORMAL: Card close with close_kind → correct side-effect (EQUIPMENT_CLEANING audit, ALLERGEN_RECEIVING flag, VAN_LOAD manifest, PORTION_CAPTURE count).
+EDGE: VAN_LOAD close with incomplete checklist → departure-blocked.
+NEGATIVE: Wrong handler for a kind (e.g. allergen close hits equipment handler) → BLOCKED by 7×7 routing matrix.
+SILENT-FAILURE: PORTION_CAPTURE close without qty/unit → rejected.
+CHALLENGE: All four kinds closed in one day → each routes to its own handler, zero cross-contamination.
+
+**Verification Method:**
+1. [NICK] Live: crew closes an equipment-cleaning card → audit trail health-inspection-ready. Evidence: screenshot.
+2. [AUTO] Routing matrix: 7×7 cross-contamination check → zero wrong-handler routes. Evidence: code-search + test.
+3. [NICK] Allergen: allergen flag → persistent banner on displays. Evidence: screenshot.
+4. [AUTO] Gate: PORTION_CAPTURE without qty/unit → rejected. Evidence: log.
 
 **Required for Release:**  
 NO
@@ -765,6 +946,12 @@ Any module can call emit() with a topic and payload; system_events row is writte
 **Rationale:**  
 Foundational — every consumer spec implicitly assumed some trigger mechanism; this is it.
 
+**Verification Method:**
+1. [AUTO] Publish: emit() → system_events row + subscribers receive within their own spec SLA. Evidence: psql + log.
+2. [AUTO] Isolation: emitting module has no knowledge of listeners. Evidence: code-search.
+3. [AUTO] Append-only: no update/delete path on system_events. Evidence: schema check.
+4. [NICK] Live: task close → wall displays update without any polling. Evidence: observation log.
+
 **Required for Release:**  
 YES
 
@@ -800,6 +987,11 @@ A malformed or incomplete raw row never reaches a canonical table — it either 
 
 **Dependency Notes:**  
 Wix retirement per D-062; supersedes W7-SHOP/W8-SHOP.
+
+**Verification Method:**
+1. [AUTO] Validation: malformed input → flagged, not promoted. Evidence: log.
+2. [AUTO] Append-only staging: raw input never edited in place. Evidence: schema.
+3. [NICK] Live: malformed Wix email → appears in review queue, not as a Lead. Evidence: screenshot.
 
 **Required for Release:**  
 NO
@@ -840,6 +1032,12 @@ See INFERENCE 12 for the V1 local-vs-cloud AI pivot recon flag on this D-INF-001
 **Rationale:**  
 Cross-cutting reliability layer with zero prior registry coverage — every PROD-XX spec that writes to Postgres implicitly needs this and none of them specced it.
 
+**Verification Method:**
+1. [AUTO] Every-write audit: sample 50 writes → 50 audit rows. Evidence: query + count.
+2. [AUTO] Immutability: no update/delete path on audit_log. Evidence: schema check.
+3. [AUTO] Correlation: audit rows carry correlation_id across a chain. Evidence: query.
+4. [NICK] Live: Nick investigates a disputed change using the audit log. Evidence: observation log.
+
 **Required for Release:**  
 NO
 
@@ -875,6 +1073,11 @@ The system's own "FLAG, don't guess" governance rule had no actual mechanism beh
 
 **Acceptance Criteria:**  
 Any module that can't confidently complete an action routes it here instead of guessing or silently failing; PROD-25 fires an alert for WARNING/CRITICAL severity; the exception is visible in one place, not scattered across module-specific error logs.
+
+**Verification Method:**
+1. [AUTO] Routing: each exception class → its documented handler. Evidence: log.
+2. [AUTO] Persist-before-notify: exception persisted before any notify attempt. Evidence: code-search.
+3. [NICK] Live: kill a dependency → gentle failure, SMS to Sandra, no crash. Evidence: observation log.
 
 **Required for Release:**  
 YES
@@ -915,6 +1118,11 @@ RESOLVED 2026-09-02: cloud-first for V1.0 (see INFERENCE 1). This cache/precompu
 **Rationale:**  
 Canonical numeric source for D-INF-001 (cited elsewhere, e.g. DISPLAY 1/INFERENCE 1, as a principle with no number attached) — cite this target composition wherever D-INF-001 comes up.
 
+**Verification Method:**
+1. [AUTO] Cache hit: deterministic lookup answered from cache, zero inference call. Evidence: log.
+2. [AUTO] Composition: demand mix within D-INF-001 targets (65/25/8/2/<1). Evidence: metrics.
+3. [NICK] Live: cold cache warms on a state change. Evidence: observation log.
+
 **Required for Release:**  
 NO
 
@@ -948,6 +1156,11 @@ Alerts were being wired ad hoc per module (some to ntfy, some nowhere) — no si
 **Acceptance Criteria:**  
 Every module that needs to alert a human calls the same alert() interface; ntfy-to-Nick path is proven and routes correctly; SMS-to-Sandra fails loudly (visible stub, not a silent no-op) until the Twilio adapter is real.
 
+**Verification Method:**
+1. [NICK] Live: W2 Hot lead → Twilio SMS to Sandra. Evidence: screenshot.
+2. [AUTO] Channel rule: actionable → SMS, non-urgent → ntfy, per D10. Evidence: code-search.
+3. [AUTO] Logging: every notification logged. Evidence: query.
+
 **Required for Release:**  
 NO
 
@@ -978,6 +1191,18 @@ Service start / systemd unit boot
 **Dependency Notes:**  
 INFRA 19 and other modules depend on this for connection config.
 
+**Acceptance Criteria:**
+NORMAL: Service starts with required env vars; missing required var → startup error, not runtime exception.
+EDGE: Endpoint URL changes → env var only, zero code change.
+NEGATIVE: Hardcoded credential in code → BLOCKED.
+SILENT-FAILURE: Required var silently defaulted → caught (no silent defaults for required vars).
+CHALLENGE: Move a service from n100 to gflip → env-only changes.
+
+**Verification Method:**
+1. [AUTO] Startup-fail: launch with missing required var → clean startup error. Evidence: log.
+2. [AUTO] Hardcode search: grep for connection strings/keys in code → zero. Evidence: grep.
+3. [NICK] Live: Nick verifies one service relocates via env only. Evidence: observation log.
+
 **Required for Release:**  
 NO
 
@@ -1007,6 +1232,19 @@ Any module needing a DB connection or query
 
 **Dependency Notes:**  
 Distinct from CLOSE 34's schema DDL — this is the connection layer.
+
+**Acceptance Criteria:**
+NORMAL: All DB access through the layer with parameterized queries.
+EDGE: Table not in ALLOWED_TABLES → rejected.
+NEGATIVE: Raw connection outside the layer → BLOCKED.
+SILENT-FAILURE: Write without audit trigger → caught (every canonical write audited).
+CHALLENGE: SQL-injection payload → parameterized, rejected.
+
+**Verification Method:**
+1. [AUTO] Allowlist: query to non-allowed table → rejected. Evidence: log.
+2. [AUTO] Audit trigger: every write → audit row. Evidence: query.
+3. [AUTO] Injection: injection payload → rejected. Evidence: test log.
+4. [AUTO] Hardcode search: no raw connection strings. Evidence: grep.
 
 **Required for Release:**  
 NO
@@ -1044,6 +1282,11 @@ Silent infrastructure failure invisible until it damages an event (the 08-21 dns
 **Acceptance Criteria:**  
 All configured signals render with timestamp + explicit state; stale/unreadable signals show degraded not healthy (URS-HEALTH-005); service auto-starts healthy after cold reboot (URS-HEALTH-004); reachable on LAN + Tailscale.
 
+**Verification Method:**
+1. [AUTO] Service-down: kill a service → alert fires. Evidence: log.
+2. [AUTO] Threshold: temp/UPS breach → alert. Evidence: log.
+3. [NICK] Live: Nick sees the alert on his phone. Evidence: screenshot.
+
 **Required for Release:**  
 YES
 
@@ -1077,6 +1320,18 @@ Event day setup at crew staging area (V1 manual); V2: morning-of-event automatio
 **Dependency Notes:**  
 Distinct from KANBAN 1 (kitchen kanban) and DISPLAY 1 (wall TVs). This is the event-service/hospitality-culture surface — standalone, offline, complete for V1. Implemented by CREW 2.
 
+**Acceptance Criteria:**
+NORMAL: Tablet loads event config, presents hospitality prompts full-screen, Wake Lock keeps screen on.
+EDGE: Late crew member taps Replay → story restarts from the beginning.
+NEGATIVE: Network call after initial load → none (offline-capable).
+SILENT-FAILURE: Screen sleeps mid-service → caught (Wake Lock must stay active).
+CHALLENGE: Full service on airplane mode → tablet survives, screen never sleeps.
+
+**Verification Method:**
+1. [NICK] Live: crew tablet runs a real service. Evidence: observation log + screenshot.
+2. [AUTO] Offline: airplane-mode run → still works. Evidence: test log.
+3. [AUTO] Wake Lock: screen stays awake through service. Evidence: device log.
+
 **Required for Release:**  
 YES
 
@@ -1107,14 +1362,17 @@ Continuous passive monitoring during kitchen operation
 **Failure Mode Addressed:**  
 Kitchen stress signals and hands-full moments (need a timer, spot a trip hazard) currently require either nothing happening or interrupting someone — the NPU sits unused hardware capable of catching these passively.
 
-**Acceptance Criteria:**  
-Voice timer responds to a spoken command hands-free without touching a screen; trip-hazard detection raises a visual alert on the relevant TV within the NPU's local inference latency, no network round-trip required.
-
 **Dependency Notes:**  
 Shares NPU 5's NPU authority boundary (verifies/assists, humans authoritative) — same code guard should gate V1.1/V1.2, not a separate one. See PROD-35 for V2.0 tier (6 capabilities, hardware-gated).
 
 **Rationale:**  
 10-capability MT8390 NPU roadmap locked 2026-07-13 (confidence 0.85), split V1.0/V1.x/V2.0.
+
+**Acceptance Criteria:**  
+Deferred — Idea stage — no AC/VM until promoted to spec.
+
+**Verification Method:**  
+Deferred — Idea stage — no AC/VM until promoted to spec.
 
 **Required for Release:**  
 NO
@@ -1161,6 +1419,11 @@ NPU sub-tier V1.3. Distinct from CLOSE 2: CLOSE 2/LKL = WHERE; CLOSE 5/inventory
 **Open Questions:**  
 MT2 dashboard aspect is a candidate for its own SCREEN-* row.
 
+**Verification Method:**
+1. [AUTO] Parent-child: thaw/portion creates child lot, decrements parent. Evidence: psql.
+2. [AUTO] Ledger reconcile: transactions reconcile to canonical ledger. Evidence: query.
+3. [NICK] Live: Edgar portions a lot → child lot appears on MT2 dashboard. Evidence: screenshot.
+
 **Required for Release:**  
 NO
 
@@ -1196,6 +1459,12 @@ RESOLVED 2026-09-02 (Nick, agnostic — prefers local NPU edge compute for inten
 
 **Rationale:**  
 Cites D-051 OVERTURNED (2026-07-09, NPU confirmed accessible via NNAPI/NeuroPilot) as technical foundation; confirms NPU 1/PROD-35's NeuroPilot assumption.
+
+**Acceptance Criteria:**  
+Deferred — Idea stage — no AC/VM until promoted to spec.
+
+**Verification Method:**  
+Deferred — Idea stage — no AC/VM until promoted to spec.
 
 **Required for Release:**  
 NO
