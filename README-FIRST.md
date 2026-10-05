@@ -8,11 +8,27 @@ Last updated: 2026-10-04. Supersedes every earlier handoff document; those live 
 
 ---
 
-## 0. Why this file exists at all
+## 0. Why this file exists at all — and how to treat it
 
-Nick hates markdown. This is the single deliberate exception: one orientation file so a
-cold agent does not have to guess. **It must never become a collection.** If something
-belongs here, it usually belongs in `decisions_log` instead.
+Nick hates markdown. This is the single sanctioned exception: one orientation file so a
+cold agent does not have to guess.
+
+**This is a LIVING FILE (D44). Every time you touch it, read it for anything now out of
+date and REPLACE it. Never append. Never leave a stale line because it is inconvenient to
+check.**
+
+- It is **not** part of the development or production stack. It is an aid to the agent.
+- It **points at** the system; it does not describe it. Anything factual belongs in the
+  database, referenced from here.
+- If a section here starts duplicating something the database already records, **delete
+  the section** rather than maintain two copies.
+- The exception holds **only while there is exactly one such file.** If a second
+  orientation file ever appears, this exception is broken and one of them must go.
+- Correct staleness **in the session that discovers it**, not later.
+
+Two things this file has already had to correct, as examples of how wrong it can get:
+"murs_specs" was renamed and "mers_dev" never existed under its final name; and the
+viewer Nick calls PGAdmin is pgweb on a `nocodb.*` hostname.
 
 ---
 
