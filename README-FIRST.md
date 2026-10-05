@@ -359,13 +359,21 @@ WRITTEN RIGHT:
     deposit_paid_cents >= total_cents * 0.25
     SELECT count(*) FROM public.invoices_with_deposit WHERE is_outstanding
 
-The corpus already has one correct example to copy - `domain_rules`:
+The corpus already has near-correct examples in `domain_rules` - AND one that breaks this
+rule, which is the more useful example because it is real:
 
-    rule_id              | formal                                  | entity
-    RULE-BERRY-T36       | purchase_time <= event_time - 36h        | ingredient_order
-    RULE-DEPOSIT-FROZEN  | deposit_basis_cents immutable after publish | invoices
+    rule_id              | formal                                       | verdict
+    RULE-BERRY-T36       | purchase_time <= event_time - 36h            | GOOD - real names
+    RULE-BRIEF-900       | brief_char_count <= 900                      | GOOD - real name
+    RULE-AUDIO-SLA       | (dur<=15 -> lat<1000ms) AND (...)            | BREAKS IT - dur and lat
 
-That is the target quality. Terse, but every word is a real name that resolves.
+`dur` and `lat` are abbreviations. A reader needs the surrounding row to decode them, and a
+rename of `audio_clip_duration_s` would never find them. The correct form is:
+
+    audio_clip_duration_s <= 15 -> transcription_latency_ms < 1000
+
+Same constraint, no legend required, greppable, and it survives a field rename. THAT is the
+target quality.
 
 WHY IT MATTERS BEYOND TIDINESS: a placeholder cannot be executed, cannot be checked against
 the schema, and cannot be searched for when the field it should have named gets renamed.
