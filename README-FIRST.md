@@ -594,7 +594,7 @@ every row.
 | Orders API access | **works** — the key returns line items. Never called. |
 | verbatim capture | the pattern exists (`payload`, `definition_raw`); no inbox queue does |
 | an inbox queue | **specified as PROD-21 (Inbox Promotion - Raw Input Staging + Validation). Not built.** Use that spec; do not invent a parallel one. |
-| the knowledge base | `cooking_rules` exists; `domain_rules` has 11 formalised rules. **Coverage for dish quantities per head is unverified and likely thin.** |
+| the knowledge base | **EFFECTIVELY EMPTY - see the finding below.** |
 | a matcher (text to KB) | does not exist |
 | provenance on inferred values | does not exist |
 
@@ -610,3 +610,31 @@ every row.
    nobody during bootstrap?
 4. **Does the inbox queue hold orders only**, or every inbound artefact (emails, photos,
    voice notes)? PROD-21 reads as the latter, which is broader than this feature needs.
+
+### FINDING 2026-10-05 - THE KB THIS PIPELINE INFERS AGAINST HAS ALMOST NO CONTENT
+
+Nick described the KB as populated: quantity math, packing rules, logistics rules, cooking
+recipes and techniques, gathered from his own knowledge and from interviews with Sandra.
+Measured:
+
+| | |
+|---|---|
+| `tazaos.cooking_rules` | **0 rows.** The table is correctly shaped (rule_type, title, description, applies_to, priority) and completely empty. |
+| `tazaos.domain_rules` | 11 rows - real, formalised, but these are constraints (`purchase_time <= event_time - 36h`), NOT dish quantities. |
+| any recipe / ingredient / portion table | **does not exist in any database.** |
+| references in the repo's docs | the Sandra questionnaire and `postgres-spec.md` mention recipe/ingredient concepts, but no quantity table was found. |
+
+**What this means for section 13:** step 4 - "run against the KB" - has almost nothing to
+run against today. KB-anchored inference cannot start until the KB exists, so bootstrap
+invoicing currently degrades to raw inference, which is the thing this design was meant to
+avoid.
+
+**This does not block the first move.** The order fetch and the verbatim inbox are both
+independent of the KB and both worth doing regardless, because a verbatim inbox is exactly
+what makes the KB matchable LATER without re-fetching anything from Square.
+
+**OPEN QUESTION FOR NICK, and it is the important one:** where is the KB? It was either
+never loaded into these tables, or it lives in a form that was not found (a spreadsheet, a
+Notion page from before the freeze, a document on another machine, or Sandra's head). Until
+that is answered, the KB's shape is unknown and building a matcher against it would be
+guesswork. **Locate the KB before building the matcher.**
