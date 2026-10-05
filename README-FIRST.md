@@ -301,3 +301,89 @@ registry.
 | 8 | **Item 7** — the 52 `urs/*.md` files | ~12 are real findings worth queueing; the rest are prompts, applied drafts or superseded |
 | 9 | **Formal mirrors** — 1,164 cells, `[KG]` is the longest today | PD-013 makes Nick the sole approver; needs a batched review process, not one pass |
 | 10 | **`events` registry is wrong** | partially D47, but the registry fix is its own change |
+
+---
+
+## 10. SPEC AUTHORING CONVENTIONS — how Nick wants acceptance criteria and verification methods written
+
+These two rules apply to every spec written or rewritten from 2026-10-04 onward. They are
+authoring standards, not suggestions. Apply them to any AC or VM you touch, and to every
+new spec.
+
+### 10.1 Acceptance criteria are written in GHERKIN
+
+Given / When / Then. Not prose. Every AC class - normal, edge, negative, silent-failure,
+challenge - is expressed as a scenario.
+
+WHY IT MATTERS: a Gherkin scenario is already a test. `Given` is the fixture, `When` is the
+action, `Then` is the assertion. It maps directly onto a runnable test without a human
+translating prose into code first, which is the step where meaning is lost. It also makes
+the AC falsifiable at a glance: if you cannot write the `Then` as an observable outcome,
+the requirement was not testable and that is a defect in the requirement, not in the test.
+
+WRITTEN WRONG (current state of most of the corpus):
+
+    ac_normal: The system sends a pre-call brief before the task is due.
+
+WRITTEN RIGHT:
+
+    Scenario: A brief fires inside the task window
+      Given a task with due_time 14:00 and an unbroken 60-minute window before it
+        And the brief has not already been sent for this task_id
+       When the poller runs at 13:10
+       Then exactly one brief is sent for that task_id
+        And it is sent no later than due_time minus 5 minutes
+        And it is never sent earlier than due_time minus 60 minutes
+
+NOTE the shape: one scenario per AC class, concrete values not placeholders, and a `Then`
+that names something measurable. "Sent" is not measurable; "exactly one brief for that
+task_id" is.
+
+### 10.2 Verification methods use LOGICALLY DESCRIPTIVE NAMES
+
+In any formal expression - `vm_formal`, `ac_formal`, `domain_rules.formal`, invariants,
+guards - every identifier must be the REAL field or entity name, spelled out. Never a
+placeholder, never an abbreviation, never `x` and `y`.
+
+This is already PD-012 (formal logic references only real fields). This rule extends it: a
+real field must also be written at FULL LENGTH so a reader knows what it means without a
+legend.
+
+WRITTEN WRONG:
+
+    x >= y * 0.25
+    SELECT count(*) FROM t WHERE c1 > 5
+
+WRITTEN RIGHT:
+
+    deposit_paid_cents >= total_cents * 0.25
+    SELECT count(*) FROM public.invoices_with_deposit WHERE is_outstanding
+
+The corpus already has one correct example to copy - `domain_rules`:
+
+    rule_id              | formal                                  | entity
+    RULE-BERRY-T36       | purchase_time <= event_time - 36h        | ingredient_order
+    RULE-DEPOSIT-FROZEN  | deposit_basis_cents immutable after publish | invoices
+
+That is the target quality. Terse, but every word is a real name that resolves.
+
+WHY IT MATTERS BEYOND TIDINESS: a placeholder cannot be executed, cannot be checked against
+the schema, and cannot be searched for when the field it should have named gets renamed.
+Descriptive names make formal logic greppable, verifiable against the registry, and
+survivable across schema changes.
+
+### 10.3 THE CONVERSION JOB THIS IMPLIES
+
+Measured 2026-10-04: 291 specs, **1,308 acceptance criteria, 1,143 verification methods**,
+and 11 domain rules. Essentially none of the ACs are Gherkin, and the VM formats are
+inconsistent (`VM@1`, `VMn`, bare `psql - SELECT ...`, `[NICK] screenshot of ...`).
+
+So this is not a style note - it is a corpus conversion. It belongs with the formal-mirror
+work in section 9, because a Gherkin scenario is itself a formalization of the AC.
+
+OPEN QUESTION FOR NICK, raised not decided: does GHERKIN REPLACE the FOL-style
+`ac_formal` mirror, or sit alongside it? An argument for replace: two formal representations
+of one AC will drift, and Gherkin is the one a test can actually run. An argument for
+alongside: the FOL mirror can express invariants and negative constraints that do not
+naturally fit a scenario. This needs ruling before the formalization batches start, because
+it determines what the batches produce.
