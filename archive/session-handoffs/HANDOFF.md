@@ -34,6 +34,9 @@ Full text at top of master-urs.md. Highlights:
 1. NocoDB-as-storage → PostgreSQL across master-urs.md (D4/D5 compliance).
 2. W10 → W2 where "lead scoring" was misreferenced; W11 dropped from
    extraction lists (it's a read-only view now, per D21).
+3. PROD-30 promoted from V1.1-parked to V1.0 groundwork — full spec added to
+   master-urs.md; D26 locked (providers, per-provider 10s failover UX, SendGrid,
+   Twilio, local catalog authority, phased 15-invoice rollout).
 
 ## Fusion team
 - Runs in ttyd at :7684 (fusion.tazacateringphoenix.com), stack `cheap5`
@@ -59,6 +62,6 @@ Full text at top of master-urs.md. Highlights:
 - `refs.py check` must report 0 dangling pointers after ANY edit to master-urs.md.
 - Archived IDs (not dangling): KIT-002/003/004/006/009/011/018/019/021, MT-003,
   TV-008/009/010, URS-CREW-005, URS-LABEL-002, META-001/002, SW-020, INT-002,
-  PROD-30..33, PROD-35.
+  PROD-31..33, PROD-35 (PROD-30 activated 2026-10-01).
 - Notion is FROZEN. Never export back. master-urs.md is the registry.
 - GitHub token rotation pending (Nick is handling).
