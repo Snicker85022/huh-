@@ -215,9 +215,13 @@ version_id = sha256(canon)[:16]
 - **Cancelled invoices are not leads.** A `CANCELED` invoice is dead paperwork.
 - **The CRM app does not exist yet**, so Track A's invoice-drafting workflow cannot be
   tested end to end. Only the Square ingestion is live.
-- **Two things Square shows that we do not ingest:** estimates ($6,559.72 as of
-  2026-10-04) and payment timestamps. The latter needs the **Payments API**, not the
-  Invoices API — the invoice payload contains no payment records at all.
+- **Estimates are deliberately NOT ingested.** Square's "Pending — Estimates" is a
+  separate object and the invoices API cannot see it. Nick's ruling: not worth pulling.
+- **The Payments API WORKS with the token we already have** — tested 2026-10-04, HTTP 200.
+  35 completed payments in the previous 30 days summed to **$44,925.68**, matching Nick's
+  Square app exactly. **So no new payment key is needed.** What has NOT happened yet is
+  the ingestion itself: no payment-level rows are stored, so "when did money arrive" is
+  still unanswerable from the database. 19 of 90 payments failed over 90 days — 21%.
 
 ---
 
@@ -257,3 +261,43 @@ still holds frozen copies.
 
 **Not built:** the CRM app, the invoice-drafting web form, the two-person approval
 workflow, the Square push, and the entire Track B Taza-invoiced system.
+
+---
+
+## 9. PENDING DECISIONS — what Nick still has to rule on
+
+Each of these is live in `decisions_log` with status `proposed`. Read the full rationale
+there before asking him; he asked for enough context to decide without re-deriving it.
+
+### D47 — what key joins an invoice to an event? **blocking the Kanban spine**
+
+**The problem.** Nick says invoice data is the spine Mom's Kanban and other apps consume.
+`PROD-06` turns a deposit into tasks. Both need to know *which event* an invoice belongs to.
+**That link is impossible today.**
+
+**Why.** The real `public.events` table is `id(integer), name, client, event_date,
+start_time, end_time, guest_count, venue, status, allergen_flags, notes` — and has **zero
+rows**. The registry claims it is `id(uuid), invoice_order_ref, customer_id, venue_name,
+venue_arrival_time, tables_count, linens_tier, kitchen_departure_time`. **The registry is
+wrong** — the column we planned to join on, `invoice_order_ref`, does not exist. Our own
+registry describes a table that isn't there, which puts PD-012 in violation by our own
+registry.
+
+**What's already live regardless:** `invoice_number` is parsed into `customer_code`,
+`service_code` and `event_date_derived`. **261 of 329 invoices carry a usable event date**
+— so the Kanban has a real date per invoice today. That is not a substitute for the link.
+
+### Other open items needing a ruling
+
+| # | the question | why it matters |
+|---|---|---|
+| 1 | **Backup retention** — 14 days is my default, unreviewed | determines how far back a point-in-time restore can reach |
+| 2 | **Alert delivery** — `ops_alert` exists but nothing reads it | a failed sync currently writes a row nobody sees; PROD-25 (Notifier) is specified, not built |
+| 3 | **`PROD-06` says webhooks, we built polling** | Nick's stated intent is *both*: polling now, webhooks + email API later as redundancy. Confirm and amend PROD-06. |
+| 4 | **Do we store payment-level rows?** | the API works but nothing is ingested; needed for refunds, partial payments, cash-arrival dates |
+| 5 | **Track B payment stack** — Helcim primary, then what? | named as "a fallback stack" but the providers are undecided |
+| 6 | **The `tazaos` cutover** — when do the frozen design-time copies actually get dropped? | until then drift is possible and the duplication is confusing |
+| 7 | **Item 10** — archive `master-urs.md`? | one reconciliation run decides it; frees the last big markdown |
+| 8 | **Item 7** — the 52 `urs/*.md` files | ~12 are real findings worth queueing; the rest are prompts, applied drafts or superseded |
+| 9 | **Formal mirrors** — 1,164 cells, `[KG]` is the longest today | PD-013 makes Nick the sole approver; needs a batched review process, not one pass |
+| 10 | **`events` registry is wrong** | partially D47, but the registry fix is its own change |
