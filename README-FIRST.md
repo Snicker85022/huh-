@@ -3,7 +3,7 @@
 **Read this file first, then run the boot query, then read the database. Do not read the
 old markdown. Do not create new markdown.**
 
-Last updated: 2026-10-04. Supersedes every earlier handoff document; those live in
+Last updated: 2026-10-05. Supersedes every earlier handoff document; those live in
 `archive/session-handoffs/` and are historical only.
 
 ---
@@ -671,3 +671,117 @@ Nick's ruling before the matcher is built.**
 **What this does NOT block:** the order fetch and the verbatim inbox. Both are independent
 of the KB, and the verbatim inbox is precisely what lets the KB be matched later without
 re-fetching anything from Square.
+
+---
+
+## 14. POSTGRES APPLICATION RULES — mandatory defaults for every service that touches the database
+
+Assessed 2026-10-05 against this box, from Bytebase's "Postgres best practices I wish every
+app developer knew". These are application-developer rules, not DBA rules. They apply to
+every script, agent and app that opens a connection to `dev_pipeline` or `tazaos`. They are
+defaults; the burden of proof is on skipping them.
+
+**One caveat first: this box runs PostgreSQL 14.24, not 17.** The article's
+`transaction_timeout` does not exist here — it is 17+. `statement_timeout`, `lock_timeout`
+and `idle_in_transaction_session_timeout` do, and are the ones to set.
+
+Why each rule is here — measured on n100 2026-10-05 (`pg_settings`, `pg_stat_activity`,
+`pg_roles`):
+
+| the gap | measured |
+|---|---|
+| no service identifies itself | every `taza` backend shows `application_name = ''`. The three Square syncs, the backup, pgweb and the agent all look identical in `pg_stat_activity`. |
+| every timeout is disabled | `statement_timeout = 0`, `lock_timeout = 0`, `idle_in_transaction_session_timeout = 0`, `idle_session_timeout = 0` — globally and for role `taza`. Only `viewer_ro` is capped (`statement_timeout=60s`). |
+| one identity does everything | `taza` owns the tables and holds DDL rights, so a bug in a sync script can `DROP`. |
+| idempotent writes | already adopted — all three Square syncs use `ON CONFLICT ... DO UPDATE`. Keep it. |
+
+### 14.1 Every connection sets `application_name`
+
+Set it to the service name at connect time. Never leave it blank.
+
+- Python: `psycopg2.connect(DSN, application_name="square-invoice-sync")`
+- DSN alternative: `...?application_name=square-invoice-sync`
+- Names: `square-invoice-sync`, `square-catalog-sync`, `square-menu-sync`, `db-backup`,
+  `agent`, `pgweb` — match the systemd unit or viewer name.
+
+Then `pg_stat_activity` answers "which service is this?" with no guessing:
+
+```sql
+select pid, application_name, state, now() - query_start as duration
+from pg_stat_activity
+where application_name = 'square-invoice-sync';
+```
+
+WHY: it is the cheapest diagnostic in Postgres, and it is the precondition for §11 (per-call
+API logging) and §12 (Overwatch) — an event that cannot name the service that caused it
+cannot be unwound.
+
+### 14.2 Timeouts are set on every connection; none run at 0
+
+Postgres waits forever if you let it. A hung sync or a stray agent query holds a connection
+and its locks until a human notices. Values for PostgreSQL 14 (`transaction_timeout` is
+17+, so it is omitted):
+
+| setting | interactive / agent session | background sync job |
+|---|---|---|
+| `statement_timeout` | `30s` | `300s` |
+| `lock_timeout` | `10s` | `30s` |
+| `idle_in_transaction_session_timeout` | `60s` | `300s` |
+
+- Per connection: add `options=-c statement_timeout=30s -c lock_timeout=10s` to the DSN, or
+  `psycopg2.connect(..., options="-c statement_timeout=300s -c lock_timeout=30s")`.
+- Narrower: `SET LOCAL statement_timeout = '30s'` inside one transaction.
+- Analytics / long reporting is the single exception. It runs under a dedicated role with
+  an explicit, recorded cap — never by leaving the shared role at 0.
+
+WHY: `lock_timeout` is what stops one stuck writer from queuing every other query behind it.
+That mechanism — not the migration itself — is what turns a 20 ms change into an outage.
+
+### 14.3 The application role and the migration role are different roles
+
+Three keys, not one master key:
+
+- `viewer_ro` — read-only. **Exists** (D32): SELECT-only, `default_transaction_read_only=on`,
+  `statement_timeout=60s`.
+- **`app_writer` (TO BE CREATED)** — SELECT/INSERT/UPDATE/DELETE on tables, USAGE/SELECT on
+  sequences, no DDL. Every sync and every app connects as this.
+- **`app_migrator` (TO BE CREATED)** — owns DDL. Schema changes are decided first (§3,
+  PD-009), then run as this role.
+
+Target: **no runtime service holds DDL rights.** Until the split exists, `taza` keeps
+working. Least privilege is the difference between a bug that returns a permission error and
+a bug that drops prod.
+
+### 14.4 Writes are idempotent — `ON CONFLICT`, always
+
+Already the pattern in all three Square syncs; make it universal. A retry cannot create a
+duplicate, a race resolves itself, and create-versus-update branching leaves the application.
+
+- Ignore a duplicate: `... ON CONFLICT (square_invoice_id) DO NOTHING`
+- Update: `... ON CONFLICT (square_invoice_id) DO UPDATE SET ... = EXCLUDED....`
+- Every table a sync writes to needs a UNIQUE constraint to conflict on.
+
+### 14.5 Schema changes never take an exclusive lock on a live table
+
+Applies when a `tazaos` table grows past its current scale, and to anything already large
+enough to matter:
+
+- Indexes: `CREATE INDEX CONCURRENTLY` (note: it cannot run inside a transaction).
+- NOT NULL / CHECK: add it `NOT VALID`, `VALIDATE CONSTRAINT` later, then `SET NOT NULL`.
+- Never run a plain `ALTER TABLE ... ADD COLUMN ... DEFAULT` or a non-concurrent
+  `CREATE INDEX` on a live table during traffic.
+
+Measured 2026-10-05: largest user table 2.3 MB, 0 of 195 indexes invalid, no
+idle-in-transaction sessions. Immediate risk is low — this rule is prophylactic, not urgent.
+
+### Not adopted — the "invisible index" trick
+
+The article's bonus (`UPDATE pg_index SET indisvalid = false`) is **declined** for this
+system. It writes a system catalog directly, `indisvalid` is used internally by
+`CREATE INDEX CONCURRENTLY`, and there is no benefit at current table sizes.
+
+### Status of this section
+
+These are operating rules for code. Per the cascade standard (§3), when Nick rules on them
+they should be promoted to a `PD-` doctrine row in `decisions_log`; until then this section
+is the agent's working standard and is binding on new code.
