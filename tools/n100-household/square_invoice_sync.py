@@ -15,6 +15,7 @@ import fcntl
 import json
 import logging
 import os
+import re
 import sys
 import time
 from datetime import datetime, timezone
@@ -65,6 +66,22 @@ def request_json(path, body=None, method="POST", attempts=3):
             log.error("request failed on %s: %s", path, exc)
             return {"errors": [{"code": "request_failed", "detail": str(exc)}]}
     return {"errors": [{"code": "exhausted_retries"}]}
+
+
+
+def date_from_invoice_number(num):
+    """Fallback only. invoice_number is TEXT and unreliable: it mis-fires on year
+    rollover (UA-DS-01112026) and on typo-ed numbers (GB-DS-09101026 -> 1026-09-10).
+    sale_or_service_date from the payload always wins when it is present."""
+    if not num:
+        return None
+    m = re.search(r"-(\d{8})", num)
+    if not m:
+        return None
+    try:
+        return datetime.strptime(m.group(1), "%m%d%Y").date().isoformat()
+    except ValueError:
+        return None
 
 
 def money(node):
@@ -290,9 +307,11 @@ def detect_and_emit(rows, prior):
                           "was_paid_cents": p_paid, "now_paid_cents": paid})
 
                 # content changed - the normal case, not an exception
-                now_vals = (status, r["total_cents"], due, r["due_date"] or "",
-                            r["customer_name"] or "", r["customer_email"] or "",
-                            r["event_date"] or "", r["invoice_number"] or "")
+                # .get() everywhere: a missing key must degrade to a comparison,
+                # never to a crash that takes the whole sync down.
+                now_vals = (status, r.get("total_cents"), due, r.get("due_date") or "",
+                            r.get("customer_name") or "", r.get("customer_email") or "",
+                            r.get("event_date") or "", r.get("invoice_number") or "")
                 was_vals = (p[1], p_total, p_due, p[5], p[6], p[7], p[8], p[9])
                 diffs = {f: {"was": w, "now": n}
                          for f, w, n in zip(BUSINESS_FIELDS, was_vals, now_vals) if w != n}
@@ -417,6 +436,12 @@ def main():
         rows = []   # tuples, for execute_values
         for inv in invoices:
             r = flatten(inv)
+            # guarantee the key the transition detector reads. Patched at the
+            # call site rather than inside flatten() because a text match there
+            # silently failed once already and took the sync down for 28 runs.
+            if 'event_date' not in r:
+                r['event_date'] = ((inv.get('sale_or_service_date') or None)
+                                   or date_from_invoice_number(inv.get('invoice_number')))
             flat.append(r)
             rows.append(tuple(r[k] for k in (
                 "square_invoice_id","invoice_number","square_order_id","location_id","status",
