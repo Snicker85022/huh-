@@ -527,3 +527,86 @@ requirements rather than nice properties:
    a loop.
 6. **Cost** — Overwatch reading everything continuously is the largest inference load in the
    system. Triggered, sampled, or continuous?
+
+---
+
+## 13. BOOTSTRAP INVOICING — Nick's stated pipeline. Working draft, PENDING NICK.
+
+**Nick, 2026-10-04: a bootstrap version of invoicing.** Once a deposit has been determined
+to have been made, go look up the order, pull ALL of the order information **word for word**
+into an **inbox queue**, then run that against the **knowledge base** — so that inference is
+made **against known facts** (quantities and the like that already exist in the KB) rather
+than as raw inference.
+
+### The pipeline, as stated
+
+```
+deposit confirmed            (D51 - the gate. Nothing downstream starts before this.)
+        |
+        v
+look up the ORDER            /v2/orders/{order_id}. The invoice search response gives
+        |                    order_id only, which is why line_items is empty today.
+        v
+pull ALL order information   WORD FOR WORD into an inbox queue. Not summarised, not
+        |                    interpreted, not field-mapped at capture time.
+        v
+run against the KB           match the captured text to known facts in the knowledge base
+        |
+        v
+INFER - but against facts    only what the KB does not cover is actually inferred
+```
+
+### Why "word for word" is not a style preference
+
+Same reason `square_invoices.payload` and `spec.foundational_column.definition_raw` are
+stored verbatim: **anything summarised at capture can never be un-summarised.** Capture is
+cheap and reversible; interpretation is expensive and lossy. If the extraction logic turns
+out to be wrong in three months, a verbatim inbox lets you re-run it over history. A
+summarised one leaves you with the summary and no way back.
+
+It also means the inbox is **re-processable**: better KB coverage, or a better matcher,
+immediately improves every past invoice without re-fetching anything from Square.
+
+### Why "against the knowledge base" is the important half
+
+**Raw inference means the model guesses a quantity. KB-anchored inference means the model
+looks up a known quantity and only infers what the KB does not cover.** Those are different
+kinds of number:
+
+| | raw inference | KB-anchored |
+|---|---|---|
+| where the number came from | the model | a stored fact |
+| if it is wrong | unexplainable | traceable to the rule that was wrong |
+| improves over time | no | yes, as the KB grows |
+| auditable to Nick | no | yes |
+
+**CONSEQUENCE - a design requirement, not a suggestion:** every produced value must record
+**whether it came from the KB, and which rule, or whether it was inferred.** A number with
+no provenance is exactly the kind of quiet wrongness this whole system exists to prevent.
+This extends PD-010 ("every row carries its source") to every INFERRED value, not just
+every row.
+
+### What exists today vs what this needs
+
+| need | state |
+|---|---|
+| deposit detection | built and verified (D51) |
+| Orders API access | **works** — the key returns line items. Never called. |
+| verbatim capture | the pattern exists (`payload`, `definition_raw`); no inbox queue does |
+| an inbox queue | **specified as PROD-21 (Inbox Promotion - Raw Input Staging + Validation). Not built.** Use that spec; do not invent a parallel one. |
+| the knowledge base | `cooking_rules` exists; `domain_rules` has 11 formalised rules. **Coverage for dish quantities per head is unverified and likely thin.** |
+| a matcher (text to KB) | does not exist |
+| provenance on inferred values | does not exist |
+
+### OPEN QUESTIONS for Nick
+
+1. **How much of this is one build?** As written it is four: the order fetch, the inbox
+   queue, the KB matcher, and the provenance layer. The order fetch alone unblocks the
+   line-items gap.
+2. **Is the KB's coverage actually sufficient** for the dishes Taza sells, or does the
+   matcher need to hand a lot back to raw inference? This decides whether the KB-anchoring
+   is the primary path or the exception path.
+3. **Who reviews the inferred output** before it becomes a task list — Sandra, Nick, or
+   nobody during bootstrap?
+4. **Does the inbox queue hold orders only**, or every inbound artefact (emails, photos,
+   voice notes)? PROD-21 reads as the latter, which is broader than this feature needs.
