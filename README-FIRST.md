@@ -415,3 +415,115 @@ expands to, and has not invented a meaning. The instruction is recorded exactly 
 The first future session that has the definition should replace this paragraph with the
 actual standard, its source, and how conformance is measured. Until then: write plain,
 short, concrete sentences, one requirement per sentence, no jargon, active voice.
+
+---
+
+## 11. API CALL LOGGING — a requirement, and a gap
+
+**Nick, 2026-10-04: log API calls, and log both timestamps — when the call was initiated and
+when it was filled (completed).**
+
+Purpose: latency is a business signal, not a curiosity. A Square call that normally takes
+300 ms and starts taking 6 s is the first symptom of something about to break, and it is
+invisible in a log that only records that the run finished.
+
+**CURRENT STATE — a known gap, recorded rather than glossed:**
+
+| what is logged today | where |
+|---|---|
+| run-level `started_at` / `finished_at` | `tazaos.square_invoice_sync_log` |
+| one summary line per run (`seen= upserted= deposit_unpaid= pages=`) | journald |
+| `occurred_at` on every published event | `tazaos.system_events` |
+
+**What is NOT logged: individual API calls.** There is no table recording per-call
+endpoint, initiation timestamp, completion timestamp, duration, HTTP status, or page
+number. A run that took 4 seconds because one page was slow is indistinguishable from a run
+that took 4 seconds because there were four normal pages.
+
+**What a compliant implementation looks like** — per call: `endpoint`, `method`,
+`initiated_at`, `completed_at`, `duration_ms`, `http_status`, `attempt` (retry number),
+`rows_returned`, `run_id`, and a `correlation_id` that ties every call in one run together
+and ties the run to the events it published. The `correlation_id` is the important column:
+without it a slow call cannot be joined to the downstream effect it caused.
+
+**Applies to:** `square_invoice_sync` now, and every future service that calls anything
+outside the machine. Add it to the build log's `does_not_do` for the sync.
+
+---
+
+## 12. AI OVERWATCH — feature draft. NICK WILL WRITE THE SPEC.
+
+**Status: Nick's requirements, recorded verbatim in substance. He will spec this out. This
+section is captured so the requirements are not lost and so the pieces it can stand on are
+identified — it is NOT the specification, and the agent has not designed it.**
+
+### What Nick asked for
+
+A new AI agent that **lives in the system and watches everything that happens**, checks
+whether what happens **conforms** to the specs, and looks both for **errors** and for
+**ways to improve**.
+
+- It **logs the chain of events**.
+- Its logging must be designed **smartly enough that complex or compound failures, or
+  plain weirdnesses in what the user experiences, can be UNWOUND** — traced back to a
+  cause rather than guessed at.
+- **Overwatch must have one or more AIs. At least one of those eyes must be a code
+  specialist in Nick's type of code.**
+- Overwatch **watches code execution** and **writes descriptive log entries**, each with a
+  **unique identifier**.
+- Overwatch **logs failure points at the point in time of failure** — not reconstructed
+  later from inference.
+
+### Why the compound-failure requirement is the hard part
+
+A single failure is easy to log. **The interesting case is several things going wrong
+together and producing a symptom that looks unrelated to any of them** — a display showing
+the wrong event, a checklist that is short by two items, an invoice that is $40 off. To
+unwind those you need to reconstruct *what was true at the moment it broke*, from a
+sequence of timestamped, individually identified entries, not from whatever state the
+system has drifted into by the time someone notices.
+
+That is why "unique identifier" and "at the point in time of failure" are load-bearing
+requirements rather than nice properties:
+- the **unique id** is what lets one entry be referenced by another, so causality survives
+- the **timestamp of the failure itself** is what lets you see the state as it was, because
+  by the time you look, it is gone
+
+### What already exists that Overwatch can stand on
+
+| piece | what it gives |
+|---|---|
+| `tazaos.system_events` | the append-only chain. `correlation_id` links related events; `from_state`/`to_state` make causality explicit |
+| `tazaos.emit_event()` | any writer can publish inside its own transaction, so an event cannot describe a write that rolled back |
+| `tazaos.ops_alert` | the interim exception sink, with severity |
+| `tazaos.backup_log`, `square_invoice_sync_log` | per-run health, with verification flags |
+| `decisions.build_log` | what was built, what it does NOT do, and the command that proved it |
+| `decisions.bootstrap_debt` | named deficits, with acceptable closure routes |
+| the spec table + the decision log | the conformance reference Overwatch checks against |
+
+### What is missing for it to exist
+
+- An `audit_log` (PROD-22) — nothing currently records writes
+- The exception router (PROD-23) and the notifier (PROD-25) — `ops_alert` is a stand-in
+  with **nothing reading it**
+- Per-call API timing (section 11)
+- **A definition of conformance** — against which specs, checked how, and what happens on a
+  miss. This is the piece that needs Nick's ruling most.
+- **A decision on whether Overwatch may act** (file an alert, write a debt entry) or only
+  observe and report. It changes the design fundamentally.
+
+### OPEN QUESTIONS — for Nick to answer while writing the spec
+
+1. **Conformance against what** — all 291 specs, or a nominated subset per module?
+2. **May Overwatch act, or only observe?** Does it raise a debt entry itself, or only tell
+   a human?
+3. **What is "Nick's type of code"?** Which languages and stacks the code-specialist eye
+   must actually know — this determines whether that eye can be a local model or must be a
+   frontier one.
+4. **How many eyes, and do they disagree?** If two eyes disagree on conformance, what is
+   the tiebreak?
+5. **Overwatch's own logging** — does it log to the same bus it watches? An observer writing
+   to the thing it observes can create its own noise, and it needs to not watch itself into
+   a loop.
+6. **Cost** — Overwatch reading everything continuously is the largest inference load in the
+   system. Triggered, sampled, or continuous?
