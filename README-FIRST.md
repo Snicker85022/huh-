@@ -65,7 +65,8 @@ Ideas live in `intake` until they exit as a spec delta, a decision, an
 
 ## 2. Where everything lives
 
-**Server:** n100 = `192.168.2.102` (`ssh taza@192.168.2.102`). PostgreSQL 14.
+**Server:** n100 = `192.168.2.102` (`ssh taza@192.168.2.102`). PostgreSQL **14.24** —
+**end-of-life 2026-11-12**, upgrade raised as `C-2026-10-05-003` (§9).
 
 | database | size | what it is |
 |---|---|---|
@@ -200,6 +201,9 @@ version_id = sha256(canon)[:16]
 
 ## 6. Facts Nick tends to forget — remind him
 
+- **PostgreSQL 14 goes end-of-life on 2026-11-12.** After that day this cluster gets no
+  further security patches. That is the one deadline on the board with a fixed date. The
+  upgrade is `C-2026-10-05-003` in §9.
 - **"PGAdmin" is pgweb**, served on a hostname called `nocodb.*`. Both names are wrong.
 - **NocoDB is retired** (D37). Its 144 metadata tables were dropped. Do not resurrect.
 - **The `decisions` table no longer exists.** Decisions and the decision log are **one
@@ -266,8 +270,10 @@ workflow, the Square push, and the entire Track B Taza-invoiced system.
 
 ## 9. PENDING DECISIONS — what Nick still has to rule on
 
-Each of these is live in `decisions_log` with status `proposed`. Read the full rationale
-there before asking him; he asked for enough context to decide without re-deriving it.
+`D47` and the items under it are live in `decisions_log` with status `proposed`. Read the
+full rationale there before asking him; he asked for enough context to decide without
+re-deriving it. The 2026-10-05 candidates at the end of this section are one step earlier in
+the funnel: they sit in `intake.candidate` with status `assessed`, awaiting a verdict.
 
 ### D47 — what key joins an invoice to an event? **blocking the Kanban spine**
 
@@ -301,6 +307,31 @@ registry.
 | 8 | **Item 7** — the 52 `urs/*.md` files | ~12 are real findings worth queueing; the rest are prompts, applied drafts or superseded |
 | 9 | **Formal mirrors** — 1,164 cells, `[KG]` is the longest today | PD-013 makes Nick the sole approver; needs a batched review process, not one pass |
 | 10 | **`events` registry is wrong** | partially D47, but the registry fix is its own change |
+
+---
+
+### New 2026-10-05 — five candidates from two external articles, in the order they should run
+
+Two articles were assessed: Bytebase's *Postgres best practices I wish every app developer
+knew*, and Instaclustr's *Top 15 PostgreSQL best practices for 2026*. Ten of the fifteen
+Instaclustr items were ruled inapplicable to a single 347 MB box and are recorded as
+rejected in §14. Five survived. They are now in `intake.candidate` with status `assessed`,
+each pointing at its `intake.source` and carrying its options in `intake.alternative`.
+
+| run | candidate | what it is | why it sits here |
+|---|---|---|---|
+| 1 | `C-2026-10-05-001` | observability — `pg_stat_statements`, statement / lock / autovacuum logging, `effective_cache_size` | cheapest item on the list: about an hour, no version dependency, no outage. It is also the instrument that proves the later changes worked. |
+| 2 | `C-2026-10-05-002` | prove a restore actually works, then rule retention and the recovery-point target | must precede the cluster migration — never migrate a cluster whose backups have never been restored. **Same ruling as item 1 above; decide it once.** |
+| 3 | `C-2026-10-05-003` | **PostgreSQL 14 → 18**, and bring `pgvector` under package management | deadline-driven: 14 ends 2026-11-12. Urgent, but deliberately not first. |
+| 4 | `C-2026-10-05-004` | `system_metrics` retention + monthly partitioning | needs a retention window from Nick. Safer on the post-upgrade base. |
+| 5 | `C-2026-10-05-005` | `uuidv7()` for new keys, `timestamptz` everywhere | gated on PG18 — `uuidv7()` does not exist on 14. |
+
+**One doctrinal note, raised not decided.** `PD-002` says external ideas never enter the
+durable stores directly, so these landed in `intake` rather than as `D47`-style `proposed`
+rows in `decisions_log`, and promoting them is Nick's act (`PD-013`). If he would rather
+see them as `PENDING NICK:` decision rows immediately, that is a one-step promotion.
+
+**Effort and risk are blank on all five on purpose** — `PD-013`, Nick is the only estimator.
 
 ---
 
@@ -676,8 +707,10 @@ re-fetching anything from Square.
 
 ## 14. POSTGRES APPLICATION RULES — mandatory defaults for every service that touches the database
 
-Assessed 2026-10-05 against this box, from Bytebase's "Postgres best practices I wish every
-app developer knew". These are application-developer rules, not DBA rules. They apply to
+Assessed 2026-10-05 against this box, from two external articles: Bytebase's "Postgres best
+practices I wish every app developer knew" and Instaclustr's "Top 15 PostgreSQL best
+practices for 2026". The five items worth acting on were raised as `intake.candidate`
+`C-2026-10-05-001` … `-005` (§9); what follows is the standing rule set they justify. These are application-developer rules, not DBA rules. They apply to
 every script, agent and app that opens a connection to `dev_pipeline` or `tazaos`. They are
 defaults; the burden of proof is on skipping them.
 
@@ -774,11 +807,27 @@ enough to matter:
 Measured 2026-10-05: largest user table 2.3 MB, 0 of 195 indexes invalid, no
 idle-in-transaction sessions. Immediate risk is low — this rule is prophylactic, not urgent.
 
-### Not adopted — the "invisible index" trick
+### Not adopted — recorded so they are not re-proposed
 
-The article's bonus (`UPDATE pg_index SET indisvalid = false`) is **declined** for this
-system. It writes a system catalog directly, `indisvalid` is used internally by
+**From Bytebase:** the "invisible index" trick (`UPDATE pg_index SET indisvalid = false`).
+Declined. It writes a system catalog directly, `indisvalid` is used internally by
 `CREATE INDEX CONCURRENTLY`, and there is no benefit at current table sizes.
+
+**From Instaclustr's "Top 15": ten of fifteen items, rejected for *this* system —** not as a
+general judgement:
+
+| item | why it is rejected here (measured) |
+|---|---|
+| connection pooling (PgBouncer / Pgpool-II) | `max_connections=100`, **10 sessions in use**. A pooler adds a hop and a failure mode for zero benefit at this concurrency. |
+| optimize hardware | 4-core N100, 30 GB RAM, 1.2 GB used, load 0.30; the 347 MB cluster lives in page cache. Nothing to buy. |
+| schema design / normalization | governance here (`D37`, `PD-009`, `PD-012`, `PD-016`) is already far stricter than "normalize". |
+| strategic indexing | 195 indexes, 0 invalid; the few `idx_scan=0` entries sit on 300-row tables. Noise at this size. |
+| cloud-native / auto-scaling | explicitly self-hosted, single node. |
+| HA and replication | single box, no stated failover requirement. A standby on gflip is a future option, not a 2026 action. |
+| query optimisation as a standalone rule | a discipline, not a rule. Its enabling tool is `C-2026-10-05-001`. |
+| pgvector / AI workloads | `vector 0.8.1` is installed and there are **zero vector columns** in the schema. The tool is already here; there is nothing to adopt. |
+| tune parameters (broad) | one real finding only — `effective_cache_size` = **4 GB on a host with 29 GB free** — folded into `C-2026-10-05-001`. `shared_buffers=128 MB` is correct here because the OS caches the whole cluster. |
+| backups (as stated) | `db_backup.sh` (`D45`) already exceeds the article's advice. The real gap is restore proof and recovery point, which is `C-2026-10-05-002`. |
 
 ### Status of this section
 
