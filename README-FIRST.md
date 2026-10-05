@@ -633,8 +633,41 @@ avoid.
 independent of the KB and both worth doing regardless, because a verbatim inbox is exactly
 what makes the KB matchable LATER without re-fetching anything from Square.
 
-**OPEN QUESTION FOR NICK, and it is the important one:** where is the KB? It was either
-never loaded into these tables, or it lives in a form that was not found (a spreadsheet, a
-Notion page from before the freeze, a document on another machine, or Sandra's head). Until
-that is answered, the KB's shape is unknown and building a matcher against it would be
-guesswork. **Locate the KB before building the matcher.**
+**ANSWERED 2026-10-05 - the KB EXISTS, and it is not in a database.**
+
+It is the **"Operations Content KB"** - a document, referenced by
+`docs/sandra-questionnaire-2026-09-30.md`, which opens:
+
+> *"Sandra - Recipe & Operations Questions. Prepared 2026-09-30 by Cortex for Nick to email
+> to Sandra. Purpose: close the 24 open flags (F-01...F-24) in the Operations Content KB."*
+
+So the KB is real, it has content, and it is **incomplete in a known and enumerated way: 24
+open flags.** The questionnaire exists to close them with Sandra. What it is still waiting
+on, verbatim from that document:
+
+- **A1 (F-01)** Chicken Limone / CLMC - is there garlic, frozen paste or fresh, and is the
+  breast 8 oz or 6 oz? *A quantity that has never been decided.*
+- **A2 (F-03)** Beef Short Ribs - how deep should the braising liquid come, rosemary
+  quantity, exact braise time, reheat temperature and time.
+- **A3 (F-13)** Buffet staffing by guest count in three bands (55+, 25-54, under 25).
+- **A4 (F-19)** Sauce / dressing / base ratios - **marked in the document as the single
+  biggest blocker.** Tzatziki, tahini, aioli, lemon-mint vinaigrette, balsamic, lemon dill.
+
+**This changes the shape of the problem.** It is not "the knowledge was lost" - it is
+**"the knowledge is documented, half-answered, and has no table to live in."** The blockers
+are real-world answers from Sandra, not engineering.
+
+**And the intended home may not be `cooking_rules` at all.** `PROD-18` specifies the
+holder: *"a temporal, conditional business-logic knowledge graph where facts are scored by
+confidence and decay over time... handles standardised-vs-semi-custom conditionality (e.g.
+'if guest count > 150 AND outdoor, THEN extra equipment') that a static lookup table cannot
+represent."*
+
+**RAISED, NOT DECIDED:** does `cooking_rules` (simple, empty, 9 columns) hold this, or does
+PROD-18's knowledge graph? A static table cannot express the conditional rules PROD-18
+describes, and building a matcher against the wrong one wastes the work. **This needs
+Nick's ruling before the matcher is built.**
+
+**What this does NOT block:** the order fetch and the verbatim inbox. Both are independent
+of the KB, and the verbatim inbox is precisely what lets the KB be matched later without
+re-fetching anything from Square.
