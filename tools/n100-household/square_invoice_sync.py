@@ -11,6 +11,7 @@ Stores every invoice returned, with the API object kept verbatim in payload, so
 nothing is lost if a derived column turns out to be wrong. Two booleans express
 the subset Nick specified (D43): has_deposit and is_fully_paid.
 """
+import fcntl
 import json
 import logging
 import os
@@ -137,6 +138,7 @@ def flatten(inv):
         "line_items": json.dumps((inv.get("order") or {}).get("line_items") or []),
         "payment_requests": json.dumps(requests_),
         "payload": json.dumps(inv),
+        "last_seen_at": datetime.now(timezone.utc),
     }
 
 
@@ -154,7 +156,8 @@ def upsert(rows):
                     customer_id, customer_name, customer_email, customer_phone,
                     total_cents, amount_paid_cents, amount_due_cents, deposit_paid_cents,
                     has_deposit, is_fully_paid, due_date,
-                    square_created_at, square_updated_at, line_items, payment_requests, payload
+                    square_created_at, square_updated_at, line_items, payment_requests, payload,
+                    last_seen_at
                 ) VALUES %s
                 ON CONFLICT (square_invoice_id) DO UPDATE SET
                     invoice_number = EXCLUDED.invoice_number,
@@ -174,6 +177,7 @@ def upsert(rows):
                     line_items = EXCLUDED.line_items,
                     payment_requests = EXCLUDED.payment_requests,
                     payload = EXCLUDED.payload,
+                    last_seen_at = EXCLUDED.last_seen_at,
                     last_synced_at = now()
                 """,
                 rows, page_size=100,
@@ -184,12 +188,44 @@ def upsert(rows):
 
 
 
-def refresh_deposit_table():
-    """Rebuild the internal interface table (D43). Apps read this, not the raw mirror."""
+
+def raise_alert(severity, title, detail):
+    """Write to the interim exception sink (ops_alert, D45). PROD-23 will own this later.
+    A job that can fail silently is an unmonitored job."""
+    try:
+        conn = psycopg2.connect(PG_DSN)
+        with conn, conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO public.ops_alert (source, severity, title, detail) VALUES (%s,%s,%s,%s)",
+                ("square_invoice_sync", severity, title, detail[:2000]))
+        conn.close()
+    except Exception:
+        log.exception("could not write the alert either")
+
+
+def previous_successful_count():
+    """How many invoices the last OK run saw. None if there is no history."""
+    conn = psycopg2.connect(PG_DSN)
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""SELECT invoices_seen FROM public.square_invoice_sync_log
+                           WHERE status = 'ok' ORDER BY id DESC LIMIT 1""")
+            row = cur.fetchone()
+            return row[0] if row else None
+    finally:
+        conn.close()
+
+
+def refresh_deposit_table(min_expected=1):
+    """min_expected guards against a bad run emptying the table via the prune."""
+    """Rebuild the internal interface table (D43).
+
+    UPSERT rather than TRUNCATE so first_deposit_seen_at survives across runs --
+    a TRUNCATE reset it to now() every 30 minutes, making the column meaningless.
+    """
     conn = psycopg2.connect(PG_DSN)
     try:
         with conn, conn.cursor() as cur:
-            cur.execute("TRUNCATE public.invoices_with_deposit;")
             cur.execute("""
                 INSERT INTO public.invoices_with_deposit
                  (square_invoice_id, invoice_number, status, customer_id, customer_name,
@@ -202,8 +238,30 @@ def refresh_deposit_table():
                        square_created_at, square_updated_at, now(), now()
                 FROM public.square_invoices
                 WHERE amount_paid_cents > 0
+                ON CONFLICT (square_invoice_id) DO UPDATE SET
+                    status = EXCLUDED.status,
+                    customer_name = EXCLUDED.customer_name,
+                    customer_email = EXCLUDED.customer_email,
+                    customer_phone = EXCLUDED.customer_phone,
+                    total_cents = EXCLUDED.total_cents,
+                    deposit_cents = EXCLUDED.deposit_cents,
+                    balance_cents = EXCLUDED.balance_cents,
+                    is_fully_paid = EXCLUDED.is_fully_paid,
+                    is_outstanding = EXCLUDED.is_outstanding,
+                    due_date = EXCLUDED.due_date,
+                    square_updated_at = EXCLUDED.square_updated_at,
+                    refreshed_at = now()
+                    -- first_deposit_seen_at deliberately NOT touched
             """)
-            return cur.rowcount
+            n = cur.rowcount
+            # drop anything that no longer has a deposit (refunded to zero)
+            cur.execute("""
+                DELETE FROM public.invoices_with_deposit d
+                WHERE NOT EXISTS (SELECT 1 FROM public.square_invoices s
+                                  WHERE s.square_invoice_id = d.square_invoice_id
+                                    AND s.amount_paid_cents > 0)
+            """)
+            return n
     finally:
         conn.close()
 
@@ -226,9 +284,30 @@ def main():
     if not ACCESS_TOKEN:
         log.error("SQUARE_ACCESS_TOKEN not set")
         write_sync_log("failed", 0, 0, 0, 0, "SQUARE_ACCESS_TOKEN not set")
+        raise_alert("critical", "Square invoice sync: no token", "SQUARE_ACCESS_TOKEN missing from the environment file")
         return 1
+    # CRITICAL 1: one run at a time. The timer fires every 30 min; a slow run must
+    # not overlap the next one or the two will race on the same rows.
+    lock_fh = open("/tmp/square_invoice_sync.lock", "w")
+    try:
+        fcntl.flock(lock_fh, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        log.warning("another sync is already running - exiting without doing anything")
+        return 0
+
     try:
         invoices, pages = fetch_all_invoices()
+
+        # CRITICAL 2a: validate the shape before trusting it. An error body or a
+        # truncated response must never be interpreted as "there are no invoices".
+        if not isinstance(invoices, list):
+            raise RuntimeError("API returned a non-list invoices field")
+        prev = previous_successful_count()
+        if prev and len(invoices) < prev * 0.5:
+            raise RuntimeError(
+                f"anomaly guard: this run sees {len(invoices)} invoices but the last good run "
+                f"saw {prev}. Refusing to write or prune on a suspicion of a partial response.")
+
         rows = []
         for inv in invoices:
             r = flatten(inv)
@@ -237,9 +316,9 @@ def main():
                 "customer_id","customer_name","customer_email","customer_phone",
                 "total_cents","amount_paid_cents","amount_due_cents","deposit_paid_cents",
                 "has_deposit","is_fully_paid","due_date",
-                "square_created_at","square_updated_at","line_items","payment_requests","payload")))
+                "square_created_at","square_updated_at","line_items","payment_requests","payload","last_seen_at")))
         upserted = upsert(rows)
-        with_deposit = refresh_deposit_table()
+        with_deposit = refresh_deposit_table(min_expected=1)
         log.info("invoices_with_deposit refreshed: %d rows", with_deposit)
         deposit_unpaid = sum(1 for r in rows if r[13] and not r[14])
         log.info("seen=%d upserted=%d deposit_unpaid=%d pages=%d", len(rows), upserted, deposit_unpaid, pages)
@@ -247,7 +326,9 @@ def main():
         return 0
     except Exception as exc:
         log.exception("sync failed")
+        # CRITICAL 3: a failure must leave a visible row, not just a journal line.
         write_sync_log("failed", 0, 0, 0, 0, str(exc)[:500])
+        raise_alert("critical", "Square invoice sync failed", repr(exc))
         return 1
 
 
