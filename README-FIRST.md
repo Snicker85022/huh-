@@ -310,13 +310,18 @@ registry.
 
 ---
 
-### New 2026-10-05 — five candidates from two external articles, in the order they should run
+### New 2026-10-05 — the intake funnel holds fourteen open items, in the order they should run
 
-Two articles were assessed: Bytebase's *Postgres best practices I wish every app developer
-knew*, and Instaclustr's *Top 15 PostgreSQL best practices for 2026*. Ten of the fifteen
-Instaclustr items were ruled inapplicable to a single 347 MB box and are recorded as
-rejected in §14. Five survived. They are now in `intake.candidate` with status `assessed`,
-each pointing at its `intake.source` and carrying its options in `intake.alternative`.
+Three sources were pre-filtered: Bytebase's *Postgres best practices I wish every app
+developer knew*, Instaclustr's *Top 15 PostgreSQL best practices for 2026*, and Nick's own
+Google Keep list (two screenshots). Everything landed in `intake` — `intake.source`,
+`intake.candidate`, `intake.alternative`. **Nothing was written to `decisions_log`.**
+
+**Where to read it: database `dev_pipeline`, schema `intake`.** Not `tazaos` — that carries a
+stale copy (1 candidate against 6), and pgweb on port 8080 targets it. `pgweb-dev-pipeline`
+on 8081 is the viewer that reads the live funnel. That drift is `C-2026-10-05-006`.
+
+**From the two articles — five, and they are ordered because order matters:**
 
 | run | candidate | what it is | why it sits here |
 |---|---|---|---|
@@ -326,12 +331,36 @@ each pointing at its `intake.source` and carrying its options in `intake.alterna
 | 4 | `C-2026-10-05-004` | `system_metrics` retention + monthly partitioning | needs a retention window from Nick. Safer on the post-upgrade base. |
 | 5 | `C-2026-10-05-005` | `uuidv7()` for new keys, `timestamptz` everywhere | gated on PG18 — `uuidv7()` does not exist on 14. |
 
+**Raised at Nick's instruction, from this session's own measurement — one:**
+
+| candidate | what it is | the verdict in one line |
+|---|---|---|
+| `C-2026-10-05-006` | four `tazaos.intake` tables carry no `FROZEN` marker, and are stale | the D37 guard has a hole; 12 tables are marked, these 4 are not. Also: the `pipeline_doctrine` marker points at a table `D40` already dropped |
+
+**From Nick's Google Keep list — eight, assessed but not yet sequenced.** Most are application
+conventions rather than database work, so they do not belong in the run order above:
+
+| candidate | what it is | the verdict in one line |
+|---|---|---|
+| `C-2026-10-05-007` | ledger replay tests | right idea, wrong moment — `system_events` holds **5 rows**, so a replay test today would be a green light wired to nothing |
+| `C-2026-10-05-008` | debug footer: app version / session id / last event id | **the best item on the list.** Turns a human complaint into three lookups; belongs in the app specs and the §12 build |
+| `C-2026-10-05-009` | trace id on every API call and bus event | already required by §11 — do not invent a second identifier, reuse `correlation_id` and enforce it |
+| `C-2026-10-05-010` | soft deletes **and** auditing, universally | split: auditing yes (it is `PROD-22`, unbuilt — `audit_log` does not exist); soft deletes per-table, **not** universal |
+| `C-2026-10-05-011` | separate OLTP (apps) from OLAP (AI / analytics) | right instinct, not urgent at 10 of 100 connections. The cheap answer already exists: route readers through `viewer_ro`, never `taza` |
+| `C-2026-10-05-012` | no cross-schema joins | correct for `tazaos`, wrong for `dev_pipeline` as written — it would forbid `spec.spec_decision_link`'s real FK to `decisions.decisions_log` |
+| `C-2026-10-05-013` | connection pooling | **rejected** — 10 sessions of 100 |
+| `C-2026-10-05-014` | single level of abstraction | **rejected as misfiled** — a code principle, not a database rule, and it cannot be written as a checkable assertion |
+
+One item at the bottom of the second screenshot is cut off by the keyboard and has **not**
+been guessed at — the source row records that.
+
 **One doctrinal note, raised not decided.** `PD-002` says external ideas never enter the
 durable stores directly, so these landed in `intake` rather than as `D47`-style `proposed`
 rows in `decisions_log`, and promoting them is Nick's act (`PD-013`). If he would rather
 see them as `PENDING NICK:` decision rows immediately, that is a one-step promotion.
 
-**Effort and risk are blank on all five on purpose** — `PD-013`, Nick is the only estimator.
+**Effort and risk are blank on all twelve open candidates on purpose** — `PD-013`, Nick is the
+only estimator.
 
 ---
 
