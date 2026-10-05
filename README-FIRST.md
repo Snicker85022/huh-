@@ -1,100 +1,243 @@
-# README-FIRST — Taza OS spec-driven pipeline
+# README-FIRST — Taza OS
 
-**Read this file first. Then run the boot query. Then read the database, not the docs.**
+**Read this file first, then run the boot query, then read the database. Do not read the
+old markdown. Do not create new markdown.**
 
-Last updated: 2026-10-04.
+Last updated: 2026-10-04. Supersedes every earlier handoff document; those live in
+`archive/session-handoffs/` and are historical only.
 
 ---
 
-## 1. What this system is
+## 0. Why this file exists at all
+
+Nick hates markdown. This is the single deliberate exception: one orientation file so a
+cold agent does not have to guess. **It must never become a collection.** If something
+belongs here, it usually belongs in `decisions_log` instead.
+
+---
+
+## 1. The loop
 
 Nick runs a **spec-driven** operation. There is exactly one loop:
 
-    DECIDE  ->  decisions_log  ->  murs_specs  ->  CODE
-             (change mgmt)      (normative)     (generated)
+```
+DECIDE  ->  decisions_log  ->  spec  ->  CODE
+         (change mgmt)     (normative)  (derived)
+```
 
-- **`decisions_log`** — the change-management system. Every change to the system
-  description is proposed, debated, decided and logged here. Nothing changes without a row.
-- **`murs_specs`** — the normative description of what the system must do. If it is in
-  here, it is **required**. Each spec points back at the decision that created it.
-- **Code is generated from the specs.** Spec drives code. Never the reverse.
+- **`decisions_log`** — the change-management system. Everything is proposed, debated,
+  decided and logged here. Nothing changes without a row.
+- **`spec`** — the normative description of what the system must do. **If it is in here,
+  it is required.** Each spec points back at the decision that created it.
+- **Code is generated from the spec.** Never the reverse.
 
-There is no third store. Do not create one. Do not create markdown handoff files.
+There is no third store. Do not create one.
 
-## 2. Where it lives
+### The two failure modes that destroy this system
 
-| what | where |
+1. **Putting an unevaluated idea into the spec.** The spec's only real property is that
+   everything in it is required. Once that is untrue, neither a human nor an agent can
+   trust it as a contract.
+2. **Putting an undecided idea into `decisions_log`.** Every row must be something that
+   was decided, or the log stops answering the one question it exists to answer: *has
+   this been decided?*
+
+Ideas live in `intake` until they exit as a spec delta, a decision, an
+`already_satisfied` disposition, or a rejection with a recorded reason.
+
+---
+
+## 2. Where everything lives
+
+**Server:** n100 = `192.168.2.102` (`ssh taza@192.168.2.102`). PostgreSQL 14.
+
+| database | size | what it is |
+|---|---|---|
+| **`dev_pipeline`** | ~14 MB | **the development pipeline.** Spec + decisions + intake. |
+| **`tazaos`** | ~250 MB | **production runtime.** Apps, invoice mirrors, operational data. |
+| `taza_os_langgraph_checkpoints` | ~9 MB | LangGraph checkpoints only. Nothing to do with "Taza OS". |
+| `taza_memory` | ~9 MB | unused; 0 tables, 11 functions. Not deleted (unknown consumer). |
+
+### `dev_pipeline`
+
+| schema | contents |
 |---|---|
-| Server | n100, `192.168.2.102` (`ssh taza@192.168.2.102`) |
-| Database | PostgreSQL `tazaos` |
-| Schemas | `public` (spec + decisions + production data), `intake` (idea funnel) |
-| Spec table | `public.murs_specs` — 291 rows, one per spec |
-| Decision table | `public.decisions_log` — one row per decision-branch |
-| Boot view | `public.v_boot` — the single entry point |
-| Read-only role | `viewer_ro`; password at `/home/taza/viewer_ro.cred` (chmod 600) |
-| Web viewer | `pgweb` container, port 8080, published behind cloudflared |
+| `spec` | `taza_os_user_requirement_specifications` (291 rows, one per spec), `master_urs` (legacy import), `specs`, `acceptance_criteria`, `verification_methods`, `seam_stamps`, `seam-stamps`, `seam-open`, `branches`, `domain_rules`, `foundational_table`, `foundational_column`, `spec_decision_link`, `v_boot` |
+| `decisions` | `decisions_log` (**the** decision log), `change_record` (every change, FK-linked to its decision) |
+| `intake` | `source`, `candidate`, `candidate_spec`, `alternative` — the idea funnel |
 
-## 3. Your first three commands
+### `tazaos` (production)
 
-    psql -d tazaos -c "select * from public.v_boot;"
-    psql -d tazaos -c "select doctrine_id,title,rule from public.pipeline_doctrine where status='adopted' order by 1;"
-    psql -d tazaos -c "select candidate_id,title,status from intake.candidate where status not in ('rejected','already_satisfied','promoted');"
+Live: `square_catalog_items` (355), `square_catalog_sync_log`, `square_invoices` (329),
+`square_invoice_sync_log`, `invoices_with_deposit` (305), plus `events`, `menu_items`,
+`crew`, `inventory`, `task_cards`, `state_machines`, and the rest of the operational set.
 
-## 4. Your role
+**13 design-time tables in `tazaos` are FROZEN** (D37) and carry a `FROZEN` table comment
+naming their live counterpart in `dev_pipeline`. They are stale pre-split copies.
+**Never edit them.** Cutover — dropping them — is still pending.
 
-You are a pipeline agent. You are **not** the decision-maker.
+### Roles and viewers
 
-- **Read anything.** Reading is always allowed. Say "read-only" when you mean it.
-- **Propose freely — into `intake`.** An outside idea (video, forum, vendor doc, search)
-  becomes a row in `intake.candidate`. It does **not** go into `murs_specs` or
-  `decisions_log` directly. See PD-002.
-- **Write to `murs_specs` only after Nick has decided.** Sequence:
-  Nick decides → a row appears in `decisions_log` → you change the spec → the spec
-  points back at that decision row. That back-pointer *is* the audit trail.
-- **Never change schema without a decision row first.** Production schema changes are
-  decisions, not edits. See PD-009.
-- **Never invent a table or column.** If something has no home, emit
-  `NEEDS-SCHEMA: <exactly what is missing>` and stop.
-
-## 5. The two failure modes to avoid
-
-1. **Do not put an unevaluated idea into `murs_specs`.** That destroys the spec's only
-   real property: everything in it is required. Once that is untrue, neither a human nor
-   an agent can trust the spec as a contract.
-2. **Do not put an undecided idea into `decisions_log`.** Every row must be something
-   that was decided, or the log stops answering the one question it exists to answer:
-   *has this been decided?*
-
-Ideas live in `intake` until they exit as one of: a spec delta, a decision,
-an `already_satisfied` disposition, or a rejection with a recorded reason.
-
-## 6. Decisions you should read before proposing anything
-
-| id | what it settled |
+| role | notes |
 |---|---|
-| **D31** | Two durable stores; pipeline doctrine lives in the DB, not a third file |
-| **D32** | Read-only production viewer role (`viewer_ro`) |
-| **D33** | **Supersedes D4.** The development pipeline gets its own database; production runtime stays separate |
-| **D34** | `decisions` and `decisions_log` are one table |
+| `taza` | the working role. Can write `tazaos` and `dev_pipeline`. |
+| `viewer_ro` | **read-only by construction** (D32): SELECT-only on `public` + `intake`, `default_transaction_read_only=on` pinned at role level. Password at `/home/taza/viewer_ro.cred` (chmod 600). |
+| `postgres` | superuser. Needed for `pg_dump`, `pg_hba` edits, role creation. |
 
-Read them in full from `decisions_log`. Do not rely on this summary.
+| viewer | port | targets |
+|---|---|---|
+| `pgweb` | 8080 | `tazaos` |
+| `pgweb-dev-pipeline` | 8081 | `dev_pipeline` |
 
-## 7. Known outlook — verify before assuming
+**⚠️ Naming trap.** What Nick calls "PGAdmin" is actually **pgweb**, served at
+`nocodb.tazacateringphoenix.com`. There is no PGAdmin installed anywhere. pgweb has
+**zero authentication** — Nick has explicitly accepted that until the system operates.
 
-**D33 is not yet executed.** The end state:
+### Tunnels — two separate cloudflared instances, different domains
 
-- **`mers_dev`** — the development pipeline database (spec + decisions + intake)
-- **production runtime** — separate, eventually one database per app
-- why: a shared runtime database is a back channel that bypasses the event bus
-  (`PROD-20`), recreating the coupling the bus exists to prevent
+| machine | domain | fronts |
+|---|---|---|
+| n100 | `*.tazabistro.com` | `terminal` (:7682) only. n8n + nocodb retired. |
+| gflip | `*.tazacateringphoenix.com` | `fusion`, `pm`, **`chat` (:3080 — the LibreChat Nick talks to the agent through)**, `nocodb` (→ n100:8080 pgweb) |
 
-Until the split lands, the spec and decision tables live inside `tazaos` alongside
-production data. **Check `decisions_log` for D33's state before assuming which database
-you are in.**
+**Restarting gflip's cloudflared kills the chat session.** Any gflip ingress change must
+be scheduled detached, after the agent's reply lands.
 
-## 8. Things that are deliberately NOT here
+### Scheduled jobs
 
-- No Notion. Frozen since 2026-08-03.
-- No NocoDB. Retired; its 144 metadata tables were dropped from `tazaos.public` on
-  2026-10-04.
-- No markdown handoff chain. Archived to `archive/session-handoffs/`.
+| timer | cadence |
+|---|---|
+| `square-invoice-sync.timer` | **every 30 minutes** |
+| `square-catalog-sync.timer` | Sundays 03:03 |
+| `square-menu-sync.timer` | Sundays 03:00 |
+
+All three: `User=taza`, `EnvironmentFile=/etc/taza/secrets` (Square credentials live
+there, **not** in `/home/taza/.env`).
+
+---
+
+## 3. The cascade standard
+
+**Nick's rule: every change to the system description goes through a decision first.**
+
+The order is not optional:
+
+1. **Record the decision** in `decisions_log` — *before* touching anything
+2. **Apply the change**
+3. **Record it** in `change_record`, with a **foreign key** to `decisions_log.branch_id`
+4. If spec content moved, **recompute the hash**
+
+`change_record.branch_id` is a real FK. A change record cannot reference a decision that
+does not exist — the engine enforces it. This caught an error the first time it was tried.
+
+**The link direction on specs:** `spec_decision_link(spec_id, branch_id)` — a spec points
+at the **branch** that caused it, not the decision id, because one decision can have
+several branches (D29.A / D29.B / D29.C).
+
+---
+
+## 4. The content hash
+
+```
+canon = spec_id | branch_id | functional_requirement | ac_normal | ac_edge |
+        ac_negative | ac_silent_failure | ac_challenge | verification_methods |
+        atomic_requirement | intent_user_need | inputs | outputs |
+        trigger_condition | invariants | out_of_scope | maintenance_requirements |
+        external_dependencies | rationale | failure_mode_addressed
+
+version_id = sha256(canon)[:16]
+```
+
+**20 fields.** Recipe lives in `tools/stage-deterministic.py` and is reproduced in
+`decisions_log` D36 and D41.
+
+- `implementation_status` is **deliberately excluded** — it is work tracking, and a status
+  flip must not bump 291 versions (D41).
+- **Changing any hashed field means recomputing all 291** and logging it. Before extending
+  the canon, first prove you can reproduce the existing values — the D36 change did that
+  and got 291/291 before touching anything.
+- A hand-edit that changes hashed content without recomputing breaks the integrity check.
+
+---
+
+## 5. Handoff rules — what NOT to do
+
+1. **Never invent a table or column.** Emit `NEEDS-SCHEMA: <what is missing>` and stop.
+   Schema changes go through a decision (PD-009).
+2. **Never create a markdown store.** The database is the record (PD-016).
+3. **Never write to `tazaos` design-time tables.** They are frozen (D37).
+4. **Never assume which database you want.** `dev_pipeline` = spec/decisions.
+   `tazaos` = production. Check before acting.
+5. **Never trust a count without breaking it down.** See §6.
+6. **Never report success before validating.** The invoice bug was declared working and
+   wasn't.
+7. **Never restart gflip's cloudflared synchronously** — it carries the chat session.
+8. **Never edit `pg_hba.conf` without a backup and a RELOAD** (not a restart), so a bad
+   line fails without being applied.
+9. **Never run `pg_dump` as `taza`** for a whole database — the role does not own every
+   table. Use `postgres`. And `postgres` cannot write into the 700 permissions backup dir;
+   dump to `/tmp` then move.
+10. **Never renumber the PD- doctrine ids** — `README-FIRST` and other records reference
+    them. Doctrine lives in `decisions_log` alongside the D- decisions.
+
+---
+
+## 6. Facts Nick tends to forget — remind him
+
+- **"PGAdmin" is pgweb**, served on a hostname called `nocodb.*`. Both names are wrong.
+- **NocoDB is retired** (D37). Its 144 metadata tables were dropped. Do not resurrect.
+- **The `decisions` table no longer exists.** Decisions and the decision log are **one
+  table** (D34). Doctrine is rows in it too (D40).
+- **`tazaos` still holds stale copies of the spec and decisions.** The live ones are in
+  `dev_pipeline` (D37).
+- **Square owns invoices in V1** (D42). PROD-30's "replacing Square invoicing" is a
+  **V2.0** target. Both tracks run in parallel; Square is the fallback until Taza's own
+  system is proven for months.
+- **Deposit rule: ANY amount counts.** Not 50%. Estimates rise after the deposit, so the
+  percentage is meaningless — the fact that a deposit exists is the signal (Nick,
+  2026-10-04).
+- **Cancelled invoices are not leads.** A `CANCELED` invoice is dead paperwork.
+- **The CRM app does not exist yet**, so Track A's invoice-drafting workflow cannot be
+  tested end to end. Only the Square ingestion is live.
+- **Two things Square shows that we do not ingest:** estimates ($6,559.72 as of
+  2026-10-04) and payment timestamps. The latter needs the **Payments API**, not the
+  Invoices API — the invoice payload contains no payment records at all.
+
+---
+
+## 7. Boot sequence
+
+```sql
+-- the single entry point
+select * from spec.v_boot;
+
+-- the doctrine, now rows in the decision log
+select branch_id, branch_title, body
+from decisions.decisions_log
+where branch_id like 'PD-%' order by branch_id;
+
+-- the open idea queue
+select candidate_id, title, status from intake.candidate
+where status not in ('rejected','already_satisfied','promoted');
+
+-- recent changes and what drove them
+select c.change_id, c.branch_id, c.change_type, c.object_ref, d.branch_title
+from decisions.change_record c join decisions.decisions_log d using (branch_id)
+order by c.change_id desc limit 20;
+```
+
+---
+
+## 8. Current state — 2026-10-04
+
+**66 decisions · 12 change records · 291 specs · 329 Square invoices mirrored**
+
+**Live:** Square invoice ingestion every 30 min (`square_invoices` → `invoices_with_deposit`
+→ `v_invoices_awaiting_final_payment`). Verified against Nick's Square app: outstanding
+$49,462.20 — exact match to the cent.
+
+**Built but not cut over:** `dev_pipeline` holds the live spec and decisions; `tazaos`
+still holds frozen copies.
+
+**Not built:** the CRM app, the invoice-drafting web form, the two-person approval
+workflow, the Square push, and the entire Track B Taza-invoiced system.
