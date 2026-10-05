@@ -32,6 +32,8 @@ API_VERSION   = os.environ.get("SQUARE_API_VERSION", "2025-01-23")
 LOCATION_ID   = os.environ.get("SQUARE_LOCATION_ID")
 PG_DSN        = os.environ.get("TAZAOS_PG_DSN", "dbname=tazaos user=taza host=/var/run/postgresql")
 
+LOCK_PATH = os.environ.get("SYNC_LOCK_PATH", "/tmp/square_invoice_sync.lock")
+
 HEADERS = {
     "Authorization": f"Bearer {ACCESS_TOKEN}",
     "Square-Version": API_VERSION,
@@ -216,6 +218,92 @@ def previous_successful_count():
         conn.close()
 
 
+
+# Business fields whose change means the WORK has changed, not just the money (D52).
+# Invoices changing is the normal case - the estimate grows after the deposit, as
+# customers add headcount and food. So invoice.changed is a first-class event.
+BUSINESS_FIELDS = ("status", "total_cents", "amount_due_cents", "due_date",
+                   "customer_name", "customer_email", "event_date", "invoice_number")
+
+
+def prior_state(ids):
+    """The stored state BEFORE this run's upsert, so transitions can be detected."""
+    conn = psycopg2.connect(PG_DSN)
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""SELECT square_invoice_id, status, coalesce(amount_paid_cents,0),
+                                  coalesce(amount_due_cents,0), coalesce(total_cents,0),
+                                  coalesce(due_date::text,''), coalesce(customer_name,''),
+                                  coalesce(customer_email,''), coalesce(event_date::text,''),
+                                  coalesce(invoice_number,'')
+                           FROM public.square_invoices
+                           WHERE square_invoice_id = ANY(%s)""", (list(ids),))
+            return {r[0]: r for r in cur.fetchall()}
+    finally:
+        conn.close()
+
+
+def detect_and_emit(rows, prior):
+    """Emit ONLY on genuine transitions. Discovery is not a transition."""
+    emitted = 0
+    conn = psycopg2.connect(PG_DSN)
+    try:
+        with conn, conn.cursor() as cur:
+            def emit(topic, iid, frm, to, payload):
+                nonlocal emitted
+                cur.execute("SELECT public.emit_event(%s,%s,%s,%s,%s,%s,NULL,%s,%s)",
+                            (topic, "square_invoice_sync", "invoice", iid, "info",
+                             json.dumps(payload), frm, to))
+                emitted += 1
+
+            for r in rows:
+                iid = r["square_invoice_id"]
+                p = prior.get(iid)
+                paid, due, status = r["amount_paid_cents"], r["amount_due_cents"], r["status"]
+
+                if p is None:
+                    emit("invoice.created", iid, None, status,
+                         {"invoice_number": r["invoice_number"], "status": status,
+                          "total_cents": r["total_cents"]})
+                    continue
+
+                p_status, p_paid, p_due, p_total = p[1], p[2], p[3], p[4]
+
+                # THE trigger (D51): first deposit. This is what starts downstream work.
+                if p_paid == 0 and paid > 0 and status != "CANCELED":
+                    emit("invoice.deposit_received", iid, p_status, status,
+                         {"invoice_number": r["invoice_number"], "deposit_cents": paid,
+                          "total_cents": r["total_cents"], "amount_due_cents": due,
+                          "customer_name": r["customer_name"], "event_date": r["event_date"]})
+
+                if p_status != "PAID" and status == "PAID":
+                    emit("invoice.paid", iid, p_status, "PAID",
+                         {"invoice_number": r["invoice_number"], "total_cents": r["total_cents"]})
+
+                if p_status != "CANCELED" and status == "CANCELED":
+                    emit("invoice.canceled", iid, p_status, "CANCELED",
+                         {"invoice_number": r["invoice_number"]})
+
+                if paid < p_paid:
+                    emit("invoice.refunded", iid, p_status, status,
+                         {"invoice_number": r["invoice_number"],
+                          "was_paid_cents": p_paid, "now_paid_cents": paid})
+
+                # content changed - the normal case, not an exception
+                now_vals = (status, r["total_cents"], due, r["due_date"] or "",
+                            r["customer_name"] or "", r["customer_email"] or "",
+                            r["event_date"] or "", r["invoice_number"] or "")
+                was_vals = (p[1], p_total, p_due, p[5], p[6], p[7], p[8], p[9])
+                diffs = {f: {"was": w, "now": n}
+                         for f, w, n in zip(BUSINESS_FIELDS, was_vals, now_vals) if w != n}
+                if diffs:
+                    emit("invoice.changed", iid, p_status, status,
+                         {"invoice_number": r["invoice_number"], "diffs": diffs})
+    finally:
+        conn.close()
+    return emitted
+
+
 def refresh_deposit_table(min_expected=1):
     """min_expected guards against a bad run emptying the table via the prune."""
     """Rebuild the internal interface table (D43).
@@ -287,13 +375,30 @@ def main():
         raise_alert("critical", "Square invoice sync: no token", "SQUARE_ACCESS_TOKEN missing from the environment file")
         return 1
     # CRITICAL 1: one run at a time. The timer fires every 30 min; a slow run must
-    # not overlap the next one or the two will race on the same rows.
-    lock_fh = open("/tmp/square_invoice_sync.lock", "w")
+    # not overlap the next one, or two runs race on the same rows.
+    #
+    # RE-HARDENED after this killed the sync in testing: the lock file was created
+    # by one user (the service runs as taza) and refused to another (the direct test
+    # ran as root), and the resulting PermissionError took the WHOLE SYNC DOWN.
+    # A lock that cannot be taken must never stop the work. If we cannot lock, we
+    # log loudly and carry on unlocked. systemd already refuses to start an active
+    # oneshot unit, so the lock is belt-and-braces, not the primary defence.
+    lock_fh = None
     try:
+        lock_fh = open(LOCK_PATH, "w")
+        try:
+            os.chmod(LOCK_PATH, 0o666)
+        except OSError:
+            pass
         fcntl.flock(lock_fh, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except BlockingIOError:
         log.warning("another sync is already running - exiting without doing anything")
         return 0
+    except OSError as exc:
+        log.warning("could not take the lock (%s) - continuing WITHOUT it", exc)
+        raise_alert("warning", "Square invoice sync ran uNLOCKED",
+                    f"could not acquire {LOCK_PATH}: {exc}. The sync proceeded. "
+                    "systemd should still prevent overlap, but investigate the lock path.")
 
     try:
         invoices, pages = fetch_all_invoices()
@@ -308,16 +413,21 @@ def main():
                 f"anomaly guard: this run sees {len(invoices)} invoices but the last good run "
                 f"saw {prev}. Refusing to write or prune on a suspicion of a partial response.")
 
-        rows = []
+        flat = []   # dicts, for transition detection
+        rows = []   # tuples, for execute_values
         for inv in invoices:
             r = flatten(inv)
+            flat.append(r)
             rows.append(tuple(r[k] for k in (
                 "square_invoice_id","invoice_number","square_order_id","location_id","status",
                 "customer_id","customer_name","customer_email","customer_phone",
                 "total_cents","amount_paid_cents","amount_due_cents","deposit_paid_cents",
                 "has_deposit","is_fully_paid","due_date",
                 "square_created_at","square_updated_at","line_items","payment_requests","payload","last_seen_at")))
+        prior = prior_state([r["square_invoice_id"] for r in flat])
         upserted = upsert(rows)
+        emitted = detect_and_emit(flat, prior)
+        log.info("transitions emitted: %d", emitted)
         with_deposit = refresh_deposit_table(min_expected=1)
         log.info("invoices_with_deposit refreshed: %d rows", with_deposit)
         deposit_unpaid = sum(1 for r in rows if r[13] and not r[14])
