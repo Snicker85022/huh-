@@ -395,3 +395,23 @@ of one AC will drift, and Gherkin is the one a test can actually run. An argumen
 alongside: the FOL mirror can express invariants and negative constraints that do not
 naturally fit a scenario. This needs ruling before the formalization batches start, because
 it determines what the batches produce.
+
+### 10.4 READABILITY IS A REQUIREMENT, NOT A PREFERENCE
+
+**Meet or exceed current WCQG readability standards.**
+
+Nick's instruction, 2026-10-04. Applies to everything written: acceptance criteria,
+verification methods, spec prose, decision rationales, formal expressions, reports to Nick,
+and this file.
+
+PRACTICAL CONSEQUENCE for spec work: an AC or VM written at a reading level, sentence
+length or vocabulary that a cook, a crew member or Sandra cannot follow on a phone in a
+kitchen is a defective requirement, not a stylistic one. The corpus currently contains
+run-on ACs of 200+ characters with multiple numbered clauses per sentence (see `PROD-02`,
+`PROD-06`) - those fail this standard regardless of how accurate they are.
+
+**OPEN ITEM, RECORDED VERBATIM RATHER THAN GUESSED:** the agent does not know what WCQG
+expands to, and has not invented a meaning. The instruction is recorded exactly as given.
+The first future session that has the definition should replace this paragraph with the
+actual standard, its source, and how conformance is measured. Until then: write plain,
+short, concrete sentences, one requirement per sentence, no jargon, active voice.
