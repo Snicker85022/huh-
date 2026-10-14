@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Taza OS — Kitchen Displays</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:#0d1117;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+.container{display:flex;flex-direction:column;align-items:center;padding:24px;gap:16px;min-height:100vh;}
+.label{font-family:ui-monospace,'SF Mono',Consolas,monospace;font-size:11px;color:#3fe8b8;letter-spacing:.15em;margin-bottom:4px;}
+.section{font-family:ui-monospace,monospace;font-size:10px;color:#6e7681;letter-spacing:.2em;text-transform:uppercase;margin-top:12px;width:100%;max-width:340px;text-align:center;}
+.btn{
+  display:block;width:100%;max-width:340px;padding:24px 20px;
+  background:#161b22;border:2px solid #3fe8b8;border-radius:12px;
+  color:#3fe8b8;font-size:20px;font-weight:600;text-align:center;
+  text-decoration:none;letter-spacing:.05em;
+  transition:background .15s,border-color .15s;
+}
+.btn:active{background:#1a7a5e;border-color:#3fe8b8;}
+.btn.ss{border-color:#c7ae59;color:#c7ae59;padding:16px 20px;font-size:16px;}
+.btn.ss:active{background:#2a2418;}
+.btn.tv{border-color:#426a9f;color:#426a9f;padding:18px 20px;font-size:17px;}
+.btn.tv:active{background:#1a2a3f;}
+.sub{font-size:12px;color:#8b949e;margin-top:4px;font-weight:400;}
+.divider{width:60%;height:1px;background:#21262d;}
+.footer{font-family:ui-monospace,monospace;font-size:10px;color:#444;margin-top:16px;}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:340px;}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="label">TAZA OS — KITCHEN DISPLAYS</div>
+
+  <a class="btn" href="/taza-card-table.html?board=East">
+    MT1 — EAST WALL
+    <div class="sub">Ingress / Packing Zone</div>
+  </a>
+  <a class="btn" href="/taza-card-table.html?board=West">
+    MT2 — WEST WALL
+    <div class="sub">Cooking Zone</div>
+  </a>
+  <a class="btn" href="/master.html">
+    Z33 — GAME MASTER
+    <div class="sub">Expeditor God-View · Sandra / Nick</div>
+  </a>
+
+  <div class="section">— TV Displays —</div>
+  <a class="btn tv" href="/tcl1-east.html">
+    TCL1 EAST — Command Center
+    <div class="sub">75" Situational Awareness</div>
+  </a>
+  <a class="btn tv" href="/tcl2-west.html">
+    TCL2 WEST — What's Next
+    <div class="sub">75" Cooking Station</div>
+  </a>
+  <a class="btn tv" href="/van-loadout.html">
+    ALEXA — Van Loadout
+    <div class="sub">55" Gamified Load Tracker</div>
+  </a>
+
+  <div class="section">— Screensavers —</div>
+  <div class="grid">
+    <a class="btn ss" href="/screensaver-mt1.html">MT1<div class="sub">Rest Mode</div></a>
+    <a class="btn ss" href="/screensaver-mt2.html">MT2<div class="sub">Rest Mode</div></a>
+    <a class="btn ss" href="/screensaver-tcl1.html">TCL1<div class="sub">Command Rest</div></a>
+    <a class="btn ss" href="/screensaver-tcl2.html">TCL2<div class="sub">Kitchen Soul</div></a>
+  </div>
+  <a class="btn ss" href="/screensaver-alexa.html" style="max-width:165px;">
+    ALEXA<div class="sub">Ready to Roll</div>
+  </a>
+
+  <div class="section">— Utilities —</div>
+  <a class="btn" href="/timer.html" style="border-color:#d29922;color:#d29922;padding:16px 20px;font-size:17px;">
+    KITCHEN TIMER
+    <div class="sub">Multi-timer utility</div>
+  </a>
+
+  <div class="footer">192.168.2.102:9003</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,15 @@
+[Unit]
+Description=Taza checklist printer self-heal (discover + repair queue + flush spool)
+Documentation=file:/home/taza/checklist-app/printer-selfheal.sh
+After=cups.service cups-browsed.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=taza
+ExecStart=/home/taza/checklist-app/printer-selfheal.sh
+TimeoutStartSec=180
+Nice=10
+
+[Install]
+WantedBy=multi-user.target

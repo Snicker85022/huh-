@@ -1,0 +1,10 @@
+[Unit]
+Description=Run MT2 kiosk maintenance every 10 minutes
+
+[Timer]
+OnBootSec=60
+OnUnitActiveSec=10min
+Unit=mt2-rotation.service
+
+[Install]
+WantedBy=timers.target

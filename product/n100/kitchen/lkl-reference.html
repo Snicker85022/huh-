@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Last Known Location — Inventory Reference</title>
+<style>
+  :root {
+    --bg: #1a1a1a;
+    --bg-row: #212121;
+    --bg-row-alt: #262626;
+    --border: #333;
+    --text: #ddd;
+    --text-dim: #888;
+    --text-name: #f0f0f0;
+    --stale-bg: #2a2010;
+    --stale-text: #b8a060;
+    --header-bg: #111;
+    --header-text: #aaa;
+    --accent: #5a8a6a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: clamp(13px, 1.5vw, 18px);
+    line-height: 1.4;
+  }
+
+  header {
+    background: var(--header-bg);
+    border-bottom: 1px solid var(--accent);
+    padding: 0.6em 1.2em;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  header h1 {
+    font-size: clamp(14px, 1.8vw, 20px);
+    font-weight: 600;
+    color: #c0c0c0;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  #meta {
+    font-size: clamp(10px, 1.1vw, 13px);
+    color: var(--text-dim);
+  }
+
+  #meta .stale-count {
+    color: var(--stale-text);
+    margin-left: 0.8em;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+
+  thead th {
+    background: #1e1e1e;
+    color: var(--header-text);
+    font-size: clamp(10px, 1.1vw, 13px);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.5em 1em;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 2.8em;
+  }
+
+  thead th:nth-child(1) { width: 28%; }
+  thead th:nth-child(2) { width: 14%; }
+  thead th:nth-child(3) { width: 38%; }
+  thead th:nth-child(4) { width: 20%; }
+
+  tbody tr:nth-child(odd)  { background: var(--bg-row); }
+  tbody tr:nth-child(even) { background: var(--bg-row-alt); }
+  tbody tr.stale           { background: var(--stale-bg); }
+
+  td {
+    padding: 0.55em 1em;
+    border-bottom: 1px solid #2a2a2a;
+    vertical-align: middle;
+  }
+
+  td.name {
+    color: var(--text-name);
+    font-weight: 500;
+  }
+
+  td.qty {
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+  }
+
+  td.location {
+    color: var(--text);
+  }
+
+  td.ts {
+    font-size: 0.85em;
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  tr.stale td.name { color: var(--stale-text); }
+  tr.stale td.ts   { color: var(--stale-text); }
+
+  .stale-icon {
+    margin-left: 0.4em;
+    font-size: 0.8em;
+    opacity: 0.8;
+  }
+
+  #error-msg {
+    display: none;
+    padding: 2em;
+    text-align: center;
+    color: #c06060;
+    font-size: 1.1em;
+  }
+
+  #loading {
+    padding: 3em;
+    text-align: center;
+    color: var(--text-dim);
+  }
+
+  @media (max-width: 600px) {
+    thead th:nth-child(2) { display: none; }
+    td:nth-child(2)       { display: none; }
+    thead th:nth-child(1) { width: 38%; }
+    thead th:nth-child(3) { width: 40%; }
+    thead th:nth-child(4) { width: 22%; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Last Known Location</h1>
+  <div id="meta">
+    <span id="item-count">—</span> items
+    <span id="stale-count" class="stale-count" style="display:none"></span>
+    &nbsp;·&nbsp; refreshed <span id="last-refresh">—</span>
+  </div>
+</header>
+
+<div id="loading">Loading inventory…</div>
+<div id="error-msg">Failed to load inventory.json — check server.</div>
+
+<table id="inv-table" style="display:none">
+  <thead>
+    <tr>
+      <th>Item</th>
+      <th>Qty / State</th>
+      <th>Location</th>
+      <th>Verified</th>
+    </tr>
+  </thead>
+  <tbody id="inv-body"></tbody>
+</table>
+
+<script>
+const STALE_MS = 24 * 60 * 60 * 1000; // 24 hours
+const REFRESH_INTERVAL = 60 * 1000;    // 60 seconds
+
+function fmtTimestamp(isoStr) {
+  if (!isoStr) return '—';
+  const d = new Date(isoStr);
+  if (isNaN(d)) return isoStr;
+  const mo = String(d.getMonth() + 1).padStart(2, '0');
+  const da = String(d.getDate()).padStart(2, '0');
+  const hr = String(d.getHours()).padStart(2, '0');
+  const mn = String(d.getMinutes()).padStart(2, '0');
+  return `${mo}/${da} ${hr}:${mn}`;
+}
+
+function fmtRefreshTime() {
+  const d = new Date();
+  const hr = String(d.getHours()).padStart(2, '0');
+  const mn = String(d.getMinutes()).padStart(2, '0');
+  const sc = String(d.getSeconds()).padStart(2, '0');
+  return `${hr}:${mn}:${sc}`;
+}
+
+function isStale(isoStr) {
+  if (!isoStr) return true;
+  const d = new Date(isoStr);
+  if (isNaN(d)) return false;
+  return (Date.now() - d.getTime()) > STALE_MS;
+}
+
+function renderTable(items) {
+  const sorted = [...items].sort((a, b) =>
+    a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+  );
+
+  const tbody = document.getElementById('inv-body');
+  tbody.innerHTML = '';
+  let staleCount = 0;
+
+  for (const item of sorted) {
+    const stale = isStale(item.last_verified);
+    if (stale) staleCount++;
+
+    const qty = item.qty
+      ? item.qty
+      : (item.unit ? `— ${item.unit}` : '—');
+
+    const tr = document.createElement('tr');
+    if (stale) tr.classList.add('stale');
+
+    const nameTd = document.createElement('td');
+    nameTd.className = 'name';
+    nameTd.textContent = item.name;
+    if (stale) {
+      const warn = document.createElement('span');
+      warn.className = 'stale-icon';
+      warn.textContent = '⚠';
+      warn.title = 'Last verified >24 hours ago';
+      nameTd.appendChild(warn);
+    }
+
+    const qtyTd = document.createElement('td');
+    qtyTd.className = 'qty';
+    qtyTd.textContent = qty;
+
+    const locTd = document.createElement('td');
+    locTd.className = 'location';
+    locTd.textContent = item.location || '—';
+
+    const tsTd = document.createElement('td');
+    tsTd.className = 'ts';
+    tsTd.textContent = fmtTimestamp(item.last_verified);
+
+    tr.appendChild(nameTd);
+    tr.appendChild(qtyTd);
+    tr.appendChild(locTd);
+    tr.appendChild(tsTd);
+    tbody.appendChild(tr);
+  }
+
+  document.getElementById('item-count').textContent = sorted.length;
+  document.getElementById('last-refresh').textContent = fmtRefreshTime();
+
+  const staleEl = document.getElementById('stale-count');
+  if (staleCount > 0) {
+    staleEl.textContent = `· ${staleCount} stale`;
+    staleEl.style.display = '';
+  } else {
+    staleEl.style.display = 'none';
+  }
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('error-msg').style.display = 'none';
+  document.getElementById('inv-table').style.display = '';
+}
+
+function loadInventory() {
+  fetch('inventory.json?_=' + Date.now())
+    .then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(data => {
+      const items = Array.isArray(data) ? data : (data.items || []);
+      renderTable(items);
+    })
+    .catch(err => {
+      console.error('Inventory load failed:', err);
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('error-msg').style.display = '';
+    });
+}
+
+loadInventory();
+setInterval(loadInventory, REFRESH_INTERVAL);
+</script>
+</body>
+</html>

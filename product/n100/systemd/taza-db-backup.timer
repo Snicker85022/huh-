@@ -1,0 +1,11 @@
+[Unit]
+Description=Nightly Taza PostgreSQL backup at 02:30
+
+[Timer]
+OnCalendar=*-*-* 02:30:00
+Persistent=true
+RandomizedDelaySec=300
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target

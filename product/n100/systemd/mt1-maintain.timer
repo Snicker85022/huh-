@@ -1,0 +1,11 @@
+[Unit]
+Description=Run MT1 kiosk maintenance every 10 minutes
+
+[Timer]
+OnBootSec=60
+OnUnitActiveSec=10min
+AccuracySec=30
+Unit=mt1-maintain.service
+
+[Install]
+WantedBy=timers.target

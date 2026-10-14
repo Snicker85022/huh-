@@ -1,0 +1,14 @@
+[Unit]
+Description=Taza Kitchen Kanban Display (port 9003)
+After=network.target
+
+[Service]
+Type=simple
+User=taza
+WorkingDirectory=/home/taza/kitchen
+ExecStart=/usr/bin/python3 /home/taza/kitchen/server_kanban.py
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

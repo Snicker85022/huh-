@@ -1,0 +1,12 @@
+[Unit]
+Description=Taza nightly PostgreSQL backup (dev_pipeline + tazaos + roles)
+After=postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/home/taza/scripts/db_backup.sh
+TimeoutStartSec=1800
+Nice=10
+IOSchedulingClass=idle

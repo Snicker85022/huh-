@@ -1,0 +1,10 @@
+[Unit]
+Description=Taza Square Invoice Mirror (30-minute refresh, decision D43)
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=taza
+EnvironmentFile=/etc/taza/secrets
+ExecStart=/usr/bin/python3 /home/taza/scripts/square_invoice_sync.py

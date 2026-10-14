@@ -1,0 +1,5 @@
+[Unit]
+Description=Functional DNS self-heal check
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/taza-dns-selfheal.sh

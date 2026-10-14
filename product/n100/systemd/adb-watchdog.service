@@ -1,0 +1,16 @@
+[Unit]
+Description=ADB Fleet Watchdog (D-H) - MAC-based fleet reconnect + status
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=taza
+Group=taza
+Environment=HOME=/home/taza
+ExecStart=/usr/bin/python3 /home/taza/scripts/adb_watchdog.py
+Nice=10
+TimeoutStartSec=120
+
+[Install]
+WantedBy=multi-user.target

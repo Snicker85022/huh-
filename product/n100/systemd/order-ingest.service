@@ -1,0 +1,13 @@
+[Unit]
+Description=Taza Order Ingest - pulls Square orders verbatim and posts them to the intercom (README sec.13, D49/D77)
+After=network-online.target postgresql.service square-invoice-sync.service
+Wants=network-online.target
+Documentation=file:/home/taza/order-ingest/order_ingest.py
+
+[Service]
+Type=oneshot
+User=taza
+Environment=ORDER_WINDOW_DAYS=45
+ExecStart=/usr/bin/python3 /home/taza/order-ingest/order_ingest.py
+TimeoutStartSec=600
+Nice=10

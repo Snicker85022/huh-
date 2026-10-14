@@ -1,0 +1,8 @@
+[Unit]
+Description=MT2 ADB and rotation maintenance
+Wants=network-online.target
+After=network-online.target
+[Service]
+Type=oneshot
+User=taza
+ExecStart=/home/taza/mt2-maintain.sh

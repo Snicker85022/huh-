@@ -1,0 +1,40 @@
+<!doctype html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>z33 -> Taza Vision</title>
+<style>body{font:16px system-ui;background:#0b0f14;color:#e6edf3;margin:0;padding:16px}
+button{font-size:20px;padding:14px 22px;border-radius:10px;border:0;background:#2ea043;color:#fff}
+button.stop{background:#b62324} .row{margin:12px 0} video,img{width:100%;max-width:900px;border-radius:10px;background:#000}
+code{background:#161b22;padding:2px 6px;border-radius:6px}</style></head><body>
+<h2>z33 camera &rarr; Taza Vision stack</h2>
+<div class="row"><button id="go">START camera + stream</button>
+<button id="stop" class="stop">STOP</button></div>
+<div class="row" id="st">idle</div>
+<video id="v" playsinline muted autoplay></video>
+<div class="row"><b>What our stack receives:</b><br><img id="prev" alt="waiting for frames"></div>
+<canvas id="c" hidden></canvas>
+<script>
+const $=id=>document.getElementById(id);
+let stream=null,timer=null,sent=0,t0=0;
+async function start(){
+  try{$('st').textContent='requesting camera...';
+    stream=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:1920},height:{ideal:1080},facingMode:'environment'},audio:false});
+    $('v').srcObject=stream; t0=Date.now(); sent=0;
+    $('st').textContent='streaming';
+    const v=$('v'),c=$('c'),ctx=c.getContext('2d');
+    timer=setInterval(async()=>{
+      if(v.videoWidth===0)return;
+      c.width=v.videoWidth;c.height=v.videoHeight;ctx.drawImage(v,0,0,c.width,c.height);
+      c.toBlob(async b=>{
+        if(!b)return;
+        try{const r=await fetch('z33/frame',{method:'POST',headers:{'Content-Type':'image/jpeg'},body:b});
+          sent++; const fps=(sent/((Date.now()-t0)/1000)).toFixed(1);
+          $('st').textContent=`streaming to stack — ${sent} frames, ${fps} fps, ${v.videoWidth}x${v.videoHeight}`;
+        }catch(e){$('st').textContent='POST failed: '+e;}
+      },'image/jpeg',0.7);
+    },125);
+    $('prev').src='streams/z33.mjpg?ts='+Date.now();
+  }catch(e){$('st').textContent='camera error: '+e;}
+}
+function stop(){if(timer)clearInterval(timer);timer=null;if(stream)stream.getTracks().forEach(t=>t.stop());$('st').textContent='stopped';}
+$('go').onclick=start;$('stop').onclick=stop;
+</script></body></html>

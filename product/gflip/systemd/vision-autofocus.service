@@ -1,0 +1,14 @@
+[Unit]
+Description=PTZ software autofocus loop
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=taza
+WorkingDirectory=/home/taza/vision-stack/calibration
+ExecStart=/home/taza/vision-stack/venv/bin/python /home/taza/vision-stack/calibration/autofocus.py 300
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taza — Command Center Rest</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #1a1a1a;
+    color: #c7a84b;
+    font-family: 'Inter', sans-serif;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .diamond-wrap {
+    width: 220px;
+    height: 220px;
+    animation: rotateGlow 32s linear infinite;
+    filter: drop-shadow(0 0 22px rgba(199,168,75,0.45));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .diamond-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  @keyframes rotateGlow {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+
+  .brand-name {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 4vw, 52px);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: #c7a84b;
+    margin-top: 28px;
+    text-align: center;
+  }
+
+  .brand-sub {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: clamp(14px, 2vw, 22px);
+    color: rgba(199,168,75,0.7);
+    letter-spacing: 0.05em;
+    margin-top: 8px;
+    text-align: center;
+  }
+
+  .location {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(12px, 1.4vw, 18px);
+    font-weight: 300;
+    color: rgba(91,138,181,0.9);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-top: 6px;
+    text-align: center;
+  }
+
+  .rule {
+    width: 180px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(199,168,75,0.55), transparent);
+    margin: 22px auto;
+  }
+
+  .datetime {
+    text-align: center;
+    margin-top: 4px;
+  }
+
+  .datetime .time-display {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(36px, 7vw, 96px);
+    font-weight: 300;
+    color: #c7a84b;
+    letter-spacing: 0.04em;
+    line-height: 1;
+  }
+
+  .datetime .date-display {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(14px, 2vw, 22px);
+    font-weight: 300;
+    color: rgba(199,168,75,0.55);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  .ticker-wrap {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 48px;
+    background: rgba(61,90,128,0.25);
+    border-top: 1px solid rgba(199,168,75,0.22);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+  }
+
+  .ticker-track {
+    display: flex;
+    gap: 80px;
+    animation: scrollLeft 40s linear infinite;
+    white-space: nowrap;
+    padding-left: 100vw;
+  }
+
+  @keyframes scrollLeft {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  .ticker-item {
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(199,168,75,0.75);
+  }
+
+  .ticker-dot {
+    color: rgba(91,138,181,0.7);
+    margin: 0 12px;
+  }
+
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,0.55) 100%);
+    pointer-events: none;
+  }
+
+  .glow-tl, .glow-br {
+    position: fixed;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(80px);
+    opacity: 0.08;
+  }
+  .glow-tl { top: -80px; left: -80px; background: #c7a84b; }
+  .glow-br { bottom: -80px; right: -80px; background: #5b8ab5; }
+</style>
+</head>
+<body onclick="window.location.href='http://192.168.2.102:9003/tcl1-east.html'">
+
+  <div class="glow-tl"></div>
+  <div class="glow-br"></div>
+
+  <div class="diamond-wrap">
+    <img src="faviqr.png" alt="Taza">
+  </div>
+
+  <div class="brand-name">Taza Catering &amp; Events</div>
+  <div class="brand-sub">Jackson Kitchens</div>
+  <div class="location">Phoenix, Arizona</div>
+
+  <div class="rule"></div>
+
+  <div class="datetime">
+    <div class="time-display" id="time-display">00:00:00</div>
+    <div class="date-display" id="date-display"></div>
+  </div>
+
+  <div class="ticker-wrap">
+    <div class="ticker-track" id="ticker"></div>
+  </div>
+
+<script>
+  const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  function tick() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2,'0');
+    const m = String(now.getMinutes()).padStart(2,'0');
+    const s = String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('time-display').textContent = h + ':' + m + ':' + s;
+    document.getElementById('date-display').textContent =
+      DAYS[now.getDay()] + ' · ' + MONTHS[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  const items = [
+    'Veteran & Women Owned',
+    'Coastal European & Modern American Cuisine',
+    'Chef Sandra Lockard — Executive Chef',
+    'Jackson Kitchens · Phoenix, AZ',
+    'Taza Catering & Events',
+    'Excellence is the Standard',
+  ];
+  const track = document.getElementById('ticker');
+  const all = [...items, ...items];
+  track.innerHTML = all.map(t =>
+    `<span class="ticker-item">${t}</span><span class="ticker-dot">◆</span>`
+  ).join('');
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+[Unit]
+Description=Taza OS git mirror sync
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=taza
+EnvironmentFile=/home/taza/.env
+ExecStart=/bin/bash /home/taza/scripts/git-sync-and-push.sh
+StandardOutput=append:/mnt/taza-git/logs/git-sync.log
+StandardError=append:/mnt/taza-git/logs/git-sync.log
+TimeoutStartSec=600
+
+[Install]
+WantedBy=multi-user.target

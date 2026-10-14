@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taza — Rest Mode (West)</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #1a3a2a;
+    color: #c7ae59;
+    font-family: 'Inter', sans-serif;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+  }
+
+  .particles {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    background: #c7ae59;
+    opacity: 0;
+    animation: floatUp linear infinite;
+  }
+
+  @keyframes floatUp {
+    0%   { transform: translateY(0) translateX(0);   opacity: 0; }
+    10%  { opacity: 0.45; }
+    90%  { opacity: 0.25; }
+    100% { transform: translateY(-100vh) translateX(var(--drift)); opacity: 0; }
+  }
+
+  .center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+  }
+
+  .diamond-wrap {
+    animation: breathe 4s ease-in-out infinite;
+    width: 140px;
+    height: 140px;
+  }
+
+  @keyframes breathe {
+    0%, 100% { transform: scale(1);   opacity: 0.85; }
+    50%       { transform: scale(1.08); opacity: 1; }
+  }
+
+  .affirmation-container {
+    position: relative;
+    height: 2.4em;
+    width: 90vw;
+    max-width: 600px;
+    text-align: center;
+  }
+
+  .affirmation {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(18px, 3vw, 28px);
+    font-weight: 400;
+    color: #c7ae59;
+    letter-spacing: 0.04em;
+    opacity: 0;
+    animation: crossfade 25s linear infinite;
+  }
+
+  .affirmation:nth-child(1) { animation-delay: 0s; }
+  .affirmation:nth-child(2) { animation-delay: 5s; }
+  .affirmation:nth-child(3) { animation-delay: 10s; }
+  .affirmation:nth-child(4) { animation-delay: 15s; }
+  .affirmation:nth-child(5) { animation-delay: 20s; }
+
+  @keyframes crossfade {
+    0%    { opacity: 0; }
+    4%    { opacity: 1; }
+    16%   { opacity: 1; }
+    20%   { opacity: 0; }
+    100%  { opacity: 0; }
+  }
+
+  .rule {
+    width: 120px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, #c7ae59, transparent);
+    opacity: 0.5;
+  }
+
+  .clock {
+    position: fixed;
+    bottom: 28px;
+    right: 36px;
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(14px, 2vw, 20px);
+    font-weight: 300;
+    color: #c7ae59;
+    opacity: 0.7;
+    letter-spacing: 0.08em;
+  }
+
+  .tap-hint {
+    position: fixed;
+    bottom: 28px;
+    left: 36px;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 300;
+    color: #c7ae59;
+    opacity: 0.25;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .wall-label {
+    position: fixed;
+    top: 24px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #c7ae59;
+    opacity: 0.25;
+  }
+</style>
+</head>
+<body onclick="window.location.href='http://192.168.2.102:9003/taza-card-table.html?board=West'">
+
+  <div class="particles" id="particles"></div>
+
+  <div class="wall-label">West Wall</div>
+
+  <div class="center">
+    <div class="diamond-wrap">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+        <polygon points="50,5 95,50 50,95 5,50" fill="none" stroke="#c7ae59" stroke-width="3"/>
+        <polygon points="50,18 82,50 50,82 18,50" fill="none" stroke="#c7ae59" stroke-width="1.5" opacity="0.6"/>
+        <polygon points="50,30 70,50 50,70 30,50" fill="none" stroke="#c7ae59" stroke-width="1" opacity="0.4"/>
+        <circle cx="50" cy="50" r="4" fill="#c7ae59" opacity="0.8"/>
+        <line x1="50" y1="5" x2="50" y2="18" stroke="#c7ae59" stroke-width="1" opacity="0.5"/>
+        <line x1="95" y1="50" x2="82" y2="50" stroke="#c7ae59" stroke-width="1" opacity="0.5"/>
+        <line x1="50" y1="95" x2="50" y2="82" stroke="#c7ae59" stroke-width="1" opacity="0.5"/>
+        <line x1="5" y1="50" x2="18" y2="50" stroke="#c7ae59" stroke-width="1" opacity="0.5"/>
+      </svg>
+    </div>
+
+    <div class="rule"></div>
+
+    <div class="affirmation-container">
+      <div class="affirmation">Precision. Speed. Heart.</div>
+      <div class="affirmation">The crew makes the event.</div>
+      <div class="affirmation">Every detail matters.</div>
+      <div class="affirmation">West wall strong.</div>
+      <div class="affirmation">Taza — Veteran &amp; Women Owned</div>
+    </div>
+  </div>
+
+  <div class="clock" id="clock"></div>
+  <div class="tap-hint">Tap to wake</div>
+
+<script>
+  function tick() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2,'0');
+    const m = String(now.getMinutes()).padStart(2,'0');
+    const s = String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('clock').textContent = h + ':' + m + ':' + s;
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  const container = document.getElementById('particles');
+  const COUNT = 20;
+  for (let i = 0; i < COUNT; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const left = Math.floor(i * (100 / COUNT));
+    const duration = 18 + (i * 1.3) % 24;
+    const delay = -((i * 2.1) % duration);
+    const drift = ((i % 5) - 2) * 20;
+    const size = 2 + (i % 3);
+    p.style.cssText = `
+      left: ${left}%;
+      bottom: -8px;
+      width: ${size}px;
+      height: ${size}px;
+      animation-duration: ${duration}s;
+      animation-delay: ${delay}s;
+      --drift: ${drift}px;
+      opacity: 0;
+    `;
+    container.appendChild(p);
+  }
+</script>
+</body>
+</html>

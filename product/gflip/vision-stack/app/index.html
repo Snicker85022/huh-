@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Vision QC — 3D Room</title>
+<style>
+  body{margin:0;background:#0b0f14;color:#ddd;font-family:Segoe UI,Roboto,sans-serif;overflow:hidden}
+  #c{position:absolute;inset:0}
+  #panel{position:absolute;top:10px;left:10px;width:330px;max-height:calc(100vh - 20px);overflow:auto;background:rgba(15,20,25,.82);border:1px solid #1f2a33;border-radius:12px;padding:12px;z-index:10;font-size:12px}
+  h2{margin:0 0 8px;font-size:15px;color:#9fd8ff}
+  .cam{margin-bottom:10px;padding:8px;background:#111820;border-radius:8px}
+  .cam b{color:#fff}
+  video,img{width:100%;border-radius:6px;background:#000;margin-top:6px}
+  a{color:#8dc9ff}
+  .tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:8px;background:#123;color:#7cc}
+  #info{position:absolute;bottom:10px;left:10px;font-size:11px;color:#789;background:rgba(15,20,25,.7);padding:6px 10px;border-radius:8px;z-index:10}
+</style>
+</head>
+<body>
+<div id="c"></div>
+<div id="panel">
+  <h2>Room 25.25' × 17.65' × 10'</h2>
+  <p style="margin-top:0;color:#8aa">Axes: X=east · Y=up · Z=south (Z=0 north wall) · origin NW floor. North is far/up, east is right. Camera frustums drawn from editable config.</p>
+  <div class="cam">
+    <b>PTZ HD975B-P</b> <span class="tag">AI YOLOv8n ONNX</span><br>
+    <span style="color:#9fb">Live view (auto-refreshing):</span>
+    <img id="ptzimg" src="/streams/ptz.mjpg" onerror="this.style.display='none'" style="min-height:180px">
+    <div id="calibstatus" style="margin-top:4px;color:#ffd76a;font-size:11px">calibration: loading…</div>
+    <video id="ptzv" controls muted autoplay playsinline style="display:none"></video>
+  </div>
+
+  <div class="cam"><b>PTZ controls</b> <span class="tag">press &amp; hold</span><br>
+    <button onmousedown="ptzStart('left')" onmouseup="ptzStop()" onmouseleave="ptzStop()" ontouchstart="ptzStart('left');return false;" ontouchend="ptzStop();return false;">◀</button>
+    <button onmousedown="ptzStart('up')" onmouseup="ptzStop()" onmouseleave="ptzStop()" ontouchstart="ptzStart('up');return false;" ontouchend="ptzStop();return false;">▲</button>
+    <button onmousedown="ptzStart('down')" onmouseup="ptzStop()" onmouseleave="ptzStop()" ontouchstart="ptzStart('down');return false;" ontouchend="ptzStop();return false;">▼</button>
+    <button onmousedown="ptzStart('right')" onmouseup="ptzStop()" onmouseleave="ptzStop()" ontouchstart="ptzStart('right');return false;" ontouchend="ptzStop();return false;">▶</button>
+    <br><small>Keyboard: ←→↑↓ pan/tilt. Zoom disabled (digital only - no optical zoom on this camera)</small>
+  </div>
+  <div class="cam"><b>USB webcam</b> <span class="tag">pending driver</span></div>
+  <div class="cam"><b>MT1</b> <span class="tag">pending ADB auth</span></div>
+  <div class="cam"><b>MT2</b> <span class="tag">pending ADB auth</span></div>
+</div>
+<div id="info">drag to orbit · scroll to zoom · right-drag to pan</div>
+
+<script type="importmap">
+{"imports":{
+ "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+ "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {CSS2DRenderer,CSS2DObject} from 'three/addons/renderers/CSS2DRenderer.js';
+
+const RX=303/12, RZ=211.75/12, RY=120/12;
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x0b0f14);
+const camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,0.1,200);
+camera.position.set(RX*0.5, RY*1.5, RZ*1.35); camera.lookAt(RX*0.5,0,RZ*0.5);
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight); document.getElementById('c').appendChild(renderer.domElement);
+const controls=new OrbitControls(camera,renderer.domElement); controls.target.set(RX*0.5,0,RZ*0.5); controls.update();
+const css=new CSS2DRenderer(); css.setSize(innerWidth,innerHeight); css.domElement.style.position='absolute'; css.domElement.style.top='0'; css.domElement.style.pointerEvents='none'; document.getElementById('c').appendChild(css.domElement);
+
+scene.add(new THREE.HemisphereLight(0xffffff,0x223344,1.2));
+const dir=new THREE.DirectionalLight(0xffffff,1.5); dir.position.set(RX*.5,RY+8,RZ*.5); scene.add(dir);
+const g=new THREE.Mesh(new THREE.PlaneGeometry(RX,RZ),new THREE.MeshStandardMaterial({color:0x1b2228,roughness:.9}));
+g.rotation.x=-Math.PI/2; g.position.set(RX/2,0,RZ/2); scene.add(g);
+const grid=new THREE.GridHelper(Math.max(RX,RZ),20,0x333a44,0x222831); grid.position.set(RX/2,.01,RZ/2); scene.add(grid);
+const wallMat=new THREE.MeshStandardMaterial({color:0x1d2a35,transparent:true,opacity:.45,side:THREE.DoubleSide});
+[
+ {w:RX, h:RY, pos:[RX/2, RY/2, 0],  rot:0},
+ {w:RX, h:RY, pos:[RX/2, RY/2, RZ], rot:Math.PI},
+ {w:RZ, h:RY, pos:[0, RY/2, RZ/2],  rot:Math.PI/2},
+ {w:RZ, h:RY, pos:[RX, RY/2, RZ/2], rot:-Math.PI/2},
+].forEach(({w,h,pos,rot})=>{
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),wallMat); m.position.set(pos[0],pos[1],pos[2]); m.rotation.y=rot; scene.add(m);
+  const e=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(w,h)), new THREE.LineBasicMaterial({color:0x3a4a5a}));
+  e.position.copy(m.position); e.rotation.copy(m.rotation); scene.add(e);
+});
+
+// editable camera config: pos & target in feet from SW floor corner
+// NSF chrome poles (1in dia, 6.1ft tall) - measured positions
+const poles=[
+ {name:'2x5 NW', pos:[ 7.042, 3.05, 7.32]},
+ {name:'2x5 SW', pos:[ 7.042, 3.05, 9.32]},
+ {name:'2x5 NE', pos:[12.011, 3.05, 7.32]},
+ {name:'2x5 SE', pos:[12.011, 3.05, 9.32]},
+ {name:'3x6 NW', pos:[12.156, 3.05, 7.32]},
+ {name:'3x6 SW', pos:[12.156, 3.05, 10.32]},
+ {name:'3x6 NE', pos:[18.125, 3.05, 7.32]},
+ {name:'3x6 SE', pos:[18.125, 3.05, 10.32]},
+];
+const poleGroup=new THREE.Group(); scene.add(poleGroup);
+poles.forEach(p=>{
+  const cyl=new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.04,6.1,8),
+    new THREE.MeshStandardMaterial({color:0xc0c8d0,metalness:0.9,roughness:0.15}));
+  cyl.position.set(p.pos[0],3.05,p.pos[2]); poleGroup.add(cyl);
+  const el=document.createElement('div'); el.textContent=p.name; el.style.cssText='color:#ccc;font-size:10px;background:#222;padding:1px 5px;border-radius:6px';
+  const lbl=new CSS2DObject(el); lbl.position.set(p.pos[0],6.3,p.pos[2]); poleGroup.add(lbl);
+});
+
+const cams=[
+ {id:'PTZ', pos:[12.375,5,8.82], target:[16,4,8], fov:60, color:0xffaa00},
+ {id:'MT1', pos:[24.5,5,8], target:[4,4,10], fov:65, color:0x00aaff},
+ {id:'MT2', pos:[0.5,6,14], target:[16,4,9], fov:65, color:0xff3399},
+];
+const group=new THREE.Group(); scene.add(group);
+function frustum({id,pos,target,fov,color}){
+  const p=new THREE.Vector3(...pos), t=new THREE.Vector3(...target);
+  const d=new THREE.Vector3().subVectors(t,p).normalize(); const dist=Math.min(p.distanceTo(t),20);
+  const f=THREE.MathUtils.degToRad(fov/2), hh=Math.tan(f)*dist, hw=hh*4/3;
+  const base=new THREE.Vector3().copy(p).addScaledVector(d,dist);
+  const up=new THREE.Vector3(0,1,0);
+  const right=new THREE.Vector3().crossVectors(d,up).normalize();
+  const trueUp=new THREE.Vector3().crossVectors(right,d).normalize();
+  const c=[
+    new THREE.Vector3().copy(base).addScaledVector(trueUp,hh).addScaledVector(right,hw),
+    new THREE.Vector3().copy(base).addScaledVector(trueUp,hh).addScaledVector(right,-hw),
+    new THREE.Vector3().copy(base).addScaledVector(trueUp,-hh).addScaledVector(right,-hw),
+    new THREE.Vector3().copy(base).addScaledVector(trueUp,-hh).addScaledVector(right,hw),
+  ];
+  const mat=new THREE.LineBasicMaterial({color});
+  group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([p,base]),mat));
+  c.forEach(q=>group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([p,q]),mat)));
+  group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([...c,c[0]]),mat));
+  const s=new THREE.Mesh(new THREE.SphereGeometry(.15,8,8),new THREE.MeshBasicMaterial({color})); s.position.copy(p); group.add(s);
+  const el=document.createElement('div'); el.textContent=id; el.style.color='#fff'; el.style.background='#'+color.toString(16).padStart(6,'0'); el.style.padding='2px 6px'; el.style.borderRadius='6px'; el.style.fontSize='11px';
+  const lbl=new CSS2DObject(el); lbl.position.copy(p.clone().add(new THREE.Vector3(0,.5,0))); group.add(lbl);
+}
+cams.forEach(frustum);
+
+addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight); css.setSize(innerWidth,innerHeight); camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();});
+(function loop(){requestAnimationFrame(loop); controls.update(); renderer.render(scene,camera); css.render(scene,camera);})();
+
+function ptzStart(dir){let p=0,t=0,z=0; if(dir==='left')p=-1; if(dir==='right')p=1; if(dir==='up')t=1; if(dir==='down')t=-1; if(dir==='zin')z=.8; if(dir==='zout')z=-.8; fetch(`/api/ptz/move?pan=${p}&tilt=${t}&zoom=${z}`);}
+function ptzStop(){fetch('/api/ptz/stop');}
+window.addEventListener('keydown',e=>{if(e.repeat)return; let d=null; if(e.key==='ArrowLeft')d='left'; if(e.key==='ArrowRight')d='right'; if(e.key==='ArrowUp')d='up'; if(e.key==='ArrowDown')d='down'; if(d)ptzStart(d);});
+window.addEventListener('keyup',e=>{if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))ptzStop();});
+
+setInterval(async()=>{try{const r=await fetch('/api/calib/status');const d=await r.json();const s=await (await fetch('/api/ptz/state')).json();document.getElementById('calibstatus').textContent=`calib: ${d.state} | board ${d.board_size_mm}mm @ ${d.screen} | PTZ est pan=${s.pan_deg.toFixed(1)}° tilt=${s.tilt_deg.toFixed(1)}° zoom=${s.zoom.toFixed(2)} | corners=${d.corners}`;}catch(e){}} ,2000);
+</script>
+</body>
+</html>

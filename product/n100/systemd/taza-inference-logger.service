@@ -1,0 +1,13 @@
+[Unit]
+Description=Taza OS Inference Performance Logger
+After=network.target
+
+[Service]
+Type=simple
+User=taza
+ExecStart=/usr/bin/python3 /home/taza/inference_perf_logger.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

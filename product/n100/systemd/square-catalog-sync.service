@@ -1,0 +1,15 @@
+[Unit]
+Description=Taza Square Catalog Weekly Mirror (v1: full pull-and-upsert)
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=taza
+Group=taza
+EnvironmentFile=/etc/taza/secrets
+ExecStart=/usr/bin/python3 /home/taza/scripts/square_catalog_sync.py
+StandardOutput=journal
+StandardError=journal
+TimeoutStartSec=600
+Nice=10

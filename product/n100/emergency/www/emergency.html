@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EMERGENCY OPS BRIEF — Taza</title>
+<style>
+  :root { font-size: 18px; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, system-ui, "Segoe UI", Roboto, sans-serif;
+    background: #fff;
+    color: #111;
+    line-height: 1.45;
+  }
+  header {
+    background: #c0000b;
+    color: #fff;
+    padding: 18px 16px;
+    text-align: center;
+  }
+  header h1 { margin: 0; font-size: 2rem; font-weight: 900; letter-spacing: 1px; }
+  header .sub { font-size: 1.15rem; font-weight: 700; margin-top: 4px; }
+  .status {
+    background: #111; color: #fff; text-align: center;
+    padding: 10px 12px; font-size: 1rem; font-weight: 700;
+  }
+  .status .on { color: #2ecc40; }
+  .wrap { padding: 12px 14px 40px; max-width: 720px; margin: 0 auto; }
+  .box { border-radius: 8px; padding: 14px 16px; margin: 14px 0; }
+  .warn-print {
+    background: #ffd400; color: #111; border: 3px solid #111;
+    text-align: center; font-size: 1.5rem; font-weight: 900;
+  }
+  .allergy {
+    background: #c0000b; color: #fff; border: 3px solid #111;
+    text-align: center; font-size: 1.6rem; font-weight: 900;
+  }
+  .allergy .note { font-size: 1.1rem; font-weight: 700; margin-top: 6px; }
+  .nostaff {
+    background: #fff3cd; border: 2px solid #c0000b; color: #111;
+    font-size: 1.15rem; font-weight: 700;
+  }
+  .nostaff a { color: #c0000b; }
+  h2 {
+    background: #111; color: #fff; padding: 8px 12px; border-radius: 6px;
+    font-size: 1.25rem; margin: 22px 0 8px;
+  }
+  .gig { border: 2px solid #111; border-radius: 8px; padding: 12px 14px; margin: 10px 0; }
+  .gig h3 { margin: 0 0 8px; font-size: 1.25rem; }
+  .gig .allergen { color: #c0000b; font-weight: 900; }
+  dl { margin: 0; }
+  dt { font-weight: 800; margin-top: 6px; }
+  dd { margin: 0 0 2px; }
+  ul.check { list-style: none; padding-left: 0; }
+  ul.check li { padding: 8px 0 8px 34px; border-bottom: 1px solid #ddd; position: relative; font-size: 1.1rem; }
+  ul.check li::before {
+    content: ""; position: absolute; left: 0; top: 8px;
+    width: 22px; height: 22px; border: 3px solid #111; border-radius: 4px;
+  }
+  table.timeline { width: 100%; border-collapse: collapse; }
+  table.timeline th, table.timeline td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #ccc; }
+  table.timeline th { background: #eee; }
+  table.timeline td:first-child { font-weight: 800; white-space: nowrap; }
+  .tablink {
+    display: block; text-align: center; margin: 24px 0 0;
+    background: #0b8043; color: #fff; text-decoration: none;
+    padding: 16px; border-radius: 8px; font-size: 1.3rem; font-weight: 800;
+  }
+  a { color: #0645ad; }
+</style>
+</head>
+<body>
+<header>
+  <h1>EMERGENCY OPS BRIEF</h1>
+  <div class="sub">Taza Catering &amp; Events</div>
+</header>
+
+<div class="status">
+  <span class="on">● TAZA OS BRAIN ONLINE</span> &nbsp;|&nbsp; Battery ~30 min &nbsp;|&nbsp;
+  Brief printed <script>document.write(new Date().toLocaleString('en-US',{hour:'2-digit',minute:'2-digit',month:'short',day:'numeric'}));</script>
+</div>
+
+<div class="wrap">
+
+  <div class="box warn-print">⚠ TURN OFF STAR PRINTER NOW ⚠</div>
+
+  <div class="box allergy">
+    NUT ALLERGY — GIG 1<br>LIFE THREATENING
+    <div class="note">BUCKEYE DELIVERY — Confirm ZERO nut exposure end-to-end</div>
+  </div>
+
+  <div class="box nostaff">
+    ⛔ NOT YET ON SITE: Helper Cook — <a href="tel:+16025550199">(602) 555-0199</a> — ETA 13:45
+  </div>
+
+  <h2>GIG 1 · BUCKEYE · DO FIRST</h2>
+  <div class="gig">
+    <h3>Family Dentistry</h3>
+    <dl>
+      <dt>Address</dt><dd>1300 S Watson Rd, A-100, Buckeye</dd>
+      <dt>Headcount</dt><dd>25 pax — Hot Hors d'oeuvres + Beverage</dd>
+      <dt>Ready by</dt><dd>13:30</dd>
+      <dt>Depart kitchen</dt><dd>12:40</dd>
+      <dt class="allergen">ALLERGEN</dt><dd class="allergen">NUT — LIFE THREATENING · confirm zero exposure</dd>
+    </dl>
+  </div>
+
+  <h2>GIG 2 · TEMPE · EVENING</h2>
+  <div class="gig">
+    <h3>Grace Community Church</h3>
+    <dl>
+      <dt>Address</dt><dd>1200 E Southern Ave, Tempe</dd>
+      <dt>Headcount</dt><dd>75 pax — Buffet + Bar</dd>
+      <dt>Bar</dt><dd>PourMasters sub covering bar service</dd>
+      <dt>Ice</dt><dd>75 lbs</dd>
+      <dt>Feed time</dt><dd>18:30</dd>
+    </dl>
+  </div>
+
+  <h2>OPEN ITEMS</h2>
+  <ul class="check">
+    <li>Confirm Helper Cook arrival (ETA 13:45)</li>
+    <li>Verify ZERO nut exposure — Gig 1 Buckeye</li>
+    <li>Turn OFF Star printer</li>
+    <li>Load Gig 1 — depart by 12:40</li>
+    <li>Confirm PourMasters bar sub — Gig 2</li>
+    <li>Pick up 75 lbs ice — Gig 2</li>
+    <li>Beverage service ready — Gig 1</li>
+  </ul>
+
+  <h2>TIMELINE</h2>
+  <table class="timeline">
+    <tr><th>Time</th><th>Action</th></tr>
+    <tr><td>12:40</td><td>Depart kitchen — Gig 1 Buckeye</td></tr>
+    <tr><td>13:30</td><td>Gig 1 READY — Family Dentistry, 25 pax</td></tr>
+    <tr><td>13:45</td><td>Helper Cook ETA on site</td></tr>
+    <tr><td>—</td><td>Load / prep Gig 2 · pick up 75 lbs ice</td></tr>
+    <tr><td>18:30</td><td>Gig 2 FEED — Grace Community Church, 75 pax</td></tr>
+  </table>
+
+  <a class="tablink" href="/siteguide">→ Kitchen Site Guide</a>
+
+</div>
+</body>
+</html>

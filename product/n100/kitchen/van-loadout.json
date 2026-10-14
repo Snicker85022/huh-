@@ -1,0 +1,54 @@
+{
+  "event": {
+    "name": "Riverside Corporate Luncheon",
+    "client": "Meridian Partners LLC",
+    "departure": "2026-07-14T09:30:00",
+    "location": "Riverside Conference Center"
+  },
+  "vans": {
+    "van1": {
+      "name": "VAN 1",
+      "type": "ProMaster High Roof 2500",
+      "wheelbase": "159in",
+      "driver": "Edgar",
+      "total_points": 0,
+      "items": [
+        {"id": "v1-01", "name": "Chafing Dishes (full set)", "weight_class": "heavy", "points": 25, "confirmed": true, "assigned_to": "Edgar", "category": "equipment"},
+        {"id": "v1-02", "name": "Sterno Fuel (24ct box)", "weight_class": "medium", "points": 15, "confirmed": true, "assigned_to": "Edgar", "category": "equipment"},
+        {"id": "v1-03", "name": "Folding Tables (6x)", "weight_class": "heavy", "points": 30, "confirmed": false, "assigned_to": "Marcos", "category": "furniture"},
+        {"id": "v1-04", "name": "Linens (white, pressed)", "weight_class": "medium", "points": 20, "confirmed": true, "assigned_to": "Sandra", "category": "linens"},
+        {"id": "v1-05", "name": "Serving Utensil Kit", "weight_class": "light", "points": 10, "confirmed": true, "assigned_to": "Edgar", "category": "equipment"},
+        {"id": "v1-06", "name": "Cambro Transport (protein)", "weight_class": "heavy", "points": 35, "confirmed": false, "assigned_to": "Marcos", "category": "food"},
+        {"id": "v1-07", "name": "Cambro Transport (sides)", "weight_class": "heavy", "points": 30, "confirmed": true, "assigned_to": "Marcos", "category": "food"},
+        {"id": "v1-08", "name": "Cold Box (salads)", "weight_class": "heavy", "points": 25, "confirmed": false, "assigned_to": "Luz", "category": "food"},
+        {"id": "v1-09", "name": "Generator + Extension Cords", "weight_class": "heavy", "points": 40, "confirmed": true, "assigned_to": "Edgar", "category": "equipment"},
+        {"id": "v1-10", "name": "Signage + Easels", "weight_class": "medium", "points": 15, "confirmed": false, "assigned_to": "Sandra", "category": "presentation"},
+        {"id": "v1-11", "name": "First Aid Kit", "weight_class": "light", "points": 10, "confirmed": true, "assigned_to": "Edgar", "category": "safety"},
+        {"id": "v1-12", "name": "ProLon Cooking Station", "weight_class": "heavy", "points": 45, "confirmed": true, "assigned_to": "Marcos", "category": "equipment"},
+        {"id": "v1-13", "name": "Propane Tanks (2x)", "weight_class": "heavy", "points": 30, "confirmed": false, "assigned_to": "Edgar", "category": "equipment"},
+        {"id": "v1-14", "name": "Trash Bags + Gloves", "weight_class": "light", "points": 5, "confirmed": true, "assigned_to": "Luz", "category": "supplies"},
+        {"id": "v1-15", "name": "Cash Box + CC Reader", "weight_class": "light", "points": 20, "confirmed": true, "assigned_to": "Sandra", "category": "admin"}
+      ]
+    },
+    "van2": {
+      "name": "VAN 2",
+      "type": "ProMaster City",
+      "wheelbase": "compact",
+      "driver": "Luz",
+      "total_points": 0,
+      "items": [
+        {"id": "v2-01", "name": "Dessert Cooler", "weight_class": "heavy", "points": 25, "confirmed": true, "assigned_to": "Luz", "category": "food"},
+        {"id": "v2-02", "name": "Beverage Station Kit", "weight_class": "medium", "points": 20, "confirmed": true, "assigned_to": "Luz", "category": "equipment"},
+        {"id": "v2-03", "name": "Ice Chest (3x)", "weight_class": "heavy", "points": 20, "confirmed": false, "assigned_to": "Luz", "category": "equipment"},
+        {"id": "v2-04", "name": "Paper Goods (plates/napkins)", "weight_class": "medium", "points": 10, "confirmed": true, "assigned_to": "Sandra", "category": "supplies"},
+        {"id": "v2-05", "name": "Appetizer Trays (set)", "weight_class": "medium", "points": 15, "confirmed": true, "assigned_to": "Luz", "category": "equipment"},
+        {"id": "v2-06", "name": "Bar Kit (soft drinks)", "weight_class": "heavy", "points": 20, "confirmed": false, "assigned_to": "Sandra", "category": "beverages"},
+        {"id": "v2-07", "name": "Candles + Centerpieces", "weight_class": "light", "points": 15, "confirmed": true, "assigned_to": "Sandra", "category": "presentation"},
+        {"id": "v2-08", "name": "Warming Bags (4x)", "weight_class": "medium", "points": 10, "confirmed": false, "assigned_to": "Luz", "category": "equipment"},
+        {"id": "v2-09", "name": "Staff Aprons + Uniforms", "weight_class": "light", "points": 10, "confirmed": true, "assigned_to": "Sandra", "category": "uniforms"},
+        {"id": "v2-10", "name": "Sauce Containers (labeled)", "weight_class": "medium", "points": 15, "confirmed": true, "assigned_to": "Luz", "category": "food"}
+      ]
+    }
+  },
+  "last_updated": "2026-07-14T00:00:00Z"
+}

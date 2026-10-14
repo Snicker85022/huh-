@@ -1,0 +1,19 @@
+logLevel: info
+api: yes
+apiAddress: :9997
+rtsp: yes
+rtspAddress: :8554
+hls: yes
+hlsAddress: :8888
+hlsVariant: lowLatency
+webrtc: yes
+webrtcAddress: :8889
+paths:
+  webcam:
+    source: publisher
+  mt1:
+    source: publisher
+  mt2:
+    source: publisher
+  ptz:
+    source: publisher

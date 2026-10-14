@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Ornith — Taza OS Local AI</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #1a1a1a;
+    --bg2: #222222;
+    --bg3: #2a2a2a;
+    --green: #00ff88;
+    --green-dim: #00cc6a;
+    --slate: #2d3748;
+    --slate-border: #4a5568;
+    --text: #e2e8f0;
+    --text-dim: #718096;
+    --reasoning-bg: #242424;
+    --reasoning-border: #3a3a3a;
+    --font: 'Courier New', Courier, monospace;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 14px;
+    overflow: hidden;
+  }
+
+  #app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  /* ── Title bar ── */
+  #titlebar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: var(--bg2);
+    border-bottom: 1px solid #333;
+    flex-shrink: 0;
+    gap: 8px;
+  }
+
+  #titlebar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    overflow: hidden;
+  }
+
+  #health-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #555;
+    flex-shrink: 0;
+    transition: background 0.3s;
+  }
+
+  #health-dot.online {
+    background: var(--green);
+    animation: pulse 2s infinite;
+  }
+
+  #health-dot.offline {
+    background: #e53e3e;
+    animation: none;
+  }
+
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(0,255,136,0.7); }
+    70%  { box-shadow: 0 0 0 6px rgba(0,255,136,0); }
+    100% { box-shadow: 0 0 0 0 rgba(0,255,136,0); }
+  }
+
+  #title-text {
+    font-size: 15px;
+    font-weight: bold;
+    color: var(--green);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  #health-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+
+  #clear-btn {
+    background: transparent;
+    border: 1px solid #444;
+    color: var(--text-dim);
+    padding: 5px 12px;
+    cursor: pointer;
+    font-family: var(--font);
+    font-size: 12px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  #clear-btn:hover {
+    border-color: #e53e3e;
+    color: #e53e3e;
+  }
+
+  /* ── Message area ── */
+  #messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    scroll-behavior: smooth;
+  }
+
+  #messages::-webkit-scrollbar { width: 6px; }
+  #messages::-webkit-scrollbar-track { background: var(--bg); }
+  #messages::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+
+  .msg-row {
+    display: flex;
+    flex-direction: column;
+    max-width: 80%;
+  }
+
+  .msg-row.user { align-self: flex-end; align-items: flex-end; }
+  .msg-row.ornith { align-self: flex-start; align-items: flex-start; }
+
+  .msg-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-bottom: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .msg-bubble {
+    padding: 10px 14px;
+    border-radius: 6px;
+    line-height: 1.6;
+    word-break: break-word;
+    white-space: pre-wrap;
+  }
+
+  .msg-row.user .msg-bubble {
+    background: var(--slate);
+    border: 1px solid var(--slate-border);
+    color: var(--text);
+  }
+
+  .msg-row.ornith .msg-bubble {
+    background: #0d1f15;
+    border: 1px solid var(--green-dim);
+    color: var(--text);
+  }
+
+  /* reasoning block */
+  .reasoning-wrapper {
+    width: 100%;
+    margin-bottom: 5px;
+  }
+
+  .reasoning-toggle {
+    background: none;
+    border: 1px solid var(--reasoning-border);
+    color: var(--text-dim);
+    font-family: var(--font);
+    font-size: 11px;
+    padding: 3px 8px;
+    cursor: pointer;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .reasoning-toggle:hover { border-color: #555; color: var(--text); }
+
+  .reasoning-toggle .arrow { display: inline-block; transition: transform 0.2s; }
+  .reasoning-toggle.open .arrow { transform: rotate(90deg); }
+
+  .reasoning-block {
+    display: none;
+    background: var(--reasoning-bg);
+    border: 1px solid var(--reasoning-border);
+    border-top: none;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: #888;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 200px;
+    overflow-y: auto;
+    border-radius: 0 0 4px 4px;
+  }
+
+  .reasoning-block.open { display: block; }
+
+  .msg-meta {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    padding-left: 2px;
+  }
+
+  /* ── Thinking indicator ── */
+  #thinking {
+    display: none;
+    align-self: flex-start;
+    max-width: 80%;
+  }
+
+  #thinking.visible { display: flex; flex-direction: column; }
+
+  .thinking-bubble {
+    background: #0d1f15;
+    border: 1px solid var(--green-dim);
+    padding: 10px 14px;
+    border-radius: 6px;
+    color: var(--green-dim);
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .dots span {
+    display: inline-block;
+    animation: dot-bounce 1.4s infinite ease-in-out both;
+  }
+  .dots span:nth-child(1) { animation-delay: 0s; }
+  .dots span:nth-child(2) { animation-delay: 0.2s; }
+  .dots span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes dot-bounce {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+    40%            { transform: scale(1);   opacity: 1; }
+  }
+
+  /* ── Input bar ── */
+  #inputbar {
+    padding: 12px 16px;
+    background: var(--bg2);
+    border-top: 1px solid #333;
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+    align-items: flex-end;
+  }
+
+  #user-input {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid #444;
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 14px;
+    padding: 10px 12px;
+    border-radius: 4px;
+    resize: none;
+    min-height: 42px;
+    max-height: 120px;
+    outline: none;
+    line-height: 1.5;
+    overflow-y: auto;
+    transition: border-color 0.2s;
+  }
+
+  #user-input:focus { border-color: var(--green-dim); }
+  #user-input::placeholder { color: #555; }
+
+  #send-btn {
+    background: var(--green);
+    border: none;
+    color: #000;
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: bold;
+    padding: 10px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+    height: 42px;
+    transition: background 0.2s;
+  }
+
+  #send-btn:hover:not(:disabled) { background: var(--green-dim); }
+  #send-btn:disabled { background: #2a4a38; color: #4a7a5a; cursor: not-allowed; }
+
+  /* ── Mobile tweaks ── */
+  @media (max-width: 600px) {
+    .msg-row { max-width: 92%; }
+    #title-text { font-size: 13px; }
+    #user-input { font-size: 16px; } /* prevent zoom on iOS/Android */
+  }
+
+  /* ── System prompt panel ── */
+  #sysprompt-panel {
+    background: var(--bg2);
+    border-bottom: 1px solid #333;
+    flex-shrink: 0;
+  }
+  #sysprompt-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 16px;
+    cursor: pointer;
+    user-select: none;
+  }
+  #sysprompt-header:hover { background: var(--bg3); }
+  #sysprompt-header span { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+  #sysprompt-toggle-btn {
+    background: transparent;
+    border: 1px solid #444;
+    color: var(--text-dim);
+    padding: 2px 8px;
+    cursor: pointer;
+    font-family: var(--font);
+    font-size: 11px;
+    border-radius: 3px;
+  }
+  #sysprompt-toggle-btn:hover { border-color: #666; color: var(--text); }
+  #sysprompt-body { display: none; padding: 0 16px 10px; }
+  #sysprompt-body.open { display: block; }
+  #sysprompt-textarea {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid #444;
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 12px;
+    padding: 8px 10px;
+    border-radius: 4px;
+    resize: vertical;
+    height: 120px;
+    outline: none;
+    line-height: 1.5;
+  }
+  #sysprompt-textarea:focus { border-color: var(--green-dim); }
+  #sysprompt-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 5px;
+  }
+  #sysprompt-charcount { font-size: 11px; color: var(--text-dim); }
+  #sysprompt-apply-btn {
+    background: var(--green);
+    border: none;
+    color: #000;
+    font-family: var(--font);
+    font-size: 12px;
+    font-weight: bold;
+    padding: 5px 14px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  #sysprompt-apply-btn:hover { background: var(--green-dim); }
+
+  /* ── Inject modal ── */
+  #inject-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  #inject-overlay.open { display: flex; }
+  #inject-modal {
+    background: var(--bg2);
+    border: 1px solid #444;
+    border-radius: 6px;
+    padding: 16px;
+    width: 90%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  #inject-modal h3 { font-size: 12px; color: var(--green); text-transform: uppercase; letter-spacing: 0.5px; }
+  #inject-textarea {
+    background: var(--bg3);
+    border: 1px solid #444;
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 12px;
+    padding: 8px 10px;
+    border-radius: 4px;
+    resize: vertical;
+    min-height: 140px;
+    outline: none;
+    line-height: 1.5;
+    width: 100%;
+  }
+  #inject-textarea:focus { border-color: var(--green-dim); }
+  #inject-modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
+  #inject-cancel-btn {
+    background: transparent;
+    border: 1px solid #444;
+    color: var(--text-dim);
+    font-family: var(--font);
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  #inject-cancel-btn:hover { border-color: #666; color: var(--text); }
+  #inject-confirm-btn {
+    background: var(--green);
+    border: none;
+    color: #000;
+    font-family: var(--font);
+    font-size: 12px;
+    font-weight: bold;
+    padding: 6px 14px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  #inject-confirm-btn:hover { background: var(--green-dim); }
+
+  #inject-btn {
+    background: transparent;
+    border: 1px solid #444;
+    color: var(--text-dim);
+    font-family: var(--font);
+    font-size: 13px;
+    padding: 10px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+    height: 42px;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  #inject-btn:hover { border-color: var(--green-dim); color: var(--green); }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="titlebar">
+    <div id="titlebar-left">
+      <div id="health-dot" title="Ornith :8082 health"></div>
+      <span id="title-text">Ornith — Taza OS Local AI</span>
+      <span id="health-label">checking...</span>
+      <span id="ctx-indicator" style="font-size:11px;color:var(--text-dim);margin-left:6px;white-space:nowrap;">ctx: ~0/8192</span>
+    </div>
+    <button id="clear-btn" onclick="clearChat()">Clear</button>
+  </div>
+
+  <div id="sysprompt-panel">
+    <div id="sysprompt-header" onclick="toggleSysPrompt()">
+      <span>System Prompt</span>
+      <button id="sysprompt-toggle-btn">Edit</button>
+    </div>
+    <div id="sysprompt-body">
+      <textarea id="sysprompt-textarea" oninput="updateCharCount()"></textarea>
+      <div id="sysprompt-footer">
+        <span id="sysprompt-charcount">0 chars</span>
+        <button id="sysprompt-apply-btn" onclick="applySysPrompt()">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="messages">
+    <!-- messages injected here -->
+    <div id="thinking" class="msg-row ornith">
+      <div class="msg-label">Ornith</div>
+      <div class="thinking-bubble">
+        Ornith is thinking<span class="dots"><span>.</span><span>.</span><span>.</span></span>
+      </div>
+    </div>
+  </div>
+
+  <div id="inputbar">
+    <textarea id="user-input" placeholder="Ask Ornith something…" rows="1"></textarea>
+    <button id="inject-btn" onclick="openInjectModal()" title="Inject context block">Inject</button>
+    <button id="send-btn" onclick="sendMessage()">Send</button>
+  </div>
+
+  <div id="inject-overlay" onclick="closeInjectModal(event)">
+    <div id="inject-modal">
+      <h3>Inject Context</h3>
+      <textarea id="inject-textarea" placeholder="Paste context text here — will be added as a system message…"></textarea>
+      <div id="inject-modal-btns">
+        <button id="inject-cancel-btn" onclick="closeInjectModal()">Cancel</button>
+        <button id="inject-confirm-btn" onclick="confirmInject()">Inject</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const API_URL = 'http://192.168.2.102:8082/v1/chat/completions';
+const HEALTH_URL = 'http://192.168.2.102:8082/v1/models';
+
+let systemPromptText = '/no_think You are Ornith-1.0-35B (Qwen3-35B-A3B MoE fine-tune, Q5_K_M, 24.7GB). Running on llama-server b9976, port 8082, ctx 8192, 3/4 CPU cores, ~5 tok/s. Host: Intel N100, 32GB single-channel DDR4, 512GB NVMe, Ubuntu 22.04, IP 192.168.2.102. LAN: MT1 192.168.2.104:5555, MT2 192.168.2.108:5555 (ADB over Ethernet). You serve Nick Lockard (owner/LSSBB), Sandra Lockard (exec chef), Edgar (event mgr) at Taza Catering & Events, Phoenix AZ — Coastal European & Modern American cuisine. No internet. No reasoning blocks. Answer directly.';
+
+// conversation history (includes system prompt, excludes thinking rows)
+let history = [{ role: 'system', content: systemPromptText }];
+let busy = false;
+
+const messagesEl = document.getElementById('messages');
+const thinkingEl = document.getElementById('thinking');
+const inputEl = document.getElementById('user-input');
+const sendBtn = document.getElementById('send-btn');
+const healthDot = document.getElementById('health-dot');
+const healthLabel = document.getElementById('health-label');
+
+// ── Health check ──────────────────────────────────────────────
+async function checkHealth() {
+  try {
+    const r = await fetch(HEALTH_URL, { method: 'GET', signal: AbortSignal.timeout(5000) });
+    if (r.ok) {
+      healthDot.className = 'online';
+      healthLabel.textContent = ':8082 online';
+    } else {
+      healthDot.className = 'offline';
+      healthLabel.textContent = ':8082 ' + r.status;
+    }
+  } catch {
+    healthDot.className = 'offline';
+    healthLabel.textContent = ':8082 offline';
+  }
+}
+checkHealth();
+setInterval(checkHealth, 10000);
+
+// ── Scroll helpers ────────────────────────────────────────────
+function scrollToBottom() {
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+// ── Render a user message ─────────────────────────────────────
+function appendUserMessage(text) {
+  const row = document.createElement('div');
+  row.className = 'msg-row user';
+  row.innerHTML = `<div class="msg-label">You</div>
+    <div class="msg-bubble">${escHtml(text)}</div>`;
+  messagesEl.insertBefore(row, thinkingEl);
+  scrollToBottom();
+}
+
+// ── Render an Ornith message ──────────────────────────────────
+function appendOrnithMessage({ content, reasoning, tokens, elapsed }) {
+  const row = document.createElement('div');
+  row.className = 'msg-row ornith';
+
+  let html = `<div class="msg-label">Ornith</div>`;
+
+  if (reasoning && reasoning.trim()) {
+    const rid = 'r' + Date.now();
+    html += `<div class="reasoning-wrapper">
+      <button class="reasoning-toggle" onclick="toggleReasoning(this,'${rid}')" title="Show reasoning">
+        <span class="arrow">▶</span> reasoning
+      </button>
+      <div class="reasoning-block" id="${rid}">${escHtml(reasoning)}</div>
+    </div>`;
+  }
+
+  html += `<div class="msg-bubble">${escHtml(content)}</div>`;
+
+  const metaParts = [];
+  if (tokens != null) metaParts.push(tokens + ' tok');
+  if (elapsed != null) metaParts.push((elapsed / 1000).toFixed(1) + 's');
+  if (metaParts.length) {
+    html += `<div class="msg-meta">${metaParts.join(' · ')}</div>`;
+  }
+
+  row.innerHTML = html;
+  messagesEl.insertBefore(row, thinkingEl);
+  scrollToBottom();
+}
+
+// ── Reasoning toggle ──────────────────────────────────────────
+function toggleReasoning(btn, id) {
+  const block = document.getElementById(id);
+  const open = block.classList.toggle('open');
+  btn.classList.toggle('open', open);
+  btn.querySelector('.arrow').textContent = open ? '▼' : '▶';
+}
+
+// ── Clear chat ────────────────────────────────────────────────
+function clearChat() {
+  const rows = messagesEl.querySelectorAll('.msg-row:not(#thinking)');
+  rows.forEach(r => r.remove());
+  history = [{ role: 'system', content: systemPromptText }];
+  updateCtx();
+}
+
+// ── Auto-resize textarea ──────────────────────────────────────
+inputEl.addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+});
+
+// ── Enter to send (Shift+Enter = newline) ─────────────────────
+inputEl.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    if (!busy) sendMessage();
+  }
+});
+
+// ── Send message ──────────────────────────────────────────────
+async function sendMessage() {
+  const text = inputEl.value.trim();
+  if (!text || busy) return;
+
+  busy = true;
+  sendBtn.disabled = true;
+  inputEl.value = '';
+  inputEl.style.height = 'auto';
+
+  appendUserMessage(text);
+  history.push({ role: 'user', content: text });
+
+  thinkingEl.classList.add('visible');
+  scrollToBottom();
+
+  const t0 = Date.now();
+  let reply = null;
+  let reasoning = null;
+  let tokens = null;
+
+  try {
+    const resp = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'ornith',
+        messages: history,
+        stream: false,
+        temperature: 0.7,
+        chat_template_kwargs: { enable_thinking: false }
+      }),
+      signal: AbortSignal.timeout(120000)
+    });
+
+    if (!resp.ok) {
+      const errText = await resp.text().catch(() => resp.status);
+      throw new Error('HTTP ' + resp.status + ': ' + errText);
+    }
+
+    const data = await resp.json();
+    const choice = data.choices && data.choices[0];
+    if (!choice) throw new Error('No choices in response');
+
+    const msg = choice.message || {};
+    reply = msg.content || '';
+    reasoning = msg.reasoning_content || null;
+
+    // some providers nest reasoning differently
+    if (!reasoning && data.reasoning_content) reasoning = data.reasoning_content;
+
+    if (data.usage) {
+      tokens = (data.usage.completion_tokens || 0) + (data.usage.prompt_tokens || 0);
+    }
+
+    history.push({ role: 'assistant', content: reply });
+    updateCtx();
+
+  } catch (err) {
+    reply = '[Error: ' + err.message + ']';
+    reasoning = null;
+    // don't push error into history
+    history.pop(); // remove the user turn so history stays clean
+  }
+
+  const elapsed = Date.now() - t0;
+  thinkingEl.classList.remove('visible');
+
+  appendOrnithMessage({ content: reply, reasoning, tokens, elapsed });
+
+  busy = false;
+  sendBtn.disabled = false;
+  inputEl.focus();
+}
+
+// ── HTML escape ───────────────────────────────────────────────
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// ── Context window indicator ──────────────────────────────────
+const ctxEl = document.getElementById('ctx-indicator');
+function updateCtx() {
+  const totalChars = history.reduce((acc, m) => acc + (m.content || '').length, 0);
+  const estTokens = Math.round(totalChars / 4);
+  ctxEl.textContent = 'ctx: ~' + estTokens + '/8192';
+}
+
+// ── System prompt panel ───────────────────────────────────────
+const syspromptBody = document.getElementById('sysprompt-body');
+const syspromptTextarea = document.getElementById('sysprompt-textarea');
+const syspromptCharcount = document.getElementById('sysprompt-charcount');
+
+// populate textarea on load
+syspromptTextarea.value = systemPromptText;
+updateCharCount();
+
+function toggleSysPrompt() {
+  syspromptBody.classList.toggle('open');
+}
+
+function updateCharCount() {
+  syspromptCharcount.textContent = syspromptTextarea.value.length + ' chars';
+}
+
+function applySysPrompt() {
+  systemPromptText = syspromptTextarea.value;
+  history[0] = { role: 'system', content: systemPromptText };
+  syspromptBody.classList.remove('open');
+  updateCtx();
+}
+
+// ── Inject modal ──────────────────────────────────────────────
+const injectOverlay = document.getElementById('inject-overlay');
+const injectTextarea = document.getElementById('inject-textarea');
+
+function openInjectModal() {
+  injectTextarea.value = '';
+  injectOverlay.classList.add('open');
+  injectTextarea.focus();
+}
+
+function closeInjectModal(e) {
+  if (!e || e.target === injectOverlay) {
+    injectOverlay.classList.remove('open');
+  }
+}
+
+function confirmInject() {
+  const text = injectTextarea.value.trim();
+  if (!text) { injectOverlay.classList.remove('open'); return; }
+  history.splice(1, 0, { role: 'system', content: text });
+  injectOverlay.classList.remove('open');
+  updateCtx();
+}
+
+// Focus input on load
+inputEl.focus();
+updateCtx();
+</script>
+</body>
+</html>

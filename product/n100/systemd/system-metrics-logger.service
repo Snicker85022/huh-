@@ -1,0 +1,13 @@
+[Unit]
+Description=Taza OS System Metrics Logger
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=taza
+ExecStart=/usr/bin/python3 /home/taza/system_metrics_logger.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

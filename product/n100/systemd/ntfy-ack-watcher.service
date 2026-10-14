@@ -1,0 +1,12 @@
+[Unit]
+Description=Taza ntfy ack watcher - clears alarm notifications when Nick replies
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /opt/taza/repo/scripts/ntfy-ack-watcher.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

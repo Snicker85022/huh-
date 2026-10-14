@@ -1,0 +1,11 @@
+[Unit]
+Description=Weekly Taza Square catalog mirror (Sunday 03:00 MST)
+
+[Timer]
+OnCalendar=Sun *-*-* 03:00:00 America/Phoenix
+Persistent=true
+RandomizedDelaySec=300
+Unit=square-catalog-sync.service
+
+[Install]
+WantedBy=timers.target

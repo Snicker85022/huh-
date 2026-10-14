@@ -1,0 +1,12 @@
+[Unit]
+Description=MT2 kiosk maintenance (ADB-TCP + portrait rotation, mirrors MT1)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=taza
+ExecStart=/home/taza/mt2-maintain.sh
+
+[Install]
+WantedBy=multi-user.target

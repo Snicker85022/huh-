@@ -1,0 +1,87 @@
+{
+  "today": {
+    "date": "2026-07-14",
+    "gig_count": 2,
+    "gigs": [
+      {"name": "Riverside Corporate Luncheon", "client": "Meridian Partners LLC", "pax": 85, "time": "12:00"},
+      {"name": "Taza Test Kitchen Prep", "client": "Internal", "pax": 0, "time": "16:00"}
+    ],
+    "crew": [
+      {"name": "Edgar", "role": "Lead Cook", "status": "on_deck"},
+      {"name": "Sandra", "role": "Event Lead", "status": "on_deck"},
+      {"name": "Marcos", "role": "Line Cook", "status": "on_deck"},
+      {"name": "Luz", "role": "Pastry/Expo", "status": "en_route"}
+    ],
+    "allergens": [
+      {"flag": "TREE NUTS", "severity": "critical", "count": 3},
+      {"flag": "SHELLFISH", "severity": "warning", "count": 1}
+    ],
+    "prep_tasks": {
+      "total": 24,
+      "complete": 9,
+      "in_progress": 3
+    },
+    "performance": {
+      "cards_completed_today": 9,
+      "streak": 4,
+      "points_earned": 310
+    },
+    "timeline": {
+      "prep_start": "07:00",
+      "prep_end": "11:00",
+      "service_start": "12:00",
+      "service_end": "14:30",
+      "breakdown_end": "16:00"
+    }
+  },
+  "cook_queue": [
+    {
+      "id": "q1",
+      "status": "active",
+      "station": "HOT LINE",
+      "dish": "Braised Short Rib",
+      "technique": "Braise low/slow — 325°F, 3.5 hrs. Liquid should reach mid-rib. Check at 2h mark.",
+      "time_remaining_min": 45,
+      "temp_target": "195°F internal",
+      "temp_type": "hot"
+    },
+    {
+      "id": "q2",
+      "status": "next",
+      "station": "SAUTÉ",
+      "dish": "Roasted Garlic Potato Purée",
+      "technique": "Fold in butter cold, finish cream warm. Don't over-work.",
+      "time_remaining_min": null,
+      "temp_target": null,
+      "temp_type": "hot"
+    },
+    {
+      "id": "q3",
+      "status": "next",
+      "station": "COLD LINE",
+      "dish": "Heirloom Tomato Salad",
+      "technique": "Plate to order — dress last second. Micro-basil from walk-in top shelf.",
+      "time_remaining_min": null,
+      "temp_target": "38°F or below",
+      "temp_type": "cold"
+    },
+    {
+      "id": "q4",
+      "status": "next",
+      "station": "PASTRY",
+      "dish": "Chocolate Ganache Tart",
+      "technique": "Set at room temp 20min before service. Do not refrigerate after plating.",
+      "time_remaining_min": null,
+      "temp_target": null,
+      "temp_type": "neutral"
+    }
+  ],
+  "stations": [
+    {"name": "Hot Line", "status": "ON", "indicator": "hot"},
+    {"name": "Walk-in", "status": "GOOD", "indicator": "cold"},
+    {"name": "Prep Table", "status": "CLEAR", "indicator": "neutral"},
+    {"name": "Sauté", "status": "READY", "indicator": "hot"},
+    {"name": "Cold Line", "status": "ACTIVE", "indicator": "cold"}
+  ],
+  "last_updated": "2026-07-14T00:00:00Z"
+}

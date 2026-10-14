@@ -1,0 +1,16 @@
+[Unit]
+Description=TV Kiosk Watchdog - TCL1/TCL2/ALEXA on kitchen web apps
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=taza
+Group=taza
+Environment=HOME=/home/taza
+ExecStart=/usr/bin/python3 /home/taza/scripts/tv-kiosk-watchdog.py
+Nice=10
+TimeoutStartSec=120
+
+[Install]
+WantedBy=multi-user.target

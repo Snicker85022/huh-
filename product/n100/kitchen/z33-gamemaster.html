@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080, initial-scale=1, user-scalable=no">
+<title>Mom's Table — Game Master</title>
+<!--
+  z33 GAME MASTER DISPLAY  ·  Mom's Table RPG wall
+  Target: 1080 (w) x 1920 (h) PORTRAIT touchscreen.
+  Camera bezel is on the RIGHT edge in portrait -> a right-side "camera safe zone"
+  keeps critical UI off the far-right strip (see --cam-safe).
+  Renders from the same data contract described in game-design/11-rpg-character-system.md.
+  V1: hardcoded SAMPLE data + effect dispatcher. Live feed stub = connectFeed() (SSE /events).
+-->
+<style>
+  :root{
+    --slate:#426a9f; --slate-lo:#2d4a72; --slate-hi:#5c86bd;
+    --gold:#c7ae59; --gold-hi:#e6cf82; --gold-lo:#9c8a3f;
+    --maroon:#9c3c4a; --maroon-lo:#7f2c39;
+    --felt:#123024; --felt-lo:#0c211a; --felt-hi:#1b4433;
+    --ink:#0a1512; --paper:#f4efe1;
+    --cam-safe:64px;                 /* right strip kept clear of critical UI */
+    --common:#e9e9ef; --uncommon:#4fae5a; --rare:#3f7fd6; --epic:#9b59d6; --legendary:#e6b422;
+    --rgap:18px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{width:1080px; height:1920px; overflow:hidden}
+  body{
+    background:
+      radial-gradient(120% 60% at 50% -8%, var(--felt-hi) 0%, var(--felt) 42%, var(--felt-lo) 100%),
+      repeating-linear-gradient(45deg, rgba(0,0,0,.045) 0 3px, transparent 3px 6px),
+      repeating-linear-gradient(-45deg, rgba(0,0,0,.045) 0 3px, transparent 3px 6px);
+    color:var(--paper);
+    font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+    -webkit-font-smoothing:antialiased;
+    display:flex; flex-direction:column;
+    padding:14px 14px 0;
+    gap:var(--rgap);
+    user-select:none;
+  }
+  .fantasy{font-weight:800; letter-spacing:.06em; text-transform:uppercase;
+    text-shadow:0 2px 0 rgba(0,0,0,.45), 0 0 18px rgba(199,174,89,.15)}
+  .panel{
+    background:linear-gradient(180deg, rgba(18,48,36,.82), rgba(8,22,18,.9));
+    border:2px solid rgba(199,174,89,.35);
+    border-radius:14px;
+    box-shadow:0 6px 22px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05);
+    position:relative;
+  }
+  .panel > .cap{
+    position:absolute; top:-13px; left:22px;
+    background:linear-gradient(180deg,var(--maroon),var(--maroon-lo));
+    border:1.5px solid var(--gold); border-radius:8px;
+    padding:3px 14px; font-size:15px; color:var(--gold-hi);
+  }
+  .gold{color:var(--gold-hi)}
+
+  /* ---------- 1. HEADER ---------- */
+  header{
+    height:104px; flex:0 0 104px;
+    display:grid; grid-template-columns:1fr auto 1fr; align-items:center;
+    padding:0 var(--cam-safe) 0 26px;
+    border-radius:14px;
+    background:
+      linear-gradient(180deg, var(--felt-hi), var(--felt) 60%, var(--felt-lo)),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.02) 0 2px, transparent 2px 5px);
+    border:2px solid var(--gold);
+    box-shadow:0 6px 20px rgba(0,0,0,.5), inset 0 0 40px rgba(0,0,0,.35);
+  }
+  header .title{font-size:26px; line-height:1.05}
+  header .title small{display:block; font-size:13px; letter-spacing:.32em; color:var(--gold);
+    -webkit-text-fill-color:var(--gold); text-shadow:none; margin-top:3px}
+  header .team{
+    text-align:center;
+    background:radial-gradient(120% 120% at 50% 0%, rgba(199,174,89,.18), transparent 70%);
+    padding:4px 30px; border-radius:12px;
+  }
+  header .team .lbl{font-size:12px; letter-spacing:.28em; color:var(--gold)}
+  header .team .val{font-size:52px; font-weight:800; color:var(--gold-hi);
+    text-shadow:0 2px 0 #000, 0 0 26px rgba(199,174,89,.55); line-height:.98}
+  header .shift{text-align:right; font-size:15px; color:#d8e6de}
+  header .shift b{color:var(--gold-hi); font-size:19px}
+
+  /* ---------- 2. CHARACTER PORTRAITS ---------- */
+  .heroes{flex:0 0 520px; padding:22px 12px 12px;}
+  .hero-row{display:flex; gap:10px; height:100%; align-items:stretch}
+  .char{
+    flex:1 1 0; min-width:0; position:relative;
+    background:linear-gradient(180deg, rgba(66,106,159,.16), rgba(10,21,18,.55));
+    border:1.5px solid rgba(199,174,89,.3); border-radius:12px;
+    padding:8px 8px 10px; display:flex; flex-direction:column; align-items:center;
+    overflow:hidden;
+  }
+  .char.master{border-color:var(--gold); box-shadow:0 0 22px rgba(199,174,89,.4), inset 0 0 30px rgba(199,174,89,.08)}
+  .char .cname{font-size:19px; font-weight:800; color:#fff; letter-spacing:.02em}
+  .char .cclass{font-size:12.5px; color:var(--gold-hi); margin-top:-1px}
+  .char .cclass .ci{margin-right:3px}
+  .char .lvl{font-size:11px; color:#cdd8e6; letter-spacing:.14em; margin-top:1px}
+  .portrait{position:relative; width:100%; flex:1 1 auto; min-height:0; display:flex;
+    align-items:flex-end; justify-content:center; margin:4px 0}
+  .portrait svg{height:100%; width:auto; max-width:100%; filter:drop-shadow(0 4px 6px rgba(0,0,0,.6))}
+  .stance-tag{position:absolute; bottom:2px; left:50%; transform:translateX(-50%);
+    font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--gold);
+    background:rgba(0,0,0,.5); border:1px solid rgba(199,174,89,.4); border-radius:20px; padding:1px 8px; white-space:nowrap}
+  .xpwrap{width:100%; margin-top:2px}
+  .xpbar{height:9px; width:100%; background:rgba(0,0,0,.45); border:1px solid rgba(199,174,89,.35);
+    border-radius:6px; overflow:hidden}
+  .xpbar > i{display:block; height:100%; background:linear-gradient(90deg,var(--gold-lo),var(--gold-hi));
+    box-shadow:0 0 8px rgba(199,174,89,.6)}
+  .xptxt{font-size:9.5px; color:#c7d2c9; text-align:center; margin-top:1px; letter-spacing:.04em}
+  .badges{display:flex; gap:3px; flex-wrap:wrap; justify-content:center; margin-top:4px; min-height:20px}
+  .bdg{font-size:10px; padding:1px 5px; border-radius:5px; border:1px solid;
+    background:rgba(0,0,0,.35); white-space:nowrap}
+  .bdg.on{border-color:var(--gold); color:var(--gold-hi)}
+  .bdg.off{border-color:#6b3038; color:#c08; opacity:.55; text-decoration:line-through}
+  .equip{font-size:9.5px; color:#9fb4a9; text-align:center; margin-top:3px; line-height:1.25}
+  .score{margin-top:5px; width:100%; text-align:center; font-size:12px;
+    background:rgba(0,0,0,.4); border-radius:7px; padding:3px 2px; border:1px solid rgba(255,255,255,.08)}
+  .score .raw{color:#dfe7df} .score .bon{color:var(--gold-hi)} .score .dem{color:#e78} .score .net{color:#fff; font-weight:800}
+  .qr-mini{position:absolute; top:6px; right:6px; width:34px; height:34px; border-radius:5px;
+    border:1px solid var(--gold); background:#fff; padding:2px}
+  .qr-mini svg{width:100%; height:100%}
+
+  /* ---------- 3. EFFECTS ---------- */
+  #fxLayer{position:fixed; inset:0; pointer-events:none; z-index:40; overflow:hidden}
+  .smoke{position:absolute; width:120px; height:120px; border-radius:50%;
+    background:radial-gradient(circle, rgba(220,220,220,.55), rgba(180,180,180,0) 70%);
+    animation:smokeRise 1.8s ease-out forwards}
+  @keyframes smokeRise{0%{transform:translateY(20px) scale(.4); opacity:0}
+    30%{opacity:.8} 100%{transform:translateY(-90px) scale(1.6); opacity:0}}
+  .spark{position:absolute; width:8px; height:8px; border-radius:50%;
+    background:radial-gradient(circle,#fff,var(--gold-hi) 60%,transparent);
+    animation:sparkPop 1.1s ease-out forwards}
+  @keyframes sparkPop{0%{transform:scale(.2) translate(0,0); opacity:1}
+    100%{transform:scale(1.4) translate(var(--dx),var(--dy)); opacity:0}}
+  #boom{position:fixed; inset:0; z-index:60; display:none; align-items:center; justify-content:center;
+    background:radial-gradient(circle at 50% 45%, rgba(255,180,40,.5), rgba(120,20,0,.85) 60%, rgba(0,0,0,.95));}
+  #boom.on{display:flex; animation:boomFlash .5s ease-out}
+  #boom .burst{font-size:240px; filter:drop-shadow(0 0 40px #ffb400); animation:boomScale .9s ease-out}
+  #boom .btxt{position:absolute; bottom:20%; width:100%; text-align:center; font-size:44px; color:#fff;
+    text-shadow:0 0 30px #ffb400}
+  @keyframes boomFlash{0%{opacity:0}12%{opacity:1}}
+  @keyframes boomScale{0%{transform:scale(.2); opacity:0}30%{transform:scale(1.15); opacity:1}100%{transform:scale(1)}}
+  .shake{animation:shake .5s cubic-bezier(.36,.07,.19,.97) both}
+  @keyframes shake{10%,90%{transform:translate(-2px,1px)}20%,80%{transform:translate(4px,-2px)}
+    30%,50%,70%{transform:translate(-7px,3px)}40%,60%{transform:translate(7px,-3px)}}
+
+  /* ---------- 4. SCOREBOARD ---------- */
+  .board{flex:0 0 400px; padding:22px 12px 10px; display:flex; flex-direction:column}
+  .board-cols{display:flex; gap:8px; flex:1 1 auto; min-height:0}
+  .bcol{flex:1 1 0; min-width:0; display:flex; flex-direction:column;
+    background:rgba(0,0,0,.28); border:1px solid rgba(199,174,89,.2); border-radius:10px; padding:6px}
+  .bcol h4{font-size:14px; color:#fff; text-align:center; border-bottom:1px solid rgba(199,174,89,.25); padding-bottom:3px}
+  .bcol .streak{font-size:10px; text-align:center; color:var(--gold-hi); margin:2px 0}
+  .stack{flex:1 1 auto; overflow:hidden; display:flex; flex-direction:column; gap:4px; margin-top:3px}
+  .dcard{font-size:10.5px; background:linear-gradient(180deg,#f6f1e2,#e6dcc2); color:#2a2016;
+    border-radius:5px; padding:3px 6px; border-left:4px solid var(--slate);
+    display:flex; justify-content:space-between; gap:4px; box-shadow:0 1px 2px rgba(0,0,0,.3)}
+  .dcard.chain{border-left-color:var(--gold); background:linear-gradient(180deg,#fff5d6,#f0e2ad)}
+  .dcard .pts{font-weight:800; white-space:nowrap}
+  .dcard .chainb{color:#9a7b13}
+  .dcard .demb{color:#b23}
+  .bcol .totals{font-size:10.5px; margin-top:5px; border-top:1px solid rgba(199,174,89,.25); padding-top:4px; line-height:1.5}
+  .bcol .totals .net{font-size:20px; color:var(--gold-hi); font-weight:800}  /* Part2: 18px+ for Nick's eyes */
+
+  /* ---------- 5. PRIZES / DROPS ---------- */
+  .drops{flex:0 0 296px; padding:20px 12px 12px; display:flex; flex-direction:column; gap:8px}
+  .tickerbar{overflow:hidden; white-space:nowrap; background:rgba(0,0,0,.45);
+    border:1px solid rgba(199,174,89,.3); border-radius:8px; padding:5px 0}
+  .tickerbar .run{display:inline-block; padding-left:100%; animation:scrollx 26s linear infinite; font-size:15px}
+  .tickerbar .run span{margin:0 34px; color:#eef}
+  .tickerbar .run b{color:var(--gold-hi)}
+  @keyframes scrollx{from{transform:translateX(0)}to{transform:translateX(-100%)}}
+  .drops-grid{display:flex; gap:10px; flex:1 1 auto; min-height:0}
+  .drops-col{flex:1 1 0; display:flex; flex-direction:column}
+  .drops-col h4{font-size:12px; color:var(--gold-hi); letter-spacing:.14em; margin-bottom:4px}
+  .prize-list, .drop-list{display:flex; flex-direction:column; gap:4px; overflow:hidden}
+  .prize{font-size:11px; display:flex; justify-content:space-between; background:rgba(66,106,159,.18);
+    border:1px solid rgba(199,174,89,.2); border-radius:6px; padding:3px 7px}
+  .prize .need{color:var(--gold)}
+  .drop-hist{display:flex; flex-wrap:wrap; gap:4px; align-content:flex-start; overflow:hidden}
+  .item{font-size:10px; padding:2px 7px; border-radius:12px; border:1.5px solid; background:rgba(0,0,0,.35); white-space:nowrap}
+  .item.common{border-color:var(--common); color:var(--common)}
+  .item.uncommon{border-color:var(--uncommon); color:var(--uncommon)}
+  .item.rare{border-color:var(--rare); color:#a9c9ff}
+  .item.epic{border-color:var(--epic); color:#d3aef0}
+  .item.legendary{border-color:var(--legendary); color:var(--gold-hi); box-shadow:0 0 10px rgba(230,180,34,.5)}
+
+  /* ---------- 6. STANCES ---------- */
+  .stances{flex:0 0 196px; padding:20px 12px 12px}
+  .stance-row{display:flex; gap:10px; height:100%}
+  .stance{flex:1 1 0; text-align:center; border:1px solid rgba(199,174,89,.25); border-radius:10px;
+    background:rgba(0,0,0,.3); padding:6px 4px; display:flex; flex-direction:column; align-items:center; position:relative}
+  .stance.locked{opacity:.4; filter:grayscale(1)}
+  .stance.locked::after{content:"🔒"; position:absolute; top:6px; right:8px; font-size:13px}
+  .stance .pose{flex:1 1 auto; display:flex; align-items:center; justify-content:center}
+  .stance .pose svg{height:78px; width:auto}
+  .stance .sn{font-size:12.5px; color:#fff; font-weight:700}
+  .stance .req{font-size:9.5px; color:#9fb4a9; line-height:1.2; margin-top:1px}
+  .stance.earned{border-color:var(--gold); box-shadow:0 0 12px rgba(199,174,89,.25)}
+  .stance.awarding{animation:stancePulse .5s ease 3}
+  @keyframes stancePulse{50%{box-shadow:0 0 26px rgba(199,174,89,.9); transform:translateY(-2px)}}
+  /* flying stance-name banner for the award ceremony (spec §4.2) */
+  .fly-stance{position:fixed; z-index:70; pointer-events:none; white-space:nowrap;
+    font-weight:800; letter-spacing:.06em; text-transform:uppercase; font-size:22px;
+    color:var(--gold-hi); text-shadow:0 2px 8px #000, 0 0 22px rgba(199,174,89,.85);
+    background:linear-gradient(180deg,var(--maroon),var(--maroon-lo));
+    border:2px solid var(--gold); border-radius:12px; padding:8px 18px;
+    box-shadow:0 8px 26px rgba(0,0,0,.5);
+    transition:transform 1.15s cubic-bezier(.5,-0.15,.25,1.25), opacity .5s ease;
+    will-change:transform,opacity}
+
+  /* ---------- 7. QR ZONE ---------- */
+  .qrzone{flex:0 0 auto; margin-bottom:12px; padding:12px var(--cam-safe) 12px 22px;
+    display:flex; align-items:center; gap:18px}
+  .qrzone .qbox{width:104px; height:104px; background:#fff; border-radius:8px; padding:6px; border:2px solid var(--gold)}
+  .qrzone .qbox svg{width:100%; height:100%}
+  .qrzone .qinfo .h{font-size:18px; color:var(--gold-hi)}
+  .qrzone .qinfo .s{font-size:13px; color:#cdd8e6; margin-top:3px; max-width:640px; line-height:1.35}
+  .qrzone .qinfo code{color:var(--slate-hi); font-family:monospace; font-size:12px}
+  .hidden{display:none !important}
+</style>
+</head>
+<body>
+
+<!-- 1. HEADER -->
+<header>
+  <div class="title fantasy">Mom's Table<small>Game Master</small></div>
+  <div class="team">
+    <div class="lbl fantasy">★ Team Score ★</div>
+    <div class="val" id="teamScore">0</div>
+  </div>
+  <div class="shift">
+    <div id="shiftDate">—</div>
+    <div>Elapsed <b id="elapsed">0:00</b></div>
+  </div>
+</header>
+
+<!-- 2. CHARACTER PORTRAITS -->
+<section class="panel heroes">
+  <span class="cap fantasy">The Party</span>
+  <div class="hero-row" id="heroRow"></div>
+</section>
+
+<!-- 4. SCOREBOARD -->
+<section class="panel board">
+  <span class="cap fantasy">Done Pile · Card Stacks</span>
+  <div class="board-cols" id="boardCols"></div>
+</section>
+
+<!-- 5. PRIZES / DROPS / GOODIE BAGS -->
+<section class="panel drops">
+  <span class="cap fantasy">Prizes · Drops · Goodie Bags</span>
+  <div class="tickerbar"><div class="run" id="ticker"></div></div>
+  <div class="drops-grid">
+    <div class="drops-col">
+      <h4 class="fantasy">Next Tier Rewards</h4>
+      <div class="prize-list" id="prizeList"></div>
+    </div>
+    <div class="drops-col">
+      <h4 class="fantasy">Recent Drops (last 10)</h4>
+      <div class="drop-hist" id="dropHist"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. STANCES SHOWCASE -->
+<section class="panel stances">
+  <span class="cap fantasy">Stances · Tap + PIN to Award</span>
+  <div class="stance-row" id="stanceRow"></div>
+</section>
+
+<!-- 7. MASTER QR ZONE (conditional) -->
+<section class="panel qrzone hidden" id="qrZone">
+  <div class="qbox" id="qrBox"></div>
+  <div class="qinfo">
+    <div class="h fantasy" id="qrName">Master Unlocked</div>
+    <div class="s">Scan to download your character card to your phone.
+      <br><code id="qrUrl">http://brain:9003/character/…</code>
+      <br><em style="color:#7f8f86">V1 placeholder QR — replace with signed-token QR before crew rollout (see spec §8.4).</em></div>
+  </div>
+</section>
+
+<!-- EFFECT LAYERS -->
+<!-- FX test row (Part 1 spec §3): hidden in production; toggle with `t` key -->
+<div id="fxTestRow" style="display:none; position:fixed; bottom:8px; left:50%; transform:translateX(-50%);
+  z-index:80; gap:6px; background:rgba(0,0,0,.7); border:1px solid var(--gold); border-radius:8px; padding:6px 8px">
+  <button onclick="triggerSmoke('edgar')" style="font-size:12px">Smoke</button>
+  <button onclick="triggerSparkle('nick')" style="font-size:12px">Sparkle</button>
+  <button onclick="triggerExplosion('TEST')" style="font-size:12px">Explosion</button>
+</div>
+<div id="fxLayer"></div>
+<div id="boom"><div class="burst">💥</div><div class="btxt fantasy" id="boomText">PERFECT SHIFT</div></div>
+
+<script>
+/* ============================================================
+   DATA CONTRACT  (matches game-design/11-rpg-character-system.md §9)
+   V1 = hardcoded SAMPLE. Live feed via connectFeed() -> SSE '/events'.
+   ============================================================ */
+
+// Tier thresholds (spec §2.2) — lifetime XP -> tier
+const TIERS = [
+  {t:1,name:"Apprentice",xp:0},   {t:2,name:"Line Cook",xp:500},
+  {t:3,name:"Sous",xp:1500},      {t:4,name:"Chef de Partie",xp:4000},
+  {t:5,name:"Sous Chef",xp:9000}, {t:6,name:"Chef",xp:18000},
+  {t:7,name:"Master",xp:36000}
+];
+// per-level XP purely for the display bar (level is finer-grained than tier)
+function xpForLevel(l){ return Math.round(120*Math.pow(l,1.6)); }
+
+// Class visual identity (icon + silhouette key)
+const CLASSES = {
+  Wizard:{ci:"🪄", key:"wizard"},   Paladin:{ci:"🛡️", key:"paladin"},
+  Ranger:{ci:"🗡️", key:"ranger"},   Rogue:{ci:"🔪", key:"rogue"},
+  Cleric:{ci:"✝️", key:"cleric"},    Berserker:{ci:"🪓", key:"berserker"},
+  Apprentice:{ci:"🥄", key:"apprentice"}
+};
+
+const SAMPLE = {
+  shiftDate: "Thu · Jul 9 2026 · Dinner",
+  startedAtMin: 214,               // minutes into shift (mock)
+  teamScore: 42,                   // Part2: today's combined crew net (9+14+3+8+5+3)
+  crew: [
+    { id:"edgar", name:"Edgar", cls:"Ranger", level:8, xp:2100,
+      stance:"Attack Mode", master:false,
+      equipped:{armor:"Captain's leather T2", weapon:"Twin blades", clothing:"Rolled sleeves", hair:"Hood"},
+      badges:[{n:"Protein Master",on:true},{n:"Chain King",on:true},{n:"Closer",on:false}],
+      today:{raw:8, bonus:2, demerit:1}, streak:6, best:9,        // Part2: 4 cards / +9 net
+      cards:[ {t:"Portion filet ×6",p:"+2⚡",chain:true},{t:"Sear duck",p:"+1✓"},
+              {t:"Break down chix",p:"+2⚡",chain:true},{t:"Missed wrap",p:"-½✗",dem:true} ] },
+    { id:"sandra", name:"Sandra", cls:"Paladin", level:12, xp:8600,
+      stance:"Murder Eyes", master:true,                          // Part2: Sandra has master status (QR demo)
+      equipped:{armor:"Ornate plate T4", weapon:"Greatsword + tower shield", clothing:"Chef's coat", hair:"Toque"},
+      badges:[{n:"Gatekeeper",on:true},{n:"Zero-Demerit",on:true}],
+      today:{raw:12, bonus:2, demerit:0}, streak:11, best:11,     // Part2: 6 cards / +14 net
+      cards:[ {t:"Approve RED: chicken 165°",p:"+2⚡",chain:true},{t:"Allergen mise check",p:"+1✓"},
+              {t:"Gate 6 yellow cards",p:"+2⚡",chain:true},{t:"Quality walk",p:"+1✓"},
+              {t:"Approve filet portion",p:"+1✓"},{t:"Close inspection",p:"+1✓"} ] },
+    { id:"nick", name:"Nick", cls:"Wizard", level:14, xp:37200,
+      stance:"The Zen", master:true,
+      equipped:{armor:"Master robe (glow)", weapon:"Thermometer staff", clothing:"Heraldic", hair:"Grandmaster"},
+      badges:[{n:"Batch Wizard",on:true},{n:"Architect",on:true}],
+      today:{raw:6, bonus:2, demerit:0}, streak:4, best:7,
+      cards:[ {t:"Build batch rules",p:"+2⚡",chain:true},{t:"System tune",p:"+1✓"},
+              {t:"Dashboard fix",p:"+1✓"},{t:"Combo bonus",p:"+1✓"} ] },
+    { id:"orlando", name:"Orlando", cls:"Rogue", level:3, xp:640,
+      stance:"Ready Stance", master:false,
+      equipped:{armor:"Whites T1", weapon:"Paring dagger", clothing:"Bib apron", hair:"Beanie"},
+      badges:[{n:"—",on:false}],
+      today:{raw:2, bonus:1, demerit:0}, streak:2, best:4,        // Part2: 2 cards / +3 net
+      cards:[ {t:"Prep mise",p:"+1✓"},{t:"Combo x2",p:"+2⚡",chain:true} ] },
+    { id:"bambi", name:"Bambi", cls:"Cleric", level:5, xp:1180,
+      stance:"Flippant Style", master:false,
+      equipped:{armor:"Whites T1", weapon:"Whisk mace", clothing:"Cross-back", hair:"Skull cap"},
+      badges:[{n:"Zero-Demerit",on:true}],
+      today:{raw:4, bonus:1, demerit:0}, streak:5, best:5,
+      cards:[ {t:"Sauce batch",p:"+2⚡",chain:true},{t:"Dessert plate",p:"+1✓"},{t:"Restock",p:"+1✓"} ] },
+    { id:"knox", name:"Knox", cls:"Berserker", level:4, xp:900,
+      stance:"Hair Toss", master:false,
+      equipped:{armor:"Whites T1", weapon:"Cleaver axe", clothing:"Half-apron", hair:"Low toque"},
+      badges:[{n:"Chain King",on:false}],
+      today:{raw:3, bonus:1, demerit:1}, streak:3, best:6,
+      cards:[ {t:"Grill flurry",p:"+2⚡",chain:true},{t:"Fry station",p:"+1✓"},{t:"Overcooked",p:"-½✗",dem:true} ] }
+  ],
+  ticker:[
+    {b:"Edgar",t:"earned Protein Master!"},
+    {b:"Orlando",t:"unlocked Attack Mode stance!"},
+    {b:"Sandra",t:"reached MASTER — scan the QR to grab her character card."},
+    {b:"Bambi",t:"hit a Zero-Demerit shift — 5 clean closes."},
+    {b:"Nick",t:"reached MASTER — Grandmaster of the line."}
+  ],
+  prizes:[
+    {who:"Orlando", reward:"Armor Tier 1 skin", need:"Lv 5 (Line Cook)"},
+    {who:"Knox", reward:"First hairstyle unlock", need:"Sous"},
+    {who:"Bambi", reward:"Weapon upgrade", need:"Chef de Partie"},
+    {who:"Edgar", reward:"Signature weapon skin", need:"Chef · 18k XP"}
+  ],
+  drops:[
+    {n:"Perfect Temp Token", r:"rare"},   {n:"Chain x5 Charm", r:"epic"},
+    {n:"Clean Station Chip", r:"common"}, {n:"Allergen Ace", r:"uncommon"},
+    {n:"Grandmaster Sigil", r:"legendary"}, {n:"Sharp Knife", r:"common"},
+    {n:"Combo Coin", r:"uncommon"},       {n:"Red-Card Ribbon", r:"rare"},
+    {n:"Batch Gem", r:"epic"},            {n:"Line Badge", r:"common"}
+  ],
+  stances:[
+    {n:"Ready Stance", req:"Default", earned:true},
+    {n:"Attack Mode", req:"High throughput · GM award", earned:true},
+    {n:"Flippant Style", req:"Effortless competence", earned:true},
+    {n:"Hair Toss", req:"Consistent performer", earned:true},
+    {n:"Murder Eyes", req:"The closer · Lv 6+", earned:true},
+    {n:"The Zen", req:"Calm in chaos · Lv 7+", earned:true},
+    {n:"Berserk Fury", req:"Locked · legendary", earned:false}
+  ]
+};
+
+/* ============================================================
+   LAYERED SILHOUETTE RENDERER  (V1 placeholder — spec §3 layered sprite)
+   Base body + class weapon + headpiece + accent, drawn as SVG.
+   ============================================================ */
+function silhouette(key, opts={}){
+  const acc = opts.accent || "#c7ae59";
+  const glow = opts.glow ? '<circle cx="50" cy="34" r="3.2" fill="#7fd0ff"/><circle cx="62" cy="34" r="3.2" fill="#7fd0ff"/>' : '';
+  // shared body path
+  const body = `
+    <ellipse cx="56" cy="196" rx="34" ry="9" fill="rgba(0,0,0,.35)"/>
+    <path d="M56 40 C44 40 40 52 42 66 L40 120 C38 150 44 178 56 190
+             C68 178 74 150 72 120 L70 66 C72 52 68 40 56 40 Z" fill="#101c17"/>
+    <path d="M56 44 C48 44 45 54 46 66 L45 116 C44 142 48 168 56 180
+             C64 168 68 142 67 116 L66 66 C67 54 64 44 56 44 Z" fill="#1c3327"/>
+    <circle cx="56" cy="34" r="15" fill="#16241d"/>`;
+  const weapons = {
+    wizard: `<rect x="86" y="24" width="4" height="150" rx="2" fill="${acc}"/>
+             <circle cx="88" cy="20" r="9" fill="none" stroke="${acc}" stroke-width="3"/>
+             <circle cx="88" cy="20" r="3.5" fill="#7fd0ff"/>
+             <path d="M46 20 Q30 6 22 24" fill="none" stroke="${acc}" stroke-width="2.5"/>`, // pointed hat brim
+    paladin: `<path d="M22 60 L22 118 Q22 150 42 168 Q22 148 26 118 L26 60 Z" fill="${acc}"/>
+              <rect x="88" y="40" width="5" height="130" rx="2" fill="${acc}"/>
+              <rect x="80" y="66" width="21" height="6" rx="2" fill="${acc}"/>
+              <path d="M40 22 L46 12 L52 22 L58 12 L64 22 L70 12 L72 22 Z" fill="${acc}"/>`, // crown
+    ranger: `<path d="M84 46 L104 96" stroke="${acc}" stroke-width="4" stroke-linecap="round"/>
+             <path d="M28 46 L8 96" stroke="${acc}" stroke-width="4" stroke-linecap="round"/>
+             <path d="M42 14 Q56 2 70 14 L62 34 Q56 28 50 34 Z" fill="#16241d"/>`, // hood + dual knives
+    rogue: `<path d="M86 60 L100 92" stroke="${acc}" stroke-width="3.5" stroke-linecap="round"/>
+            <path d="M42 16 Q56 4 70 16 L64 32 Q56 27 48 32 Z" fill="#16241d"/>`,
+    cleric: `<rect x="86" y="30" width="4" height="120" rx="2" fill="${acc}"/>
+             <rect x="80" y="44" width="16" height="4" fill="${acc}"/>`,
+    berserker: `<path d="M88 44 L108 44 Q116 60 100 70 L88 62 Z" fill="${acc}"/>
+                <rect x="86" y="60" width="4" height="110" rx="2" fill="${acc}"/>`,
+    apprentice: `<rect x="86" y="70" width="4" height="100" rx="2" fill="#8a7a44"/>`
+  };
+  return `<svg viewBox="0 0 112 210" xmlns="http://www.w3.org/2000/svg">
+    ${body}${glow}${weapons[key]||weapons.apprentice}
+    <path d="M40 96 L72 96 L70 120 L42 120 Z" fill="none" stroke="${acc}" stroke-width="1.5" opacity=".7"/>
+  </svg>`;
+}
+
+function stancePose(name, earned){
+  const c = earned ? "#c7ae59" : "#5a6b62";
+  const poses = {
+    "Ready Stance":`<path d="M20 4 L20 40 M20 16 L34 24 M20 16 L6 24 M20 40 L10 62 M20 40 L30 62" stroke="${c}" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="20" cy="-2" r="6" fill="${c}"/>`,
+    "Attack Mode":`<path d="M18 6 L22 40 M20 18 L40 12 M20 20 L8 30 M22 40 L34 60 M22 40 L12 60 M40 12 L52 8" stroke="${c}" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="17" cy="0" r="6" fill="${c}"/>`,
+    "Flippant Style":`<path d="M22 4 L18 40 M18 18 L6 22 M18 18 L30 12 L30 22 M18 40 L10 62 M18 40 L28 60" stroke="${c}" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="24" cy="-2" r="6" fill="${c}"/>`,
+    "Hair Toss":`<path d="M22 6 L20 40 M20 18 L34 26 M20 18 L8 24 M20 40 L12 62 M20 40 L30 62" stroke="${c}" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="26" cy="0" r="6" fill="${c}"/><path d="M26 -4 Q40 -8 44 2" stroke="${c}" stroke-width="2.5" fill="none"/>`,
+    "Murder Eyes":`<path d="M20 4 L20 40 M20 16 L32 24 M20 16 L8 24 M20 40 L12 62 M20 40 L28 62" stroke="${c}" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="20" cy="-2" r="6" fill="${c}"/><circle cx="17" cy="-3" r="1.6" fill="#ff5252"/><circle cx="23" cy="-3" r="1.6" fill="#ff5252"/>`,
+    "The Zen":`<path d="M20 6 L20 42 M20 20 L30 34 M20 20 L10 34 M20 42 L12 62 M20 42 L28 62" stroke="${c}" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="20" cy="0" r="6" fill="${c}"/><path d="M14 -1 Q20 3 26 -1" stroke="#0a1512" stroke-width="1.4" fill="none"/>`,
+    "Berserk Fury":`<path d="M20 4 L20 40 M20 16 L36 8 M20 16 L4 8 M20 40 L10 62 M20 40 L30 62" stroke="${c}" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="20" cy="-2" r="6" fill="${c}"/>`
+  };
+  return `<svg viewBox="-4 -12 56 82" xmlns="http://www.w3.org/2000/svg">${poses[name]||poses["Ready Stance"]}</svg>`;
+}
+
+// Simple deterministic pseudo-QR (placeholder, NOT scannable — spec §8.4)
+function fakeQR(seed){
+  let h=0; for(const c of seed) h=(h*31+c.charCodeAt(0))>>>0;
+  const n=17, cell=100/n; let r='<rect width="100" height="100" fill="#fff"/>';
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++){
+    h=(h*1103515245+12345)>>>0; const on=(h>>16&1);
+    const finder=(x<4&&y<4)||(x>n-5&&y<4)||(x<4&&y>n-5);
+    if(on||finder) r+=`<rect x="${x*cell}" y="${y*cell}" width="${cell}" height="${cell}" fill="#0a1512"/>`;
+  }
+  // white centers on finders
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">${r}</svg>`;
+}
+
+/* ============================================================ RENDER ============================================================ */
+function tierOf(xp){ let cur=TIERS[0]; for(const t of TIERS) if(xp>=t.xp) cur=t; return cur; }
+function net(t){ return (t.raw + t.bonus - t.demerit); }
+
+const ACCENT = {wizard:"#8bb6ff", paladin:"#c7ae59", ranger:"#7ac77a", rogue:"#b58cff", cleric:"#e6cf82", berserker:"#e07a52", apprentice:"#9fb4a9"};
+
+function render(D){
+  document.getElementById('teamScore').textContent = D.teamScore.toLocaleString();
+  document.getElementById('shiftDate').textContent = D.shiftDate;
+  document.getElementById('elapsed').textContent = Math.floor(D.startedAtMin/60)+':'+String(D.startedAtMin%60).padStart(2,'0');
+
+  // 2. heroes
+  const hr = document.getElementById('heroRow'); hr.innerHTML='';
+  D.crew.forEach(c=>{
+    const cl = CLASSES[c.cls]||CLASSES.Apprentice;
+    const lvXp = xpForLevel(c.level), nextXp = xpForLevel(c.level+1);
+    const into = Math.max(0, c.xp - lvXp), span = Math.max(1,nextXp-lvXp);
+    const pct = Math.min(100, Math.round(into/span*100));
+    const tier = tierOf(c.xp);
+    const el = document.createElement('div');
+    el.className = 'char'+(c.master?' master':''); el.dataset.crew=c.id;
+    el.innerHTML = `
+      ${c.master?`<div class="qr-mini">${fakeQR(c.id)}</div>`:''}
+      <div class="cname">${c.name}</div>
+      <div class="cclass"><span class="ci">${cl.ci}</span>${c.cls}</div>
+      <div class="lvl">Lv ${c.level} · ${tier.name}</div>
+      <div class="portrait">
+        ${silhouette(cl.key,{accent:ACCENT[cl.key], glow:cl.key==='wizard'})}
+        <div class="stance-tag">${c.stance}</div>
+      </div>
+      <div class="xpwrap"><div class="xpbar"><i style="width:${pct}%"></i></div>
+        <div class="xptxt">${into.toLocaleString()} / ${span.toLocaleString()} XP</div></div>
+      <div class="badges">${c.badges.map(b=>b.n==='—'?'':`<span class="bdg ${b.on?'on':'off'}">${b.n}</span>`).join('')}</div>
+      <div class="equip">${cl.ci} ${c.equipped.weapon}<br>${c.equipped.armor}</div>
+      <div class="score"><span class="raw">${c.today.raw}</span> <span class="bon">+${c.today.bonus}</span>
+        <span class="dem">-${c.today.demerit}</span> = <span class="net">${net(c.today)}</span></div>`;
+    hr.appendChild(el);
+  });
+
+  // 4. scoreboard
+  const bc = document.getElementById('boardCols'); bc.innerHTML='';
+  D.crew.forEach(c=>{
+    const raw=c.today.raw, bon=c.today.bonus, dem=c.today.demerit;
+    const col = document.createElement('div'); col.className='bcol';
+    col.innerHTML = `<h4>${c.name}</h4>
+      <div class="streak">🔥 streak ${c.streak} · best ${c.best}</div>
+      <div class="stack">${c.cards.map(cd=>`
+        <div class="dcard ${cd.chain?'chain':''}"><span>${cd.t}</span>
+          <span class="pts ${cd.chain?'chainb':''}${cd.dem?' demb':''}">${cd.p}</span></div>`).join('')}</div>
+      <div class="totals">raw ${raw} · <span class="gold">+${bon} bonus</span> · <span style="color:#e78">-${dem}</span>
+        <br>net <span class="net">${net(c.today)}</span></div>`;
+    bc.appendChild(col);
+  });
+
+  // 5. ticker + prizes + drops
+  document.getElementById('ticker').innerHTML =
+    D.ticker.map(t=>`<span>⚡ <b>${t.b}</b> ${t.t}</span>`).join('') + D.ticker.map(t=>`<span>⚡ <b>${t.b}</b> ${t.t}</span>`).join('');
+  document.getElementById('prizeList').innerHTML =
+    D.prizes.map(p=>`<div class="prize"><span><b>${p.who}</b> · ${p.reward}</span><span class="need">${p.need}</span></div>`).join('');
+  document.getElementById('dropHist').innerHTML =
+    D.drops.slice(0,10).map(d=>`<span class="item ${d.r}">${d.n}</span>`).join('');
+
+  // 6. stances
+  const sr = document.getElementById('stanceRow'); sr.innerHTML='';
+  D.stances.forEach(s=>{
+    const el=document.createElement('div');
+    el.className='stance '+(s.earned?'earned':'locked'); el.dataset.stance=s.n;
+    el.innerHTML=`<div class="pose">${stancePose(s.n,s.earned)}</div>
+      <div class="sn">${s.n}</div><div class="req">${s.req}</div>`;
+    el.addEventListener('click',()=>awardStanceCeremony(s.n));
+    sr.appendChild(el);
+  });
+
+  // 7. QR zone (only if a crew member has master status)
+  const master = D.crew.find(c=>c.master);
+  const qz = document.getElementById('qrZone');
+  if(master){
+    qz.classList.remove('hidden');
+    document.getElementById('qrBox').innerHTML = fakeQR('character/'+master.id);
+    document.getElementById('qrName').textContent = `${master.name} · MASTER — download your character card`;
+    document.getElementById('qrUrl').textContent = `http://brain:9003/character/${master.id}`;
+  } else qz.classList.add('hidden');
+}
+
+/* ============================================================ EFFECTS DISPATCHER (spec §5) ============================================================ */
+const GM = window.GM = {
+  el(id){ return document.querySelector(`.char[data-crew="${id}"]`); },
+  smoke(crewId){
+    const c=this.el(crewId); if(!c) return; const r=c.getBoundingClientRect();
+    for(let i=0;i<5;i++){ const s=document.createElement('div'); s.className='smoke';
+      s.style.left=(r.left+r.width/2-60+(i-2)*18)+'px'; s.style.top=(r.top+r.height*0.4)+'px';
+      s.style.animationDelay=(i*0.09)+'s'; fxLayer.appendChild(s); setTimeout(()=>s.remove(),1900); }
+  },
+  magic(crewId){
+    const c=this.el(crewId); if(!c) return; const r=c.getBoundingClientRect();
+    for(let i=0;i<16;i++){ const s=document.createElement('div'); s.className='spark';
+      s.style.left=(r.left+r.width/2)+'px'; s.style.top=(r.top+r.height*0.4)+'px';
+      s.style.setProperty('--dx',(Math.cos(i/16*6.28)*70)+'px');
+      s.style.setProperty('--dy',(Math.sin(i/16*6.28)*70)+'px');
+      s.style.animationDelay=(i*0.03)+'s'; fxLayer.appendChild(s); setTimeout(()=>s.remove(),1200); }
+  },
+  explode(reason){                       // FULL-SCREEN TAKEOVER — scarce (spec §5.1)
+    const b=document.getElementById('boom');
+    document.getElementById('boomText').textContent = reason||'PERFECT SHIFT';
+    b.classList.add('on'); document.body.classList.add('shake');
+    try{ beep(); }catch(e){}
+    console.log('[effect_log] EXPLOSIVE fired:', reason, '(audit — spec §5.1)');
+    setTimeout(()=>{ b.classList.remove('on'); document.body.classList.remove('shake'); }, 2600);
+  }
+};
+function beep(){ const a=new (window.AudioContext||window.webkitAudioContext)();
+  const o=a.createOscillator(), g=a.createGain(); o.connect(g); g.connect(a.destination);
+  o.type='sawtooth'; o.frequency.setValueAtTime(120,a.currentTime);
+  o.frequency.exponentialRampToValueAtTime(40,a.currentTime+0.6);
+  g.gain.setValueAtTime(0.3,a.currentTime); g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+0.9);
+  o.start(); o.stop(a.currentTime+0.9); }
+
+/* Dispatch-contract aliases (Part 1 spec §3): thin wrappers over the GM dispatcher
+   so external callers can use the documented trigger* API names. */
+function triggerSmoke(crewId){ GM.smoke(crewId || 'edgar'); }
+function triggerSparkle(crewId){ GM.magic(crewId || 'nick'); }
+function triggerExplosion(reason){ GM.explode(reason || 'PERFECT SHIFT'); }
+
+/* ---- STANCE AWARD CEREMONY (spec §4.2) ------------------------------------
+   Tap a stance -> GM PIN gate -> pick crew -> stance name flies to the
+   crew member's portrait + sparkle burst, then the stance is marked earned. */
+const GM_PIN = "2726";   // Game Master PIN — CHANGE HERE before crew rollout (2726 = "AZAM" / Taza)
+
+function awardStanceCeremony(name){
+  const pin = prompt(`Game Master PIN to award "${name}":`);
+  if(pin===null) return;                                   // cancelled
+  if(pin.trim() !== GM_PIN){ alert("Incorrect Game Master PIN — award denied."); return; }
+  const roster = SAMPLE.crew.map(c=>c.name).join(", ");
+  const who = prompt(`Award "${name}" to which crew member?\n(${roster})`);
+  if(!who) return;
+  const c = SAMPLE.crew.find(x=> x.name.toLowerCase() === who.trim().toLowerCase());
+  if(!c){ alert(`No crew member named "${who}".`); return; }
+  runAwardCeremony(name, c.id);
+}
+
+function runAwardCeremony(stanceName, crewId){
+  const srcEl = document.querySelector(`.stance[data-stance="${window.CSS?CSS.escape(stanceName):stanceName}"]`);
+  const tgtEl = document.querySelector(`.char[data-crew="${crewId}"] .portrait`);
+  // update the crew member's active stance + mark the stance earned
+  const cm = SAMPLE.crew.find(c=>c.id===crewId); if(cm) cm.stance = stanceName;
+  const st = SAMPLE.stances.find(s=>s.n===stanceName); if(st) st.earned = true;
+  if(!srcEl || !tgtEl){ GM.magic(crewId); render(SAMPLE); return; }
+
+  srcEl.classList.add('awarding');
+  const s0 = srcEl.getBoundingClientRect(), t0 = tgtEl.getBoundingClientRect();
+  const fly = document.createElement('div'); fly.className='fly-stance'; fly.textContent = stanceName;
+  const sx = s0.left + s0.width/2, sy = s0.top;
+  fly.style.left = sx+'px'; fly.style.top = sy+'px';
+  fly.style.transform = 'translate(-50%,0) scale(1)';
+  document.body.appendChild(fly);
+
+  requestAnimationFrame(()=>{                              // reflow, then glide to portrait
+    const dx = (t0.left + t0.width/2) - sx;
+    const dy = (t0.top  + t0.height*0.4) - sy;
+    fly.style.transform = `translate(calc(-50% + ${dx}px), ${dy}px) scale(1.25)`;
+  });
+  setTimeout(()=>{ GM.magic(crewId); fly.style.opacity='0'; }, 1150);   // land + sparkle
+  setTimeout(()=>{ fly.remove(); srcEl.classList.remove('awarding'); render(SAMPLE); }, 1750);
+  console.log('[ceremony] awarded', stanceName, '->', crewId);
+}
+
+/* ============================================================ LIVE FEED STUB (spec §9.4 — same tables as :9003 card) ============================================================ */
+function connectFeed(){
+  if(!('EventSource' in window)) return;
+  try{
+    const es = new EventSource('/events');            // future N100 SSE endpoint
+    es.addEventListener('state', e=> render(JSON.parse(e.data)));
+    es.addEventListener('effect', e=>{ const f=JSON.parse(e.data);
+      if(f.type==='smoke') GM.smoke(f.crew);
+      else if(f.type==='magic') GM.magic(f.crew);
+      else if(f.type==='explosive') GM.explode(f.reason); });
+    es.onerror = ()=>{ /* stay on last-rendered SAMPLE; N100 not wired yet */ };
+  }catch(e){ /* no feed in V1 */ }
+}
+
+/* ============================================================ BOOT ============================================================ */
+render(SAMPLE);
+connectFeed();
+// idle Wizard magic flourish (uncommon, spec §5)
+setInterval(()=>GM.magic('nick'), 12000);
+// keyboard test hooks for Nick (screenshot/demo only): S=smoke E=explosion M=magic
+addEventListener('keydown',e=>{
+  if(e.key==='e') GM.explode('MASTER UNLOCKED — NICK');
+  if(e.key==='s') GM.smoke('edgar');
+  if(e.key==='m') GM.magic('nick');
+  if(e.key==='t'){ const r=document.getElementById('fxTestRow');
+    r.style.display = r.style.display==='flex' ? 'none' : 'flex'; }
+});
+</script>
+</body>
+</html>

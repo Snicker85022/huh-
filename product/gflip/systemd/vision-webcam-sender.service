@@ -1,0 +1,13 @@
+[Unit]
+Description=Webcam V4L2 -> H.264 UDP to n100 relay
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=taza
+ExecStart=/home/taza/vision-stack/bin/ffmpeg -hide_banner -loglevel warning -f v4l2 -input_format mjpeg -video_size 1920x1080 -framerate 30 -i /dev/video0 -an -c:v libx264 -preset veryfast -tune zerolatency -b:v 3000k -f mpegts udp://192.168.2.102:9999
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

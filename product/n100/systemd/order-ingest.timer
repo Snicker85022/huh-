@@ -1,0 +1,11 @@
+[Unit]
+Description=Order ingest every 30 min, 5 min after the invoice mirror so it sees the new deposits
+
+[Timer]
+OnCalendar=*:05,35
+Persistent=true
+AccuracySec=30s
+Unit=order-ingest.service
+
+[Install]
+WantedBy=timers.target

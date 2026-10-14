@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0">
+<title>Taza OS Crew Service</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --card: #161b22;
+    --border: #30363d;
+    --text: #f0f3f7;
+    --dim: #9aa4b2;
+    --accent: #3fb950;
+    --warn: #d29922;
+    --danger: #f85149;
+    --tap-min: 52px;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-size: 18px; line-height: 1.5;
+  }
+  .tabbar { display: flex; position: sticky; top: 0; z-index: 10; background: var(--bg); border-bottom: 2px solid var(--border); }
+  .tabbtn {
+    flex: 1; padding: 16px 8px; text-align: center; font-size: 20px; font-weight: 700;
+    background: var(--card); color: var(--dim); border: none; min-height: var(--tap-min);
+  }
+  .tabbtn.active { color: var(--text); background: var(--bg); border-bottom: 4px solid var(--accent); }
+  .panel { display: none; padding: 16px; max-width: 640px; margin: 0 auto; }
+  .panel.active { display: block; }
+  h1 { font-size: 22px; margin: 0 0 8px; }
+  h2 { font-size: 22px; margin: 24px 0 10px; color: var(--accent); }
+  .box { border: 2px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 14px; background: var(--card); }
+  .box.danger { border-color: var(--danger); }
+  .box.warn { border-color: var(--warn); }
+  .big { font-size: 22px; font-weight: 800; }
+  .dim { color: var(--dim); font-size: 16px; }
+  .badge { display: inline-block; font-size: 15px; font-weight: 700; padding: 4px 10px; border-radius: 20px; margin-right: 6px; }
+  .badge-chef { background: #3a1f1f; color: #ff8b8b; }
+  .badge-ops { background: #1f2f47; color: #7fb8ff; }
+  .badge-lead { background: #2a3d1f; color: #a9e17f; }
+  .badge-crew { background: #3d3520; color: #f0c96a; }
+  .badge-you { background: #2f1f47; color: #cf9bff; }
+  .person-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .person-row:last-child { border-bottom: none; }
+  a.tel { color: var(--accent); text-decoration: none; font-weight: 700; font-size: 18px; }
+  ol, ul { padding-left: 24px; margin: 8px 0; }
+  li { padding: 6px 0; font-size: 18px; }
+  .step-num { font-weight: 800; color: var(--accent); }
+  .checklist label { display: flex; align-items: center; gap: 10px; padding: 10px 0; font-size: 18px; min-height: var(--tap-min); }
+  .checklist input[type=checkbox] { width: 26px; height: 26px; flex-shrink: 0; }
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+  .allergy { border: 4px solid var(--danger); background: #2a1414; }
+  .allergy .big { color: var(--danger); font-size: 24px; }
+  table.timeline { width: 100%; border-collapse: collapse; font-size: 17px; }
+  table.timeline td { padding: 8px 4px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  table.timeline td:first-child { width: 60px; font-weight: 700; color: var(--accent); white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<!-- Power status banner -->
+<div id="power-banner" style="display:none; width:100%; padding:12px; text-align:center; font-size:20px; font-weight:bold; position:sticky; top:0; z-index:999;"></div>
+
+<script>
+var _wasOnBattery = false;
+function pollStatus() {
+  fetch('/status')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var banner = document.getElementById('power-banner');
+      if (data.status === 'ONBATTERY') {
+        _wasOnBattery = true;
+        banner.style.display = 'block';
+        banner.style.background = '#cc0000';
+        banner.style.color = '#ffffff';
+        banner.textContent = '⚡ ON BATTERY — ' + data.bcharge + '% charge — ~' + data.timeleft + ' remaining';
+      } else if (data.status === 'ONLINE') {
+        if (_wasOnBattery) {
+          _wasOnBattery = false;
+          banner.style.display = 'block';
+          banner.style.background = '#006600';
+          banner.style.color = '#ffffff';
+          banner.textContent = '⚡ POWER RESTORED — Taza OS back online';
+        } else {
+          banner.style.display = 'none';
+        }
+      }
+    })
+    .catch(function() {});
+}
+setInterval(pollStatus, 10000);
+pollStatus();
+</script>
+
+<div class="tabbar">
+  <button class="tabbtn" id="btn-emergency" onclick="showTab('emergency')">🚨 EMERGENCY</button>
+  <button class="tabbtn" id="btn-siteguide" onclick="showTab('siteguide')">📋 SITE GUIDE</button>
+</div>
+
+<!-- ============ TAB 1: EMERGENCY ============ -->
+<div class="panel" id="panel-emergency">
+  <h1>Emergency Ops Brief</h1>
+  <div class="dim">Taza Catering &amp; Events</div>
+
+  <div class="box">
+    <div class="big">TAZA OS BRAIN ONLINE</div>
+    <div class="dim" id="battery-line">Battery remaining: check printed receipt for latest reading</div>
+  </div>
+
+  <div class="box danger">
+    <div class="big">&gt;&gt;&gt; TURN OFF STAR PRINTER NOW &lt;&lt;&lt;</div>
+    <div class="dim">Saves battery for the dashboard and crew phones.</div>
+  </div>
+
+  <div class="box allergy">
+    <div class="big">!! NUT ALLERGY — GIG 1 !!</div>
+    <div>LIFE THREATENING. Buckeye delivery. Confirm ZERO nut exposure before service.</div>
+  </div>
+
+  <h2>Crew Contacts</h2>
+  <div class="box">
+    <div class="person-row">
+      <span class="badge badge-lead">Lead</span>
+      <div>Edgar Martinez — Lead Event Manager</div>
+    </div>
+    <a class="tel" href="tel:+14804697895">📞 (480) 469-7895</a>
+  </div>
+  <div class="box">
+    <div class="person-row">
+      <span class="badge badge-crew">Crew</span>
+      <div>Orlando Montague — Contract Crew</div>
+    </div>
+    <a class="tel" href="tel:+16028803512">📞 (602) 880-3512</a>
+  </div>
+  <div class="box">
+    <div class="person-row">
+      <span class="badge badge-crew">Crew</span>
+      <div>Bambi Smith — Contract Crew</div>
+    </div>
+    <a class="tel" href="tel:+16234568458">📞 (623) 456-8458</a>
+  </div>
+  <div class="box">
+    <div class="person-row">
+      <span class="badge badge-crew">Crew</span>
+      <div>Knox (Rafheal Knox) — Contract Crew</div>
+    </div>
+    <div class="dim">Phone: TBD — Cash App: $moneybagknox</div>
+  </div>
+
+  <h2>Gig 1 — Buckeye (do first)</h2>
+  <div class="box">
+    <div><strong>Family Dentistry</strong>, 1300 S Watson Rd A-100</div>
+    <div class="dim">25 pax · HDs + Bev · ALLERGEN: NUT</div>
+    <div>Depart <strong>12:40</strong> · Ready <strong>13:30</strong></div>
+  </div>
+
+  <h2>Gig 2 — Tempe Evening</h2>
+  <div class="box">
+    <div><strong>Grace Community Church</strong>, 1200 E Southern Ave</div>
+    <div class="dim">75 pax · Buffet + Bar · PourMasters sub · 75 lbs ice · No allergen</div>
+    <div>Feed <strong>18:30</strong></div>
+  </div>
+
+  <h2>Open</h2>
+  <div class="checklist">
+    <label><input type="checkbox"> Cold items packed</label>
+    <label><input type="checkbox" checked> HDs on gas oven</label>
+    <label><input type="checkbox" checked> Dry items loaded</label>
+    <label><input type="checkbox" checked> Gig 2 staged</label>
+  </div>
+
+  <h2>Timeline</h2>
+  <div class="box">
+    <table class="timeline">
+      <tr><td>12:00</td><td>Pack cold items</td></tr>
+      <tr><td>12:30</td><td>Load van</td></tr>
+      <tr><td>12:40</td><td><strong>DEPART</strong> for Gig 1</td></tr>
+      <tr><td>13:30</td><td>Gig 1 ready</td></tr>
+      <tr><td>13:45</td><td>Helper Cook arrives</td></tr>
+      <tr><td>15:00</td><td>Stage Gig 2</td></tr>
+      <tr><td>18:30</td><td>Gig 2 feed time</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ============ TAB 2: SITE GUIDE ============ -->
+<div class="panel" id="panel-siteguide">
+  <h1>Site Guide</h1>
+  <div class="dim">Everyday crew reference — org chart, setup, cleanup.</div>
+
+  <h2>Who's Who</h2>
+  <div class="box">
+    <div class="person-row"><span class="badge badge-chef">Chef</span> Sandra — Executive Chef</div>
+    <div class="person-row"><span class="badge badge-ops">Ops</span> Nick — Operations Lead</div>
+    <div class="person-row"><span class="badge badge-lead">Lead</span> Edgar — Event Manager</div>
+    <div class="person-row"><span class="badge badge-crew">Crew</span> Contract kitchen crew</div>
+    <div class="person-row"><span class="badge badge-you">You</span> Ask your Lead if unsure who's who</div>
+  </div>
+
+  <div class="box warn">
+    <strong>Bar:</strong> PourMasters handle drinks — but take the big green ice bin to them first.
+  </div>
+
+  <h2>Setup Steps</h2>
+  <ol>
+    <li><span class="step-num">1.</span> Unload van, cold items first</li>
+    <li><span class="step-num">2.</span> Set up chafing stations per floor plan</li>
+    <li><span class="step-num">3.</span> Confirm allergen boxes before any prep</li>
+    <li><span class="step-num">4.</span> Ice bin to bar (PourMasters) if a bar is running</li>
+    <li><span class="step-num">5.</span> Check in with your Lead before service starts</li>
+  </ol>
+
+  <h2>Scanning Checklist</h2>
+  <div class="checklist">
+    <label><input type="checkbox"> Scan in on arrival</label>
+    <label><input type="checkbox"> Scan allergen box confirmed</label>
+    <label><input type="checkbox"> Scan setup complete</label>
+    <label><input type="checkbox"> Scan breakdown complete</label>
+  </div>
+
+  <h2>Uniform</h2>
+  <ul>
+    <li>Black Taza polo, tucked in</li>
+    <li>Closed-toe non-slip shoes</li>
+    <li>Hair tied back / hat</li>
+    <li>Name tag visible</li>
+  </ul>
+
+  <h2>Breakdown Steps</h2>
+  <ol>
+    <li><span class="step-num">1.</span> Pack all serving equipment back in bins</li>
+    <li><span class="step-num">2.</span> Wipe down and fold all linens</li>
+    <li><span class="step-num">3.</span> Sweep/spot-clean the service area</li>
+    <li><span class="step-num">4.</span> Load van in reverse order (last thing set up = first thing loaded)</li>
+  </ol>
+
+  <div class="divider"></div>
+  <div class="dim">Questions? Call your Lead — Edgar: <a class="tel" href="tel:+14804697895">(480) 469-7895</a></div>
+</div>
+
+<script>
+function showTab(name) {
+  document.getElementById('panel-emergency').classList.toggle('active', name === 'emergency');
+  document.getElementById('panel-siteguide').classList.toggle('active', name === 'siteguide');
+  document.getElementById('btn-emergency').classList.toggle('active', name === 'emergency');
+  document.getElementById('btn-siteguide').classList.toggle('active', name === 'siteguide');
+  if (history.replaceState) history.replaceState(null, '', '/' + (name === 'emergency' ? 'emergency' : 'siteguide'));
+}
+(function init() {
+  var path = window.location.pathname;
+  var hash = window.location.hash;
+  var startTab = 'emergency';
+  if (path.indexOf('siteguide') !== -1 || hash.indexOf('siteguide') !== -1) startTab = 'siteguide';
+  showTab(startTab);
+})();
+</script>
+
+</body>
+</html>

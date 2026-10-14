@@ -1,0 +1,22 @@
+[Unit]
+Description=PTZ patrol + human activity / hand observation collector
+After=network-online.target vision-app.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=taza
+WorkingDirectory=/home/taza/vision-stack/app
+Environment=YOLO_CONFIG_DIR=/tmp
+Environment=PATROL_STEP_S=2.0
+Environment=PATROL_STOPS=6
+Environment=PATROL_ROWS=2
+Environment=PATROL_LEVEL_S=4.0
+Environment=PATROL_GAP_S=120
+ExecStart=/home/taza/vision-stack/venv/bin/python3 /home/taza/vision-stack/app/patrol.py
+Restart=always
+RestartSec=15
+Nice=5
+
+[Install]
+WantedBy=multi-user.target

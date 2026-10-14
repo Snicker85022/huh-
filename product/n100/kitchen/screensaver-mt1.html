@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taza — Rest Mode</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #1a3a2a;
+    color: #c7ae59;
+    font-family: 'Inter', sans-serif;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+  }
+
+  /* Particle canvas layer */
+  .particles {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #c7ae59;
+    opacity: 0;
+    animation: floatUp linear infinite;
+  }
+
+  @keyframes floatUp {
+    0%   { transform: translateY(0) translateX(0);   opacity: 0; }
+    10%  { opacity: 0.5; }
+    90%  { opacity: 0.3; }
+    100% { transform: translateY(-100vh) translateX(var(--drift)); opacity: 0; }
+  }
+
+  /* Center content */
+  .center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+  }
+
+  /* Breathing diamond */
+  .diamond-wrap {
+    animation: breathe 4s ease-in-out infinite;
+    width: 140px;
+    height: 140px;
+  }
+
+  @keyframes breathe {
+    0%, 100% { transform: scale(1);   opacity: 0.85; }
+    50%       { transform: scale(1.08); opacity: 1; }
+  }
+
+  /* Affirmations */
+  .affirmation-container {
+    position: relative;
+    height: 2.4em;
+    width: 90vw;
+    max-width: 600px;
+    text-align: center;
+  }
+
+  .affirmation {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(18px, 3vw, 28px);
+    font-weight: 400;
+    color: #c7ae59;
+    letter-spacing: 0.04em;
+    opacity: 0;
+    animation: crossfade 25s linear infinite;
+  }
+
+  .affirmation:nth-child(1) { animation-delay: 0s; }
+  .affirmation:nth-child(2) { animation-delay: 5s; }
+  .affirmation:nth-child(3) { animation-delay: 10s; }
+  .affirmation:nth-child(4) { animation-delay: 15s; }
+  .affirmation:nth-child(5) { animation-delay: 20s; }
+
+  @keyframes crossfade {
+    0%    { opacity: 0; }
+    4%    { opacity: 1; }
+    16%   { opacity: 1; }
+    20%   { opacity: 0; }
+    100%  { opacity: 0; }
+  }
+
+  /* Thin decorative rule */
+  .rule {
+    width: 120px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, #c7ae59, transparent);
+    opacity: 0.5;
+  }
+
+  /* Clock */
+  .clock {
+    position: fixed;
+    bottom: 28px;
+    right: 36px;
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(14px, 2vw, 20px);
+    font-weight: 300;
+    color: #c7ae59;
+    opacity: 0.7;
+    letter-spacing: 0.08em;
+  }
+
+  /* Tap hint */
+  .tap-hint {
+    position: fixed;
+    bottom: 28px;
+    left: 36px;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 300;
+    color: #c7ae59;
+    opacity: 0.25;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body onclick="window.location.href='http://192.168.2.102:9003/taza-card-table.html?board=East'">
+
+  <!-- Particles -->
+  <div class="particles" id="particles"></div>
+
+  <!-- Center content -->
+  <div class="center">
+    <div class="diamond-wrap">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+        <polygon points="50,5 95,50 50,95 5,50" fill="none" stroke="#c7ae59" stroke-width="3"/>
+        <polygon points="50,18 82,50 50,82 18,50" fill="none" stroke="#c7ae59" stroke-width="1.5" opacity="0.6"/>
+        <polygon points="50,30 70,50 50,70 30,50" fill="none" stroke="#c7ae59" stroke-width="1" opacity="0.4"/>
+        <circle cx="50" cy="50" r="4" fill="#c7ae59" opacity="0.8"/>
+        <line x1="50" y1="5" x2="50" y2="18" stroke="#c7ae59" stroke-width="1" opacity="0.5"/>
+        <line x1="95" y1="50" x2="82" y2="50" stroke="#c7ae59" stroke-width="1" opacity="0.5"/>
+        <line x1="50" y1="95" x2="50" y2="82" stroke="#c7ae59" stroke-width="1" opacity="0.5"/>
+        <line x1="5" y1="50" x2="18" y2="50" stroke="#c7ae59" stroke-width="1" opacity="0.5"/>
+      </svg>
+    </div>
+
+    <div class="rule"></div>
+
+    <div class="affirmation-container">
+      <div class="affirmation">Excellence is the standard.</div>
+      <div class="affirmation">Every plate tells a story.</div>
+      <div class="affirmation">We cook with intention.</div>
+      <div class="affirmation">Sandra's kitchen. Our craft.</div>
+      <div class="affirmation">Taza — Coastal European &amp; Modern American</div>
+    </div>
+  </div>
+
+  <!-- Clock -->
+  <div class="clock" id="clock"></div>
+
+  <!-- Tap hint -->
+  <div class="tap-hint">Tap to wake</div>
+
+<script>
+  // Clock
+  function tick() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2,'0');
+    const m = String(now.getMinutes()).padStart(2,'0');
+    const s = String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('clock').textContent = h + ':' + m + ':' + s;
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  // Particles
+  const container = document.getElementById('particles');
+  const COUNT = 20;
+  for (let i = 0; i < COUNT; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const left = Math.random() * 100;
+    const duration = 18 + Math.random() * 24; // 18–42s
+    const delay = -(Math.random() * duration);
+    const drift = (Math.random() - 0.5) * 80;
+    const size = 2 + Math.random() * 3;
+    p.style.cssText = `
+      left: ${left}%;
+      bottom: -8px;
+      width: ${size}px;
+      height: ${size}px;
+      animation-duration: ${duration}s;
+      animation-delay: ${delay}s;
+      --drift: ${drift}px;
+      opacity: 0;
+    `;
+    container.appendChild(p);
+  }
+</script>
+</body>
+</html>
