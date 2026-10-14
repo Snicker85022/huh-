@@ -8,6 +8,53 @@ Last updated: 2026-10-14. Supersedes every earlier handoff document; those live 
 
 ---
 
+## START HERE — the front door
+
+**The map is live and it is not hand-drawn: <http://192.168.2.107:8095/architecture>** — read
+it before you touch anything. `arch_scan.py` re-reads both machines hourly (cron :05) and
+rewrites it, so it cannot drift from reality. The same facts raw: `/architecture.json`. Cards
+are clustered by what a thing **is**: PRODUCT (runs for Mom’s Table), FACTORY (builds or
+operates it), FROZEN (archive), FACTORY · not ours (third-party), HOST (plumbing). Red = one
+thing with two owners, each row naming the action that closes it. The whole classification is
+one file: `pm_web/roles.json`.
+
+### Where things go
+
+| the thing | where it lives |
+|---|---|
+| **product** — anything that runs for Mom’s Table | n100 (`192.168.2.102`), mirrored in `product/n100/` in the one repo |
+| **factory** — anything that builds or operates the product | `factory/` in the one repo; it may run on either box |
+| a **prototype** | **on gflip** (`192.168.2.107`). It moves to n100 — and into the repo — only once it is wired and automated |
+| a **systemd unit** or a **cron line** | into the repo beside its owner (`product/<host>/systemd/`, `factory/systemd/`), never only on the box |
+| a **secret** | never in the repo, not for a moment |
+| the **one repo** | `huh-`, checked out at `/home/taza/repo` on gflip. There is exactly one; `/opt/taza` is a fork to be archived |
+
+### How to behave
+
+1. Read this file, then the map, then the database. Never the old markdown.
+2. **Never touch:** anything under `~/librechat` (files, `.env`, yaml, compose, containers),
+   `mcp_shell.py` / `mcp_shell.service` / the shell MCP you are running in, `pg_hba.conf`, the
+   live cloudflared tunnels.
+3. Copy, don’t move, until the new path is verified working. Never `rm` — retire means stop
+   + disable + archive copy.
+4. Never invent a table or a column. Never create a second markdown store (PD-016).
+5. Never report success before validating it. "Idle", "active" and exit 0 are not proof —
+   prove the outcome.
+6. After ONE failed attempt: stop, read the docs, retry. Never retry-loop.
+7. One bounded action per step: `STEP / CMD / EXPECT / GOT / VERDICT / NEXT`.
+
+### The lists — five of them, and this is where they are
+
+| what it governs | file |
+|---|---|
+| what may be committed from the one repo | `/home/taza/repo/.gitignore` |
+| what may be committed from n100’s home (whitelist first, blacklist second) | `n100:/home/taza/.gitignore` |
+| the ten "never" rules | §5 of this file |
+| what LibreChat may fetch | `/home/taza/librechat/librechat.yaml` → `allowedDomains`, `allowedAddresses` |
+| what the shell MCP refuses to run | `mcp_shell.py` (guard: a write verb **and** `/etc` or `/boot` in the same command) |
+
+---
+
 ## 0. Why this file exists at all — and how to treat it
 
 Nick hates markdown. This is the single sanctioned exception: one orientation file so a
