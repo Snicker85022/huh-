@@ -3,7 +3,7 @@
 **Read this file first, then run the boot query, then read the database. Do not read the
 old markdown. Do not create new markdown.**
 
-Last updated: 2026-10-13. Supersedes every earlier handoff document; those live in
+Last updated: 2026-10-14. Supersedes every earlier handoff document; those live in
 `archive/session-handoffs/` and are historical only.
 
 ---
@@ -111,7 +111,7 @@ spec/decisions loop:
 | LibreChat (`chat`) | 3080 | the chat Nick talks to the agent through. **Its cloudflared carries the session — never restart it synchronously.** |
 | `vision-app` | 8090 | FastAPI QC/PTZ vision service. **Bootstrap prototype, v0.1 → target v0.8**; self-reports at `GET /api/version`. Code `/home/taza/vision-stack/app`, config `/etc/systemd/system/vision-app.service.d/`. Changes here are expected. |
 | mediamtx | 8554 | RTSP re-serve; the kitchen PTZ H.264 feed is `rtsp://127.0.0.1:8554/ptz_h264` |
-| `pm-os` (`pm_web` directory) | 8095 | **a factory tool, not Mom's Table** (D90). One page, two tabs: Nick's agile sprint kanban and the intended-architecture diagram. Mom's Table kanban is a product app on n100: `taza-kanban` :9003 (D89). |
+| `pm-os` (`pm_web` directory) | 8095 | **a factory tool, not Mom's Table** (D90). Two tabs. **Sprint Tracker** at `/sprinttracker` (the PM board; `/kanban` 308-redirects there, and `/api/kanban/*` still answers). **Architecture** at `/architecture` is no longer hand-drawn: `arch_scan.py` + `arch_collect.sh` read gflip locally and n100 over ssh and rewrite it hourly (cron :05), so it shows the live services, ports, databases, git checkouts and filenames; `/architecture.json` is the same facts raw for machine readers. Anything with more than one owner -- unpushed commits, the same project twice, the same file with two different sizes, a repo with no remote, a service started out of a non-canonical tree -- renders as a flashing red banner with the exact action and is pushed to ntfy.sh/taza-ops when the list changes. It is read-only. Mom's Table kanban is a product app on n100: `taza-kanban` :9003 (D89). |
 
 The kitchen PTZ camera (`192.168.2.117`, ONVIF `admin/admin`, model HD975B-P) keeps its own
 record in `vision-stack/world.db` (`subject='ptz_camera'`) and `vision-stack/PTZ_CONTROL.md` —
