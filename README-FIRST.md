@@ -3,7 +3,7 @@
 **Read this file first, then run the boot query, then read the database. Do not read the
 old markdown. Do not create new markdown.**
 
-Last updated: 2026-10-05. Supersedes every earlier handoff document; those live in
+Last updated: 2026-10-13. Supersedes every earlier handoff document; those live in
 `archive/session-handoffs/` and are historical only.
 
 ---
@@ -24,6 +24,11 @@ check.**
   the section** rather than maintain two copies.
 - The exception holds **only while there is exactly one such file.** If a second
   orientation file ever appears, this exception is broken and one of them must go.
+- **What the markdown ban actually covers.** PD-016 bans markdown *inside the development
+  pipeline* — the pipeline is the database, and this file is its one excepted `.md`. It does
+  **not** ban documentation in production or support trees (e.g. `vision-stack/PTZ_CONTROL.md`
+  is legitimate). Do not delete a production doc to satisfy PD-016; do not create a second
+  orientation file.
 - Correct staleness **in the session that discovers it**, not later.
 
 Two things this file has already had to correct, as examples of how wrong it can get:
@@ -83,15 +88,34 @@ Ideas live in `intake` until they exit as a spec delta, a decision, an
 | `decisions` | `decisions_log` (**the** decision log), `change_record` (every change, FK-linked to its decision) |
 | `intake` | `source`, `candidate`, `candidate_spec`, `alternative` — the idea funnel |
 
+> `spec."seam-stamps"` (13 rows, note the hyphen) is a stray near-duplicate of
+> `spec.seam_stamps` (337 rows). Nothing reads it. It needs a drop decision, not a user.
+
 ### `tazaos` (production)
 
-Live: `square_catalog_items` (355), `square_catalog_sync_log`, `square_invoices` (329),
+Live: `square_catalog_items` (355), `square_catalog_sync_log`, `square_invoices` (330),
 `square_invoice_sync_log`, `invoices_with_deposit` (305), plus `events`, `menu_items`,
 `crew`, `inventory`, `task_cards`, `state_machines`, and the rest of the operational set.
 
 **13 design-time tables in `tazaos` are FROZEN** (D37) and carry a `FROZEN` table comment
 naming their live counterpart in `dev_pipeline`. They are stale pre-split copies.
 **Never edit them.** Cutover — dropping them — is still pending.
+
+### gflip (`192.168.2.107`) — the kitchen / agent box, NOT the pipeline
+
+Separate machine from n100. A cold agent will meet these there; they are not part of the
+spec/decisions loop:
+
+| service | port | what |
+|---|---|---|
+| LibreChat (`chat`) | 3080 | the chat Nick talks to the agent through. **Its cloudflared carries the session — never restart it synchronously.** |
+| `vision-app` | 8090 | FastAPI QC/PTZ vision service. **Bootstrap prototype, v0.1 → target v0.8**; self-reports at `GET /api/version`. Code `/home/taza/vision-stack/app`, config `/etc/systemd/system/vision-app.service.d/`. Changes here are expected. |
+| mediamtx | 8554 | RTSP re-serve; the kitchen PTZ H.264 feed is `rtsp://127.0.0.1:8554/ptz_h264` |
+| `pm-os` (`pm_web` directory) | 8095 | **a factory tool, not Mom's Table** (D90). One page, two tabs: Nick's agile sprint kanban and the intended-architecture diagram. Mom's Table kanban is a product app on n100: `taza-kanban` :9003 (D89). |
+
+The kitchen PTZ camera (`192.168.2.117`, ONVIF `admin/admin`, model HD975B-P) keeps its own
+record in `vision-stack/world.db` (`subject='ptz_camera'`) and `vision-stack/PTZ_CONTROL.md` —
+read those before touching that camera; do not re-derive it here.
 
 ### Roles and viewers
 
@@ -181,7 +205,11 @@ version_id = sha256(canon)[:16]
 
 1. **Never invent a table or column.** Emit `NEEDS-SCHEMA: <what is missing>` and stop.
    Schema changes go through a decision (PD-009).
-2. **Never create a markdown store.** The database is the record (PD-016).
+2. **Never create a markdown store in the development pipeline.** The pipeline is the
+   database; markdown is at most a one-time extraction input or a generated view (PD-016).
+   `README-FIRST.md` is the single exception (§0). **Production and support trees are not
+   covered** — `vision-stack/PTZ_CONTROL.md` is legitimate and must not be deleted to
+   satisfy this rule. Do not create *handoff documents*.
 3. **Never write to `tazaos` design-time tables.** They are frozen (D37).
 4. **Never assume which database you want.** `dev_pipeline` = spec/decisions.
    `tazaos` = production. Check before acting.
@@ -252,13 +280,29 @@ order by c.change_id desc limit 20;
 
 ---
 
-## 8. Current state — 2026-10-04
+## 8. Current state — 2026-10-08
 
-**66 decisions · 12 change records · 291 specs · 329 Square invoices mirrored**
+**96 decisions (16 of them `PD-` doctrine) · 25 change records · 291 specs · 330 Square
+invoices mirrored · intake: 30 candidates (27 `assessed`, 2 `promoted`, 1 `already_satisfied`)**
+
+Break every count down before quoting it (§5.5, §6). The queries:
+
+```sql
+select count(*) from spec.taza_os_user_requirement_specifications;          -- 291
+select count(*) from spec.acceptance_criteria;                              -- 1308
+select count(*) from spec.verification_methods;                             -- 1143
+select branch_status, count(*) from decisions.decisions_log group by 1;     -- active 51, unknown 27, proposed 12, deferred 6
+select status, count(*) from intake.candidate group by 1;                   -- assessed 27, promoted 2, already_satisfied 1
+select count(*) from tazaos.public.square_invoices;                         -- 330 (production DB)
+```
+
+**291 specs and 1,308 ACs / 1,143 VMs are not in conflict.** The first counts spec *rows*;
+the second counts the AC and VM *children* inside them. A previous handoff flagged this pair
+as a stale-vs-current contradiction — it is not one.
 
 **Live:** Square invoice ingestion every 30 min (`square_invoices` → `invoices_with_deposit`
 → `v_invoices_awaiting_final_payment`). Verified against Nick's Square app: outstanding
-$49,462.20 — exact match to the cent.
+$49,462.20 — exact match to the cent (2026-10-04).
 
 **Built but not cut over:** `dev_pipeline` holds the live spec and decisions; `tazaos`
 still holds frozen copies.
@@ -266,14 +310,40 @@ still holds frozen copies.
 **Not built:** the CRM app, the invoice-drafting web form, the two-person approval
 workflow, the Square push, and the entire Track B Taza-invoiced system.
 
+**Elsewhere on gflip (production, not the pipeline):** a QC/PTZ vision prototype is live
+(`vision-app`, §2). Its pack-out verdicts are **advisory only** — `C-2026-10-08-002`, a
+labelled accuracy harness, has not reported a precision number, so **no QC verdict may gate
+shipping product yet**.
+
 ---
 
 ## 9. PENDING DECISIONS — what Nick still has to rule on
 
-`D47` and the items under it are live in `decisions_log` with status `proposed`. Read the
-full rationale there before asking him; he asked for enough context to decide without
-re-deriving it. The 2026-10-05 candidates at the end of this section are one step earlier in
-the funnel: they sit in `intake.candidate` with status `assessed`, awaiting a verdict.
+There is **no `status` column** — the column is `branch_status` (values: `active`,
+`proposed`, `deferred`, `unknown`).
+
+**12 rows sit at `proposed`, every one titled `PENDING NICK:`** — `D47` (the invoice↔event
+join key) plus `D63`–`D73`, the eleven rulings raised 2026-10-05:
+
+```
+D63-D67  the five Postgres application rules in §14 (application_name, timeouts, split
+         roles, ON CONFLICT, non-blocking schema change)
+D68      formal mirrors enter the decision pipeline
+D69      does Gherkin replace the FOL ac_formal mirror, or sit alongside it (§10.3)
+D70      per-call API logging becomes a requirement (§11)
+D71      AI Overwatch scope, powers and conformance definition (§12)
+D72      formal evaluation of connection pooling (agent had recommended rejection)
+D73      formal evaluation of 'single level of abstraction' (agent had recommended rejection)
+```
+
+**Already decided since this section was first written — do not re-ask:**
+`D55` backup retention is **18 months**; `D56` payment-level rows **are** stored; `D57`
+Square event detection is **dual-mode**; `D58` **Helcim** bootstraps invoicing (fallback
+provider required, unnamed). The table below is annotated with the same information.
+
+The candidates at the end of this section are one step earlier in the funnel: they sit in
+`intake.candidate` at `assessed`, awaiting a verdict. **Promoting one is Nick's act
+(`PD-013`).**
 
 ### D47 — what key joins an invoice to an event? **blocking the Kanban spine**
 
@@ -297,11 +367,11 @@ registry.
 
 | # | the question | why it matters |
 |---|---|---|
-| 1 | **Backup retention** — 14 days is my default, unreviewed | determines how far back a point-in-time restore can reach |
+| 1 | ~~Backup retention — 14 days~~ **DECIDED `D55` — retention is 18 months** | any day in the last 18 months can be restored |
 | 2 | **Alert delivery** — `ops_alert` exists but nothing reads it | a failed sync currently writes a row nobody sees; PROD-25 (Notifier) is specified, not built |
-| 3 | **`PROD-06` says webhooks, we built polling** | Nick's stated intent is *both*: polling now, webhooks + email API later as redundancy. Confirm and amend PROD-06. |
-| 4 | **Do we store payment-level rows?** | the API works but nothing is ingested; needed for refunds, partial payments, cash-arrival dates |
-| 5 | **Track B payment stack** — Helcim primary, then what? | named as "a fallback stack" but the providers are undecided |
+| 3 | ~~`PROD-06` says webhooks, we built polling~~ **DECIDED `D57` — dual-mode** | email-then-fetch for bootstrap; webhooks + email API added later as redundancy |
+| 4 | ~~Do we store payment-level rows?~~ **DECIDED `D56` — yes, invoice-level state is not enough** | needed for refunds, partial payments, cash-arrival dates |
+| 5 | ~~Track B payment stack~~ **DECIDED `D58` — Helcim bootstraps; fallback required but unnamed** | the fallback providers are still undecided |
 | 6 | **The `tazaos` cutover** — when do the frozen design-time copies actually get dropped? | until then drift is possible and the duplication is confusing |
 | 7 | **Item 10** — archive `master-urs.md`? | one reconciliation run decides it; frees the last big markdown |
 | 8 | **Item 7** — the 52 `urs/*.md` files | ~12 are real findings worth queueing; the rest are prompts, applied drafts or superseded |
@@ -310,7 +380,7 @@ registry.
 
 ---
 
-### New 2026-10-05 — the intake funnel holds fourteen open items, in the order they should run
+### The intake funnel — 27 assessed, none promoted (12 from 2026-10-05, 15 from 2026-10-08)
 
 Three sources were pre-filtered: Bytebase's *Postgres best practices I wish every app
 developer knew*, Instaclustr's *Top 15 PostgreSQL best practices for 2026*, and Nick's own
@@ -354,12 +424,25 @@ conventions rather than database work, so they do not belong in the run order ab
 One item at the bottom of the second screenshot is cut off by the keyboard and has **not**
 been guessed at — the source row records that.
 
+**2026-10-08 — fifteen new candidates, none promoted.** Sources `S-2026-10-08-001` (QC/QA
+vision bootstrap at Mom's Table pack-out + the latency-tiering rule) and `S-2026-10-08-002`
+(the MT8390 NPU ten-capability roadmap, locked 2026-07-13):
+
+| candidate | what it is | gate / state |
+|---|---|---|
+| `C-2026-10-08-001` | QC/QA vision bootstrap — presence/absence of ingredients at pack-out | prototype live on gflip; verdicts **advisory only** |
+| `C-2026-10-08-002` | verifier accuracy harness — labelled ground truth | **BLOCKING.** No QC PASS may gate shipping product until it reports a precision number |
+| `C-2026-10-08-003` | latency tiering — local AI for batch, cloud AI under a hard budget | **privacy-gated** (may crew-adjacent images leave the LAN?) **and credential-gated** (no OpenRouter key exists on gflip — `/home/taza/.env` holds only DEEPSEEK/NOTION/GITHUB) |
+| `C-2026-10-08-004` | WIP label prints the card's ingredient list to the Zebra | accept path on the label printer is unverified — no label printed from the kanban path yet |
+| `C-2026-10-08-005` | quality-factor inspection | **DEFERRED** by Nick out of the bootstrap |
+| `C-2026-10-08-006` … `-015` | the NPU ten (Vibe Index, Voice Timer, Trip Hazard, Head Strike, PPE, Equipment Acoustics, Predictive Prep Counting, Gesture Control, Fire Pre-Detection, Crew MVP Badge) | `-006` / `-010` / `-015` are **privacy-gated**; `-014` Fire Pre-Detection is **hardware-gated** (~$200 LWIR — a visible camera cannot see heat) |
+
 **One doctrinal note, raised not decided.** `PD-002` says external ideas never enter the
 durable stores directly, so these landed in `intake` rather than as `D47`-style `proposed`
 rows in `decisions_log`, and promoting them is Nick's act (`PD-013`). If he would rather
 see them as `PENDING NICK:` decision rows immediately, that is a one-step promotion.
 
-**Effort and risk are blank on all twelve open candidates on purpose** — `PD-013`, Nick is the
+**Effort and risk are blank on all 27 open candidates on purpose** — `PD-013`, Nick is the
 only estimator.
 
 ---
@@ -458,23 +541,27 @@ it determines what the batches produce.
 
 ### 10.4 READABILITY IS A REQUIREMENT, NOT A PREFERENCE
 
-**Meet or exceed current WCQG readability standards.**
+**Meet or exceed the WCAG reading-level criterion.**
 
-Nick's instruction, 2026-10-04. Applies to everything written: acceptance criteria,
-verification methods, spec prose, decision rationales, formal expressions, reports to Nick,
-and this file.
+Nick's instruction, 2026-10-04. The acronym written here as "WCQG" means **WCAG** - the
+**Web Content Accessibility Guidelines**, the W3C accessibility standard (D93). The
+reading-level criterion inside WCAG is the target: Success Criterion **3.1.5 Reading
+Level**, which sets the bar at a lower-secondary-education reading level, and lets plain
+language or supplemental content stand in. WCAG 2.2 is the current version. SC 3.1.5 is a
+**Level AAA** criterion, as are the neighbouring text criteria 3.1.3 (unusual words) and
+3.1.4 (abbreviations). Source: `https://www.w3.org/TR/WCAG22/#reading-level`.
+
+How conformance is measured: reading level is countable, not a matter of taste - a
+readability grade (Flesch-Kincaid grade level or equivalent) at or below lower secondary,
+one requirement per sentence, no jargon, active voice. Applies to everything written for
+Nick to read: acceptance criteria, verification methods, spec prose, decision rationales,
+formal expressions, reports to Nick, and this file.
 
 PRACTICAL CONSEQUENCE for spec work: an AC or VM written at a reading level, sentence
 length or vocabulary that a cook, a crew member or Sandra cannot follow on a phone in a
 kitchen is a defective requirement, not a stylistic one. The corpus currently contains
 run-on ACs of 200+ characters with multiple numbered clauses per sentence (see `PROD-02`,
 `PROD-06`) - those fail this standard regardless of how accurate they are.
-
-**OPEN ITEM, RECORDED VERBATIM RATHER THAN GUESSED:** the agent does not know what WCQG
-expands to, and has not invented a meaning. The instruction is recorded exactly as given.
-The first future session that has the definition should replace this paragraph with the
-actual standard, its source, and how conformance is measured. Until then: write plain,
-short, concrete sentences, one requirement per sentence, no jargon, active voice.
 
 ---
 
