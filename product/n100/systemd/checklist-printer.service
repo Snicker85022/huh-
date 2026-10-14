@@ -1,7 +1,7 @@
 [Unit]
-Description=Taza checklist printer self-heal (discover + repair queue + flush spool)
+Description=Taza checklist print path self-heal (USB-first: probe ipp-usb endpoint, repair queue + class + spool)
 Documentation=file:/home/taza/checklist-app/printer-selfheal.sh
-After=cups.service cups-browsed.service network-online.target
+After=cups.service ipp-usb.service network-online.target
 Wants=network-online.target
 
 [Service]

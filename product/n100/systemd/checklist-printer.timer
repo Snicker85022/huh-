@@ -1,5 +1,5 @@
 [Unit]
-Description=Probe + heal the checklist printer every 3 minutes (also a keep-alive)
+Description=Probe + heal the checklist print path every 3 minutes (USB primary; keeps the Wi-Fi fallback radio awake)
 
 [Timer]
 OnBootSec=90s

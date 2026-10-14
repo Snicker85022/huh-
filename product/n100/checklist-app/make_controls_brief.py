@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-One-page customer-facing controls brief, printed from the HP DeskJet.
+One-page customer-facing controls brief, printed on the HP DeskJet via the Checklist
+class (D84/D101: TazaHP-USB over USB first, TazaHP over Wi-Fi as the fallback member).
 
 Every claim on this page is traceable to a LOCKED procedure in the Operations Content KB
 (tazaos.rag_operations_content, status='locked'). Nothing here is aspirational.
@@ -10,7 +11,7 @@ The label QR currently resolves to 404 (checked 2026-10-09), so claiming it woul
 
 Writes a real PDF with base-14 fonts (no deps), then hands it to CUPS.
 """
-import subprocess, sys
+import os, subprocess, sys
 
 W, H = 612.0, 792.0
 FONTS = {"R": "F1", "B": "F2", "I": "F3"}
@@ -135,10 +136,17 @@ path = "/home/taza/checklist-app/out/Taza_Kitchen_Controls.pdf"
 open(path, "wb").write(bytes(out))
 print("wrote", path, len(out), "bytes")
 
+# Print target (D84/D101). Checklist = TazaHP-USB (USB, ipp-usb) as the member tried first,
+# TazaHP (Wi-Fi) as the fallback member. Never fall back to a queue that does not exist:
+# refuse instead, so a brief cannot land silently in a dead queue. The old fallback did
+# exactly that - DeskJet3720 was unreachable at 192.168.2.118 and was retired 2026-10-14 (2e).
+QUEUES = [q for q in os.environ.get("BRIEF_QUEUES", "Checklist,TazaHP-USB,TazaHP").split(",") if q]
+q = next((c for c in QUEUES
+          if subprocess.run(["lpstat", "-p", c], capture_output=True).returncode == 0), None)
+print(">>> target queue: %s" % (q or ("NONE of " + ",".join(QUEUES) + " exists")))
 if "--no-print" not in sys.argv:
-    q = "TazaHP"
-    if subprocess.run(["lpstat", "-p", q], capture_output=True).returncode:
-        q = "DeskJet3720"
+    if not q:
+        sys.exit(">>> refusing to print: no live queue")
     r = subprocess.run(["lp", "-d", q, "-o", "media=na_letter_8.5x11in",
                         "-o", "print-color-mode=monochrome",
                         "-t", "Taza Kitchen Controls Brief", path],

@@ -1,0 +1,12 @@
+[Unit]
+Description=Taza checklist consumer (n100) - reads the intercom and prints via the Checklist class
+After=network-online.target cups.service ipp-usb.service order-ingest.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=taza
+EnvironmentFile=/home/taza/checklist-app/checklist-consumer.env
+ExecStart=/usr/bin/python3 /home/taza/checklist-app/checklist_app.py
+TimeoutStartSec=600
+Nice=10
