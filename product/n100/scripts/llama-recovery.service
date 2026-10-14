@@ -1,0 +1,6 @@
+[Unit]
+Description=Taza llama-gflip daily GPU recovery attempt
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/llama-failover.sh recover

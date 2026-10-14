@@ -1,0 +1,6 @@
+[Unit]
+Description=Taza OS one-shot ntfy reminder (backlog nudge)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/taza-ntfy-reminder.sh --fire

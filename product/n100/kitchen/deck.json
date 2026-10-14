@@ -1,0 +1,685 @@
+{
+ "built": "service day 2026-10-24 (in 10 day(s)) · 3 gig(s) · built 2026-10-14T04:10:01 MST",
+ "service_day": "2026-10-24",
+ "days_out": 10.0,
+ "gigs": [
+  "JC-FS-10242026",
+  "JR-DS-10242026",
+  "LF-DS-10242026"
+ ],
+ "shown": [
+  {
+   "title": "Confirm allergen & 85 · Cam",
+   "icon": "✅",
+   "cat": "prep",
+   "urg": "soon",
+   "lkl": "office",
+   "who": "Crew",
+   "steps": [
+    0,
+    1
+   ],
+   "taza": [
+    "allergen check BEFORE procurement   [G-10]"
+   ],
+   "trace": {
+    "invoice": "JC-FS-10242026",
+    "rule": "allergen gate before procurement [G-10]",
+    "guests": "85",
+    "items": [
+     "Full Service Wedding Reception",
+     "Full Service Wedding Reception",
+     "Full Service Wedding Reception",
+     "Full Service Wedding Reception",
+     "Full Service Wedding Reception",
+     "Full Service Wedding Reception",
+     "Full Service Wedding Reception",
+     "Full Service Wedding Reception",
+     "Full Service Wedding Reception",
+     "Full Service Wedding Reception",
+     "Full Service Wedding Reception"
+    ]
+   },
+   "_kind": "confirm",
+   "_gig": "Cam",
+   "id": 101
+  },
+  {
+   "title": "Grill chicken & steak +1 · Cam",
+   "icon": "🍳",
+   "cat": "plate",
+   "urg": "normal",
+   "lkl": "grill",
+   "who": "Crew",
+   "steps": [
+    0,
+    1
+   ],
+   "taza": [
+    "first-cook poultry 165F IT; reheats + fish 145F   [G-08]"
+   ],
+   "trace": {
+    "invoice": "JC-FS-10242026",
+    "items": [
+     "Full Service Wedding Reception",
+     "Full Service Wedding Reception",
+     "Full Service Wedding Reception"
+    ]
+   },
+   "_kind": "cook",
+   "_gig": "Cam",
+   "id": 102
+  },
+  {
+   "title": "Cook short ribs & meatballs +3 · Cam",
+   "icon": "🍳",
+   "cat": "plate",
+   "urg": "normal",
+   "lkl": "hot line",
+   "who": "Crew",
+   "steps": [
+    0,
+    1
+   ],
+   "taza": [
+    "first-cook poultry 165F IT; reheats + fish 145F   [G-08]"
+   ],
+   "trace": {
+    "invoice": "JC-FS-10242026",
+    "items": [
+     "Full Service Wedding Reception",
+     "Full Service Wedding Reception",
+     "Full Service Wedding Reception",
+     "Full Service Wedding Reception",
+     "Full Service Wedding Reception"
+    ]
+   },
+   "_kind": "cook",
+   "_gig": "Cam",
+   "id": 103
+  },
+  {
+   "title": "Prep canapes +2 · Cam",
+   "icon": "🔪",
+   "cat": "prep",
+   "urg": "normal",
+   "lkl": "cold line",
+   "who": "Crew",
+   "steps": [
+    0,
+    1
+   ],
+   "taza": [
+    "date & initial the poly; olive oil not butter   [G-01]"
+   ],
+   "trace": {
+    "invoice": "JC-FS-10242026",
+    "items": [
+     "Full Service Wedding Reception",
+     "Full Service Wedding Reception",
+     "Full Service Wedding Reception"
+    ]
+   },
+   "_kind": "prep",
+   "_gig": "Cam",
+   "id": 104
+  },
+  {
+   "title": "Pack hot pans · Cam",
+   "icon": "📦",
+   "cat": "move",
+   "urg": "normal",
+   "lkl": "pack-out",
+   "who": "Crew",
+   "steps": [
+    0,
+    1
+   ],
+   "taza": [
+    "hot-box bladders 4-6L @ 95C   [G-09]"
+   ],
+   "trace": {
+    "invoice": "JC-FS-10242026",
+    "rule": "hot box [G-09]"
+   },
+   "_kind": "pack",
+   "_gig": "Cam",
+   "id": 105
+  },
+  {
+   "title": "Pack soft carrier · Cam",
+   "icon": "📦",
+   "cat": "move",
+   "urg": "normal",
+   "lkl": "pack-out",
+   "who": "Crew",
+   "steps": [
+    0,
+    1
+   ],
+   "taza": [
+    "date & initial the poly; olive oil not butter   [G-01]"
+   ],
+   "trace": {
+    "invoice": "JC-FS-10242026",
+    "rule": "poly/date [G-01]"
+   },
+   "_kind": "pack",
+   "_gig": "Cam",
+   "id": 106
+  },
+  {
+   "title": "Stage the buffet · Cam",
+   "icon": "🍴",
+   "cat": "move",
+   "urg": "normal",
+   "lkl": "on-site",
+   "who": "Crew",
+   "steps": [
+    0,
+    1
+   ],
+   "taza": null,
+   "trace": {
+    "invoice": "JC-FS-10242026",
+    "rule": "order states setup/stations/full service"
+   },
+   "_kind": "stage",
+   "_gig": "Cam",
+   "id": 107
+  },
+  {
+   "title": "Deliver Mesa · Cam",
+   "icon": "🚚",
+   "cat": "move",
+   "urg": "normal",
+   "lkl": "Saguaro Lake Ranch",
+   "who": "Crew",
+   "steps": [
+    0,
+    1
+   ],
+   "taza": null,
+   "trace": {
+    "invoice": "JC-FS-10242026",
+    "rule": "order states a delivery/venue address",
+    "time": "",
+    "city": "Mesa",
+    "venue": "Saguaro Lake Ranch"
+   },
+   "_kind": "deliver",
+   "_gig": "Cam",
+   "id": 108
+  },
+  {
+   "title": "Flag timeline still to come · Cam",
+   "icon": "🚩",
+   "cat": "reset",
+   "urg": "normal",
+   "lkl": "office",
+   "who": "Crew",
+   "steps": [
+    0,
+    1
+   ],
+   "taza": null,
+   "trace": {
+    "invoice": "JC-FS-10242026",
+    "quote": "note: Timeline to come"
+   },
+   "_kind": "flag",
+   "_gig": "Cam",
+   "id": 109
+  },
+  {
+   "title": "Confirm allergen & 100-125 · Rayer",
+   "icon": "✅",
+   "cat": "prep",
+   "urg": "soon",
+   "lkl": "office",
+   "who": "Crew",
+   "steps": [
+    0,
+    1
+   ],
+   "taza": [
+    "allergen check BEFORE procurement   [G-10]"
+   ],
+   "trace": {
+    "invoice": "JR-DS-10242026",
+    "rule": "allergen gate before procurement [G-10]",
+    "guests": "100-125",
+    "items": [
+     "Greek Chicken w/ Feta & Spinach",
+     "Baked Salmon",
+     "Beef Short Ribs",
+     "Grilled Mixed Veggies",
+     "Seasoned Rice",
+     "Mixed Green Salad",
+     "Baklava Bites"
+    ]
+   },
+   "_kind": "confirm",
+   "_gig": "Rayer",
+   "id": 110
+  },
+  {
+   "title": "Grill 80 chicken · Rayer",
+   "icon": "🍳",
+   "cat": "plate",
+   "urg": "normal",
+   "lkl": "grill",
+   "who": "Crew",
+   "steps": [
+    0,
+    1
+   ],
+   "taza": [
+    "first-cook poultry 165F IT; reheats + fish 145F   [G-08]"
+   ],
+   "trace": {
+    "invoice": "JR-DS-10242026",
+    "items": [
+     "Greek Chicken w/ Feta & Spinach"
+    ]
+   },
+   "_kind": "cook",
+   "_gig": "Rayer",
+   "id": 111
+  },
+  {
+   "title": "Cook 32 salmon +3 · Rayer",
+   "icon": "🍳",
+   "cat": "plate",
+   "urg": "normal",
+   "lkl": "hot line",
+   "who": "Crew",
+   "steps": [
+    0,
+    1
+   ],
+   "taza": [
+    "first-cook poultry 165F IT; reheats + fish 145F   [G-08]"
+   ],
+   "trace": {
+    "invoice": "JR-DS-10242026",
+    "items": [
+     "Baked Salmon",
+     "Beef Short Ribs",
+     "Grilled Mixed Veggies",
+     "Seasoned Rice"
+    ]
+   },
+   "_kind": "cook",
+   "_gig": "Rayer",
+   "id": 112
+  },
+  {
+   "title": "Prep 84 salad · Rayer",
+   "icon": "🔪",
+   "cat": "prep",
+   "urg": "normal",
+   "lkl": "cold line",
+   "who": "Crew",
+   "steps": [
+    0,
+    1
+   ],
+   "taza": [
+    "date & initial the poly; olive oil not butter   [G-01]"
+   ],
+   "trace": {
+    "invoice": "JR-DS-10242026",
+    "items": [
+     "Mixed Green Salad"
+    ]
+   },
+   "_kind": "prep",
+   "_gig": "Rayer",
+   "id": 113
+  },
+  {
+   "title": "Portion baklava · Rayer",
+   "icon": "🍰",
+   "cat": "plate",
+   "urg": "normal",
+   "lkl": "pastry",
+   "who": "Crew",
+   "steps": [
+    0,
+    1
+   ],
+   "taza": null,
+   "trace": {
+    "invoice": "JR-DS-10242026",
+    "items": [
+     "Baklava Bites"
+    ]
+   },
+   "_kind": "portion",
+   "_gig": "Rayer",
+   "id": 114
+  },
+  {
+   "title": "Pack hot pans · Rayer",
+   "icon": "📦",
+   "cat": "move",
+   "urg": "normal",
+   "lkl": "pack-out",
+   "who": "Crew",
+   "steps": [
+    0,
+    1
+   ],
+   "taza": [
+    "hot-box bladders 4-6L @ 95C   [G-09]"
+   ],
+   "trace": {
+    "invoice": "JR-DS-10242026",
+    "rule": "hot box [G-09]"
+   },
+   "_kind": "pack",
+   "_gig": "Rayer",
+   "id": 115
+  },
+  {
+   "title": "Pack soft carrier · Rayer",
+   "icon": "📦",
+   "cat": "move",
+   "urg": "normal",
+   "lkl": "pack-out",
+   "who": "Crew",
+   "steps": [
+    0,
+    1
+   ],
+   "taza": [
+    "date & initial the poly; olive oil not butter   [G-01]"
+   ],
+   "trace": {
+    "invoice": "JR-DS-10242026",
+    "rule": "poly/date [G-01]"
+   },
+   "_kind": "pack",
+   "_gig": "Rayer",
+   "id": 116
+  },
+  {
+   "title": "Stage the buffet · Rayer",
+   "icon": "🍴",
+   "cat": "move",
+   "urg": "normal",
+   "lkl": "on-site",
+   "who": "Crew",
+   "steps": [
+    0,
+    1
+   ],
+   "taza": null,
+   "trace": {
+    "invoice": "JR-DS-10242026",
+    "rule": "order states setup/stations/full service"
+   },
+   "_kind": "stage",
+   "_gig": "Rayer",
+   "id": 117
+  },
+  {
+   "title": "Deliver by 6:30 PM · Rayer",
+   "icon": "🚚",
+   "cat": "move",
+   "urg": "normal",
+   "lkl": "Litchfield Park",
+   "who": "Crew",
+   "steps": [
+    0,
+    1
+   ],
+   "taza": null,
+   "trace": {
+    "invoice": "JR-DS-10242026",
+    "rule": "order states a delivery/venue address",
+    "time": "by 6:30 PM",
+    "city": "Litchfield Park",
+    "venue": null
+   },
+   "_kind": "deliver",
+   "_gig": "Rayer",
+   "id": 118
+  },
+  {
+   "title": "Flag shred the ribs for yield",
+   "icon": "🚩",
+   "cat": "reset",
+   "urg": "normal",
+   "lkl": "office",
+   "who": "Crew",
+   "steps": [
+    0,
+    1
+   ],
+   "taza": null,
+   "trace": {
+    "invoice": "JR-DS-10242026",
+    "quote": "note: take out the bones and shred so it serves more people"
+   },
+   "_kind": "flag",
+   "_gig": "Rayer",
+   "id": 119
+  },
+  {
+   "title": "Confirm allergen & counts · Ferguson",
+   "icon": "✅",
+   "cat": "prep",
+   "urg": "soon",
+   "lkl": "office",
+   "who": "Crew",
+   "steps": [
+    0,
+    1
+   ],
+   "taza": [
+    "allergen check BEFORE procurement   [G-10]"
+   ],
+   "trace": {
+    "invoice": "LF-DS-10242026",
+    "rule": "allergen gate before procurement [G-10]",
+    "guests": null,
+    "items": [
+     "Mediterranean Grill",
+     "Pear Brie Arugula Stack",
+     "Roasted Baby Potatoes",
+     "Baklava Bites",
+     "Cheesecake Bites",
+     "Chocolate Bonbons"
+    ]
+   },
+   "_kind": "confirm",
+   "_gig": "Ferguson",
+   "id": 120
+  },
+  {
+   "title": "Grill platter · Ferguson",
+   "icon": "🍳",
+   "cat": "plate",
+   "urg": "normal",
+   "lkl": "grill",
+   "who": "Crew",
+   "steps": [
+    0,
+    1
+   ],
+   "taza": [
+    "first-cook poultry 165F IT; reheats + fish 145F   [G-08]"
+   ],
+   "trace": {
+    "invoice": "LF-DS-10242026",
+    "items": [
+     "Mediterranean Grill"
+    ]
+   },
+   "_kind": "cook",
+   "_gig": "Ferguson",
+   "id": 121
+  },
+  {
+   "title": "Cook potatoes · Ferguson",
+   "icon": "🍳",
+   "cat": "plate",
+   "urg": "normal",
+   "lkl": "hot line",
+   "who": "Crew",
+   "steps": [
+    0,
+    1
+   ],
+   "taza": null,
+   "trace": {
+    "invoice": "LF-DS-10242026",
+    "items": [
+     "Roasted Baby Potatoes"
+    ]
+   },
+   "_kind": "cook",
+   "_gig": "Ferguson",
+   "id": 122
+  },
+  {
+   "title": "Prep pear brie stack · Ferguson",
+   "icon": "🔪",
+   "cat": "prep",
+   "urg": "normal",
+   "lkl": "cold line",
+   "who": "Crew",
+   "steps": [
+    0,
+    1
+   ],
+   "taza": [
+    "date & initial the poly; olive oil not butter   [G-01]"
+   ],
+   "trace": {
+    "invoice": "LF-DS-10242026",
+    "items": [
+     "Pear Brie Arugula Stack"
+    ]
+   },
+   "_kind": "prep",
+   "_gig": "Ferguson",
+   "id": 123
+  },
+  {
+   "title": "Portion baklava +2 · Ferguson",
+   "icon": "🍰",
+   "cat": "plate",
+   "urg": "normal",
+   "lkl": "pastry",
+   "who": "Crew",
+   "steps": [
+    0,
+    1
+   ],
+   "taza": null,
+   "trace": {
+    "invoice": "LF-DS-10242026",
+    "items": [
+     "Baklava Bites",
+     "Cheesecake Bites",
+     "Chocolate Bonbons"
+    ]
+   },
+   "_kind": "portion",
+   "_gig": "Ferguson",
+   "id": 124
+  },
+  {
+   "title": "Pack hot pans · Ferguson",
+   "icon": "📦",
+   "cat": "move",
+   "urg": "normal",
+   "lkl": "pack-out",
+   "who": "Crew",
+   "steps": [
+    0,
+    1
+   ],
+   "taza": [
+    "hot-box bladders 4-6L @ 95C   [G-09]"
+   ],
+   "trace": {
+    "invoice": "LF-DS-10242026",
+    "rule": "hot box [G-09]"
+   },
+   "_kind": "pack",
+   "_gig": "Ferguson",
+   "id": 125
+  },
+  {
+   "title": "Pack soft carrier · Ferguson",
+   "icon": "📦",
+   "cat": "move",
+   "urg": "normal",
+   "lkl": "pack-out",
+   "who": "Crew",
+   "steps": [
+    0,
+    1
+   ],
+   "taza": [
+    "date & initial the poly; olive oil not butter   [G-01]"
+   ],
+   "trace": {
+    "invoice": "LF-DS-10242026",
+    "rule": "poly/date [G-01]"
+   },
+   "_kind": "pack",
+   "_gig": "Ferguson",
+   "id": 126
+  },
+  {
+   "title": "Stage the buffet · Ferguson",
+   "icon": "🍴",
+   "cat": "move",
+   "urg": "normal",
+   "lkl": "on-site",
+   "who": "Crew",
+   "steps": [
+    0,
+    1
+   ],
+   "taza": null,
+   "trace": {
+    "invoice": "LF-DS-10242026",
+    "rule": "order states setup/stations/full service"
+   },
+   "_kind": "stage",
+   "_gig": "Ferguson",
+   "id": 127
+  },
+  {
+   "title": "Deliver 4:00 PM–4:30 PM · Ferguson",
+   "icon": "🚚",
+   "cat": "move",
+   "urg": "normal",
+   "lkl": "Phoenix",
+   "who": "Crew",
+   "steps": [
+    0,
+    1
+   ],
+   "taza": null,
+   "trace": {
+    "invoice": "LF-DS-10242026",
+    "rule": "order states a delivery/venue address",
+    "time": "4:00 PM–4:30 PM",
+    "city": "Phoenix",
+    "venue": null
+   },
+   "_kind": "deliver",
+   "_gig": "Ferguson",
+   "id": 128
+  }
+ ],
+ "deferred": [],
+ "outside_deck_md5": "6dd55ff0cb52a276bfe4706df3ad5767"
+}

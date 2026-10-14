@@ -27,7 +27,13 @@
   html,body{height:100%;}
   body{background:#0a0a0c;font-family:"Segoe UI",system-ui,-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;overflow:hidden;}
 
-  .device{position:relative;aspect-ratio:1080/1920;height:100vh;max-height:100vh;max-width:100vw;overflow:hidden;
+  /* The board is a fixed 1080x1920 stage, scaled to fit the viewing window. That way the LAYOUT never
+     depends on the window: a desktop view (and any screenshot of it) is the same board, proportionally,
+     that the Microtouch panel shows -- no reflow, no shrunken cards, no viewport media queries.
+     Nick 2026-10-14: "make [it] exactly match what shows on the microtouch screen so I can show you
+     accurate images." A landscape window gets the panel's own ?rotate=90 treatment (see fitStage). */
+  .device{position:relative;width:1080px;height:1920px;flex:0 0 auto;overflow:hidden;
+    transform:scale(var(--fit,1));transform-origin:50% 50%;
     background:radial-gradient(120% 80% at 50% 34%,var(--felt-1) 0%,var(--felt-2) 46%,var(--felt-3) 100%);
     box-shadow:0 0 0 14px var(--wood-2),0 0 0 26px var(--wood-1),0 30px 80px rgba(0,0,0,.6);}
   .device::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.06;mix-blend-mode:overlay;
@@ -86,16 +92,21 @@
   .table{flex:1 1 auto;min-height:0;overflow-y:auto;}
   .lay{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:6px 0;padding:2px 0 10px;
     max-width:820px;margin:0 auto;}
-  .lay .card{margin:0 2px;}
-  @media (max-width:600px){.lay .card{margin:0 -8px;}.table .card{width:calc(50% - 6px);height:auto;aspect-ratio:253/354;}}
+  .lay .card{margin:0 5px;}
+  /* (the old max-width:600px overlap rule is gone: the stage is fixed, so a viewport media query would
+     fire on the viewing window and change the board -- it was what overlapped the in-play cards.) */
 
   /* ---------- BOTTOM: your hand ---------- */
   .handwrap{flex:0 0 auto;padding-top:4px;}
-  .hand{display:flex;justify-content:center;align-items:flex-end;height:372px;position:relative;}
-  .hand .card{width:250px;height:350px;margin:0 -34px;transform-origin:50% 100%;transition:transform .18s ease,margin .18s ease,width .3s ease,height .3s ease;cursor:pointer;touch-action:none;}
-  .hand .card:hover,.hand .card:active{transform:translateY(-24px) scale(1.04)!important;margin:0 4px;z-index:20;}
+  /* the fan is wider than the page on a big service day: cards keep their size and run off the
+     edge, and the fan is dragged left/right to read them (Nick 2026-10-14). Without flex:0 0 auto
+     the flex row shrinks every card to a sliver instead. */
+  .hand{display:block;height:236px;position:relative;}   /* absolute fan: lifting a card never reflows it */
+  .hand .card{position:absolute;bottom:0;width:150px;height:210px;transform-origin:50% 100%;transition:transform .18s ease,margin .18s ease,width .3s ease,height .3s ease;cursor:pointer;touch-action:none;}
+  .hand .card:hover,.hand .card:active{transform:translateY(-16px) scale(1.05)!important;z-index:20;}
   /* drag-to-preview: card lifts out of the fan, follows the finger, grows to in-play size */
-  .hand .card.previewing{position:fixed;margin:0!important;z-index:200;transition:none;pointer-events:none;
+  /* touch-to-read: the lifted card is swapped to the full readable face at full size, under the finger */
+  .hand .card.previewing{position:fixed;left:auto;bottom:auto;width:250px;height:350px;margin:0!important;z-index:200;transition:none;pointer-events:none;
     box-shadow:0 34px 64px rgba(0,0,0,.62),inset 0 0 0 6px #fff,inset 0 0 0 7px var(--card-edge);}
   .hand .card.previewing:hover,.hand .card.previewing:active{margin:0!important;}
   .hand .card.returning{transition:left .28s ease,top .28s ease,transform .28s ease;}
@@ -103,52 +114,58 @@
   .hand .card.sliding{transition:transform .19s cubic-bezier(.2,.7,.3,1);}
   .hand .card.reordering{z-index:300!important;transition:none;
     box-shadow:0 30px 60px rgba(0,0,0,.6),inset 0 0 0 6px #fff,inset 0 0 0 7px var(--card-edge);}
-  .hand .card.reordering:hover,.hand .card.reordering:active{margin:0 -34px;}
+  /* (the old hover/margin dance is gone: the fan no longer re-lays out under the finger) */
   .hand .card.snap{transition:transform .22s cubic-bezier(.2,.7,.3,1);}
 
   /* ---------- CARD (face) ---------- */
   .card{position:relative;background:var(--card);border-radius:16px;border:1px solid var(--card-edge);color:var(--ink);overflow:hidden;
     display:flex;flex-direction:column;box-shadow:0 10px 22px rgba(0,0,0,.42),inset 0 0 0 6px #fff,inset 0 0 0 7px var(--card-edge);
     transition:width .3s ease,height .3s ease;}
-  .table .card{width:194px;height:287px;touch-action:none;}
+  .table .card{width:194px;min-height:287px;height:auto;touch-action:none;}   /* height auto: never cut text */
   .card .top-edge{height:8px;flex:0 0 auto;}
   .u-rush .top-edge{background:var(--red);} .u-soon .top-edge{background:var(--amber);} .u-normal .top-edge{background:var(--grn);}
-  .card .body{padding:10px 12px 10px;display:flex;flex-direction:column;flex:1;gap:7px;}
+  .card .body{padding:8px 10px;display:flex;flex-direction:column;flex:1;gap:5px;}
 
   .pip{position:absolute;font-family:Georgia,serif;line-height:.8;text-align:center;z-index:3;pointer-events:none;}
-  .pip.tl{top:13px;left:13px;} .pip.br{bottom:13px;right:13px;transform:rotate(180deg);}
-  .pip .rank{font-size:19px;font-weight:700;} .pip .suit{font-size:24px;margin-top:-2px;}
+  .pip.tl{top:10px;left:11px;} .pip.br{bottom:10px;right:11px;transform:rotate(180deg);}
+  .pip .rank{font-size:16px;font-weight:700;} .pip .suit{font-size:20px;margin-top:-2px;}
   .u-rush .pip{color:var(--red);} .u-soon .pip{color:var(--amber);} .u-normal .pip{color:var(--grn);}
 
-  .titlerow{display:flex;align-items:flex-start;gap:8px;padding:0 24px;margin-top:2px;}
-  .ticon{font-size:26px;line-height:1;flex:0 0 auto;filter:saturate(1.1);}
-  .card .title{font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:20px;line-height:1.1;}
-  .hand .card .title{font-size:16px;}
-  .hand .titlerow{padding:0 20px;} .hand .ticon{font-size:20px;}
+  .titlerow{display:flex;align-items:flex-start;gap:7px;padding:0 30px 0 44px;margin-top:2px;}  /* 44px clears the rank/suit pip */
+  .ticon{font-size:22px;line-height:1;flex:0 0 auto;filter:saturate(1.1);}
+  .card .title{font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:16.5px;line-height:1.14;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+  .hand .card.mini .title{font-size:12.5px;line-height:1.14;-webkit-line-clamp:3;}
+  .hand .card.mini .titlerow{padding:0 8px 0 22px;gap:5px;margin-top:2px;}
+  .hand .card.mini .ticon{font-size:14px;}
+  .hand .card.mini .body{padding:6px 7px;gap:3px;}
+  .hand .card.mini .pip.tl{top:8px;left:8px;} .hand .card.mini .pip.br{display:none;}
+  .hand .card.mini .pip .rank{font-size:11px;} .hand .card.mini .pip .suit{font-size:14px;margin-top:-1px;}
+  .hand .card.mini .where{font-size:9.5px;padding:2px 7px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .hand .card.mini .worth{font-size:9.5px;font-weight:800;color:var(--ink-soft);letter-spacing:.04em;}
 
   .allergen{display:flex;align-items:center;gap:8px;background:var(--red);color:#fff;border-radius:8px;padding:6px 10px;font-weight:800;font-size:13px;letter-spacing:.04em;box-shadow:0 2px 6px rgba(193,18,47,.4);}
   .allergen .ic{font-size:16px;}
 
-  .where{display:inline-flex;align-items:center;gap:5px;background:rgba(0,0,0,.055);border:1px solid rgba(0,0,0,.08);border-radius:20px;padding:4px 10px;font-size:12.5px;font-weight:600;align-self:flex-start;}
+  .where{display:inline-flex;align-items:center;gap:5px;background:rgba(0,0,0,.055);border:1px solid rgba(0,0,0,.08);border-radius:20px;padding:3px 9px;font-size:11px;font-weight:600;align-self:flex-start;max-width:100%;}
   .where .ic{opacity:.55;}
 
   /* grab (ingredients / materials) */
   .grab{display:flex;flex-wrap:wrap;gap:5px;}
-  .grab .g{background:rgba(47,125,84,.12);border:1px solid rgba(47,125,84,.28);color:#245c3e;border-radius:6px;padding:3px 8px;font-size:11.5px;font-weight:600;}
+  .grab .g{background:rgba(47,125,84,.12);border:1px solid rgba(47,125,84,.28);color:#245c3e;border-radius:6px;padding:2px 7px;font-size:10.5px;font-weight:600;}
 
   /* THE TAZA WAY — critical method bullets */
-  .tway{background:rgba(201,162,39,.10);border:1px solid rgba(201,162,39,.35);border-radius:10px;padding:8px 10px;}
-  .tway .h{display:flex;align-items:center;gap:6px;font-size:10.5px;letter-spacing:.14em;font-weight:800;text-transform:uppercase;color:#8a6d16;margin-bottom:5px;}
-  .tway ul{list-style:none;display:flex;flex-direction:column;gap:4px;}
-  .tway li{position:relative;padding-left:16px;font-size:13px;line-height:1.25;color:var(--ink);}
+  .tway{background:rgba(201,162,39,.10);border:1px solid rgba(201,162,39,.35);border-radius:10px;padding:6px 8px;}
+  .tway .h{display:flex;align-items:center;gap:6px;font-size:9.5px;letter-spacing:.12em;font-weight:800;text-transform:uppercase;color:#8a6d16;margin-bottom:3px;}
+  .tway ul{list-style:none;display:flex;flex-direction:column;gap:3px;}
+  .tway li{position:relative;padding-left:14px;font-size:11.5px;line-height:1.22;color:var(--ink);}
   .tway li::before{content:"◆";position:absolute;left:0;top:1px;color:var(--gold);font-size:10px;}
 
-  .foot{margin-top:auto;display:flex;flex-direction:column;gap:9px;}
-  .steps{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-soft);font-weight:600;}
+  .foot{margin-top:auto;display:flex;flex-direction:column;gap:6px;}
+  .steps{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--ink-soft);font-weight:600;}
   .pips{display:flex;gap:5px;}
-  .pips .s{width:11px;height:11px;border-radius:50%;background:rgba(0,0,0,.14);}
+  .pips .s{width:9px;height:9px;border-radius:50%;background:rgba(0,0,0,.14);}
   .u-rush .pips .s.on{background:var(--red);} .u-soon .pips .s.on{background:var(--amber);} .u-normal .pips .s.on{background:var(--grn);}
-  .who{align-self:flex-start;background:rgba(201,162,39,.16);border:1px solid rgba(201,162,39,.35);border-radius:20px;padding:3px 10px;font-size:12px;font-weight:700;color:#7a5f12;}
+  .who{align-self:flex-start;background:rgba(201,162,39,.16);border:1px solid rgba(201,162,39,.35);border-radius:20px;padding:2px 8px;font-size:10.5px;font-weight:700;color:#7a5f12;}
 
   .actions{display:flex;gap:8px;}
   .btn{border:none;border-radius:10px;padding:11px 10px;font-size:13.5px;font-weight:800;cursor:pointer;font-family:inherit;transition:transform .08s ease;}
@@ -283,14 +300,7 @@
   .prep-item-name{font-family:Georgia,serif;font-size:16px;color:var(--gold);margin-bottom:12px;}
 
   /* ---------- portrait-device rotation (MT1/MT2 via ?rotate=90) ---------- */
-  body.rotated-90 .device{
-    transform:rotate(90deg);
-    transform-origin:center center;
-    width:100vh;
-    height:100vw;
-    max-height:100vw;
-    max-width:100vh;
-  }
+  body.rotated-90 .device{transform:rotate(90deg) scale(var(--fit,1));transform-origin:center center;}
 
   /* ---------- DONE PILE = CREW SCOREBOARD (B-DONE-PILE) ---------- */
   .crewrail{display:flex;gap:14px;align-items:flex-start;height:224px;overflow-x:auto;overflow-y:hidden;
@@ -541,6 +551,24 @@ function deckBackHTML(){
     <div class="cb-mono" title="in memory of LB">LB</div>`;
 }
 document.getElementById("deckback").innerHTML=deckBackHTML();
+
+/* ---------- the stage: a fixed 1080x1920 board, scaled to fit whatever window views it ----------
+   The board is DESIGNED for the Microtouch panel (portrait 1080x1920). Laying out at that fixed size
+   and only SCALING means the layout can never depend on the viewing window -- so a desktop view, and
+   any screenshot taken from it, is exactly the board the panel shows, just smaller. A landscape window
+   gets the panel's own ?rotate=90 treatment, which is how MT1/MT2 are mounted. Nick 2026-10-14:
+   "make [it] exactly match what shows on the microtouch screen so I can show you accurate images." */
+const _rq=new URLSearchParams(location.search).get("rotate");
+let _rotated = _rq==="90" || (_rq!=="0" && window.innerWidth>window.innerHeight);
+function fitStage(){
+  document.body.classList.toggle("rotated-90",_rotated);
+  const w=window.innerWidth,h=window.innerHeight;
+  const s = _rotated ? Math.min(w/1920,h/1080) : Math.min(w/1080,h/1920);
+  document.documentElement.style.setProperty("--fit",String(s));
+  window.__stageScale=s;
+}
+window.addEventListener("resize",()=>{ _rotated=_rq==="90"||(_rq!=="0"&&window.innerWidth>window.innerHeight); fitStage(); });
+fitStage();
 /* East / West per kiosk: load ...?board=East  (defaults to West) */
 document.getElementById("boardName").textContent="Mom's Table · "+((new URLSearchParams(location.search).get("board"))||"West");
 
@@ -565,49 +593,47 @@ const SUIT={plate:"♥",prep:"♠",move:"♦",reset:"♣"};
 const RANK={rush:"A",soon:"K",normal:"Q"};
 const PTS={rush:30,soon:20,normal:10};
 
+/* DECK SOURCE: built by /home/taza/kitchen/gig_deck.py from system_events
+   topic=order.captured (same bus the checklist app reads; no LLM). service day 2026-10-24 (in 10 day(s)) · 3 gig(s) · built 2026-10-14T04:10:01 MST
+   Full deck + per-card traceability: /home/taza/kitchen/deck.json */
 let cards=[
-  {id:1, title:"Fire Cypress salmon — 40 plates", icon:"🐟", cat:"plate", urg:"rush",
-   lkl:"Cold line · speed rack A", who:"Edgar", steps:[2,5], allergen:"Fish",
-   grab:["white wine","garlic","olive oil","Italian seasoning"],
-   taza:["After it flips, gently peel the skin off","Flip it back, onto the packing tray","Cover tight with poly — no gaps"],
-   comic:[["🐟","Grab salmon off the cold line — speed rack A."],["🧄","Season: white wine, garlic, olive oil, Italian."],["🔥","Fire it. After the flip, gently peel the skin."],["📦","Flip back, onto the packing tray, cover tight."]],
-   zone:"table"},
-  {id:2, title:"Sear short ribs, rest & hold", icon:"🥩", cat:"prep", urg:"soon",
-   lkl:"Hot line", who:"Orlando", steps:[1,3], allergen:null,
-   grab:["salt","cracked pepper","thyme"],
-   taza:["Rest 8 min before you slice — don't rush it","Slice against the grain, thinner than you think"],
-   comic:null, zone:"table"},
-  {id:3, title:"Portion NUT-FREE meals — Table 4", icon:"🥗", cat:"plate", urg:"rush",
-   lkl:"Prep 2", who:"Sandra", steps:[0,4], allergen:"Tree nuts",
-   grab:["clean board","fresh gloves"],
-   taza:["Separate board & gloves — never the shared knife","Label the lids: TABLE 4 · NUT-FREE"],
-   comic:null, zone:"hand"},
-  {id:4, title:"Pull braise from walk-in", icon:"🍲", cat:"move", urg:"normal",
-   lkl:"Walk-in B", who:"Bambi", steps:[0,2], allergen:null,
-   grab:["sheet pan","hot pads"],
-   taza:["Check the temp log before you pull","Cambro goes on the low speed rack, not the floor"],
-   comic:null, zone:"hand"},
-  {id:5, title:"Load hot boxes — PayPal event", icon:"📦", cat:"move", urg:"soon",
-   lkl:"Loading dock", who:"Knox", steps:[0,3], allergen:null,
-   grab:["Cambros ×4","strap kit"],
-   taza:["Hot on top, cold on the bottom — always","Count against the BEO sheet before it rolls"],
-   comic:null, zone:"hand"},
-  {id:6, title:"Label & wrap dessert trays", icon:"🍰", cat:"reset", urg:"normal",
-   lkl:"Prep 1", who:"Edgar", steps:[0,2], allergen:null,
-   grab:["poly wrap","label gun"],
-   taza:["Date & initial every tray","Flat in the reach-in — never stacked warm"],
-   comic:null, zone:"hand"},
+  {id:101, title:"Confirm allergen & 85 · Cam", icon:"✅", cat:"prep", urg:"soon", lkl:"office", who:"Crew", steps:[0,1], taza:["allergen check BEFORE procurement   [G-10]"], zone:"hand"},
+  {id:102, title:"Grill chicken & steak +1 · Cam", icon:"🍳", cat:"plate", urg:"normal", lkl:"grill", who:"Crew", steps:[0,1], taza:["first-cook poultry 165F IT; reheats + fish 145F   [G-08]"], zone:"hand"},
+  {id:103, title:"Cook short ribs & meatballs +3 · Cam", icon:"🍳", cat:"plate", urg:"normal", lkl:"hot line", who:"Crew", steps:[0,1], taza:["first-cook poultry 165F IT; reheats + fish 145F   [G-08]"], zone:"hand"},
+  {id:104, title:"Prep canapes +2 · Cam", icon:"🔪", cat:"prep", urg:"normal", lkl:"cold line", who:"Crew", steps:[0,1], taza:["date & initial the poly; olive oil not butter   [G-01]"], zone:"hand"},
+  {id:105, title:"Pack hot pans · Cam", icon:"📦", cat:"move", urg:"normal", lkl:"pack-out", who:"Crew", steps:[0,1], taza:["hot-box bladders 4-6L @ 95C   [G-09]"], zone:"hand"},
+  {id:106, title:"Pack soft carrier · Cam", icon:"📦", cat:"move", urg:"normal", lkl:"pack-out", who:"Crew", steps:[0,1], taza:["date & initial the poly; olive oil not butter   [G-01]"], zone:"hand"},
+  {id:107, title:"Stage the buffet · Cam", icon:"🍴", cat:"move", urg:"normal", lkl:"on-site", who:"Crew", steps:[0,1], zone:"hand"},
+  {id:108, title:"Deliver Mesa · Cam", icon:"🚚", cat:"move", urg:"normal", lkl:"Saguaro Lake Ranch", who:"Crew", steps:[0,1], zone:"hand"},
+  {id:109, title:"Flag timeline still to come · Cam", icon:"🚩", cat:"reset", urg:"normal", lkl:"office", who:"Crew", steps:[0,1], zone:"hand"},
+  {id:110, title:"Confirm allergen & 100-125 · Rayer", icon:"✅", cat:"prep", urg:"soon", lkl:"office", who:"Crew", steps:[0,1], taza:["allergen check BEFORE procurement   [G-10]"], zone:"hand"},
+  {id:111, title:"Grill 80 chicken · Rayer", icon:"🍳", cat:"plate", urg:"normal", lkl:"grill", who:"Crew", steps:[0,1], taza:["first-cook poultry 165F IT; reheats + fish 145F   [G-08]"], zone:"hand"},
+  {id:112, title:"Cook 32 salmon +3 · Rayer", icon:"🍳", cat:"plate", urg:"normal", lkl:"hot line", who:"Crew", steps:[0,1], taza:["first-cook poultry 165F IT; reheats + fish 145F   [G-08]"], zone:"hand"},
+  {id:113, title:"Prep 84 salad · Rayer", icon:"🔪", cat:"prep", urg:"normal", lkl:"cold line", who:"Crew", steps:[0,1], taza:["date & initial the poly; olive oil not butter   [G-01]"], zone:"hand"},
+  {id:114, title:"Portion baklava · Rayer", icon:"🍰", cat:"plate", urg:"normal", lkl:"pastry", who:"Crew", steps:[0,1], zone:"hand"},
+  {id:115, title:"Pack hot pans · Rayer", icon:"📦", cat:"move", urg:"normal", lkl:"pack-out", who:"Crew", steps:[0,1], taza:["hot-box bladders 4-6L @ 95C   [G-09]"], zone:"hand"},
+  {id:116, title:"Pack soft carrier · Rayer", icon:"📦", cat:"move", urg:"normal", lkl:"pack-out", who:"Crew", steps:[0,1], taza:["date & initial the poly; olive oil not butter   [G-01]"], zone:"hand"},
+  {id:117, title:"Stage the buffet · Rayer", icon:"🍴", cat:"move", urg:"normal", lkl:"on-site", who:"Crew", steps:[0,1], zone:"hand"},
+  {id:118, title:"Deliver by 6:30 PM · Rayer", icon:"🚚", cat:"move", urg:"normal", lkl:"Litchfield Park", who:"Crew", steps:[0,1], zone:"hand"},
+  {id:119, title:"Flag shred the ribs for yield", icon:"🚩", cat:"reset", urg:"normal", lkl:"office", who:"Crew", steps:[0,1], zone:"hand"},
+  {id:120, title:"Confirm allergen & counts · Ferguson", icon:"✅", cat:"prep", urg:"soon", lkl:"office", who:"Crew", steps:[0,1], taza:["allergen check BEFORE procurement   [G-10]"], zone:"hand"},
+  {id:121, title:"Grill platter · Ferguson", icon:"🍳", cat:"plate", urg:"normal", lkl:"grill", who:"Crew", steps:[0,1], taza:["first-cook poultry 165F IT; reheats + fish 145F   [G-08]"], zone:"hand"},
+  {id:122, title:"Cook potatoes · Ferguson", icon:"🍳", cat:"plate", urg:"normal", lkl:"hot line", who:"Crew", steps:[0,1], zone:"hand"},
+  {id:123, title:"Prep pear brie stack · Ferguson", icon:"🔪", cat:"prep", urg:"normal", lkl:"cold line", who:"Crew", steps:[0,1], taza:["date & initial the poly; olive oil not butter   [G-01]"], zone:"hand"},
+  {id:124, title:"Portion baklava +2 · Ferguson", icon:"🍰", cat:"plate", urg:"normal", lkl:"pastry", who:"Crew", steps:[0,1], zone:"hand"},
+  {id:125, title:"Pack hot pans · Ferguson", icon:"📦", cat:"move", urg:"normal", lkl:"pack-out", who:"Crew", steps:[0,1], taza:["hot-box bladders 4-6L @ 95C   [G-09]"], zone:"hand"},
+  {id:126, title:"Pack soft carrier · Ferguson", icon:"📦", cat:"move", urg:"normal", lkl:"pack-out", who:"Crew", steps:[0,1], taza:["date & initial the poly; olive oil not butter   [G-01]"], zone:"hand"},
+  {id:127, title:"Stage the buffet · Ferguson", icon:"🍴", cat:"move", urg:"normal", lkl:"on-site", who:"Crew", steps:[0,1], zone:"hand"},
+  {id:128, title:"Deliver 4:00 PM–4:30 PM · Ferguson", icon:"🚚", cat:"move", urg:"normal", lkl:"Phoenix", who:"Crew", steps:[0,1], zone:"hand"}
 ];
 /* ---------- done pile = the scoreboard. each laid card records its point breakdown.
    base = completion (✓), chain = streak bonus at lay time (⚡), demerit = flag penalty (✗, populated by C1 quality gate).
    raw = Σ base;  net = Σ (base + chain − demerit).  Seeded so the board opens as a live scoreboard. */
+/* bootstrap: the scoreboard opens EMPTY -- the score is what THIS crew
+   really lays down today, not a seeded demo. */
 let doneCards=[
-  {who:"Sandra",  title:"Steam & shock the green beans", icon:"🫛", cat:"prep",  urg:"normal", lkl:"Prep 2",   base:PTS.normal, chain:0,  demerit:0},
-  {who:"Sandra",  title:"Plate the amuse — 30 covers",   icon:"🍽️", cat:"plate", urg:"soon",   lkl:"Cold line", base:PTS.soon,   chain:5,  demerit:0},
-  {who:"Orlando", title:"Break down chicken — 12 birds",  icon:"🍗", cat:"prep",  urg:"rush",   lkl:"Hot line",  base:PTS.rush,   chain:10, demerit:0},
-  {who:"Edgar",   title:"Wrap & date dessert trays",      icon:"🍰", cat:"reset", urg:"normal", lkl:"Prep 1",    base:PTS.normal, chain:0,  demerit:0},
 ];
-let score=0, streak=2, played=0, done=0, muted=false, pending=null, pinBuf="";
+let score=0, streak=0, played=0, done=0, muted=false, pending=null, pinBuf="";
 doneCards.forEach(d=>{ score+=d.base+d.chain-d.demerit; played++; done++; });
 
 /* per-session hand sort order (list of card ids, left->right). Persisted in localStorage.
@@ -709,17 +735,34 @@ function faceHTML(c){
       </div>
     </div></div>`;
 }
+/* mini face: unplayed cards sit compact in the fan until you touch one. Enough to tell them apart
+   (rank + suit + icon + 3 lines of title + where + worth); the full text comes from fullHTML below. */
 function handHTML(c){
-  const pip=`<div class="pip tl"><div class="rank">${RANK[c.urg]}</div><div class="suit">${SUIT[c.cat]}</div></div>
-             <div class="pip br"><div class="rank">${RANK[c.urg]}</div><div class="suit">${SUIT[c.cat]}</div></div>`;
-  return `<div class="card u-${c.urg}" data-id="${c.id}" onclick="playCard(${c.id})">
+  const pip=`<div class="pip tl"><div class="rank">${RANK[c.urg]}</div><div class="suit">${SUIT[c.cat]}</div></div>`;
+  return `<div class="card mini u-${c.urg}" data-id="${c.id}" onclick="playCard(${c.id})">
     <div class="top-edge"></div>${pip}
     <div class="body">
       <div class="titlerow"><span class="ticon">${c.icon}</span><div class="title">${c.title}</div></div>
       <span class="where"><span class="ic">◎</span>${c.lkl}</span>
+      <div class="worth">+${PTS[c.urg]} pts${c.who&&c.who!=="Crew"?" · "+c.who:""}</div>
+    </div></div>`;
+}
+/* the readable face, swapped in the moment a card is lifted out of the fan: read it, then drag it up
+   to the table to play it. No action buttons -- dragging up IS the play. */
+function twayHTML(c){ return c.taza?`<div class="tway"><div class="h">◆ The Taza way</div><ul>${c.taza.map(t=>`<li>${t}</li>`).join("")}</ul></div>`:""; }
+function fullHTML(c){
+  return `<div class="card u-${c.urg}" data-id="${c.id}">
+    <div class="top-edge"></div>
+    <div class="pip tl"><div class="rank">${RANK[c.urg]}</div><div class="suit">${SUIT[c.cat]}</div></div>
+    <div class="pip br"><div class="rank">${RANK[c.urg]}</div><div class="suit">${SUIT[c.cat]}</div></div>
+    <div class="body">
+      <div class="titlerow"><span class="ticon">${c.icon}</span><div class="title">${c.title}</div></div>
+      ${c.allergen?`<div class="allergen"><span class="ic">⚠</span> ${c.allergen}</div>`:""}
+      <span class="where"><span class="ic">◎</span>${c.lkl}</span>
+      ${c.grab?`<div class="grab">${c.grab.map(g=>`<span class="g">${g}</span>`).join("")}</div>`:""}
+      ${twayHTML(c)}
       <div class="foot"><span class="who">${c.who}</span>
-        <div class="ptpot">worth +${PTS[c.urg]}</div>
-        <button class="btn play">▶ Play this hand</button></div>
+        <div class="ptprog"><span class="b">+${PTS[c.urg]} ✓</span>${streak>0?`<span class="c">+${streak*5} ⚡chain</span>`:""}<span class="arw">→</span><span class="n">+${PTS[c.urg]+streak*5}</span></div></div>
     </div></div>`;
 }
 function render(){
@@ -729,7 +772,11 @@ function render(){
   [...lay.children].forEach((el,i)=>{ el.style.transform=`rotate(${(i%2?1:-1)*(1+Math.random()*1.4)}deg)`; attachDrag(el); });
   const hand=document.getElementById("hand");
   hand.innerHTML=h.map(handHTML).join("");
-  [...hand.children].forEach((el,i)=>{ el.style.transform=`rotate(${(i-(h.length-1)/2)*4}deg)`; el.style.zIndex=String(10+i); attachHandDrag(el); });
+  const x0=((hand.clientWidth||1072)-((h.length-1)*HAND_ADV+HAND_W))/2;   // centred fan, may run off the page
+  [...hand.children].forEach((el,i)=>{ el.style.left=(x0+i*HAND_ADV)+"px";
+    el.style.transform=`rotate(${fanAngle(i,h.length)}deg)`; el.style.zIndex=String(10+i); attachHandDrag(el); });
+  if(fanOverflows()){ const b=handFanBounds(); handPanX=Math.max(b.lo,Math.min(b.hi,handPanX)); } else { handPanX=0; }
+  applyHandPan();
   document.getElementById("score").textContent=score;
   document.getElementById("played").textContent=played;
   document.getElementById("streak").textContent=streak;
@@ -740,37 +787,89 @@ function render(){
   renderDone();
 }
 
+/* ---------- fan pan: cards that run off the page -------------------------------
+   Nick 2026-10-14: the unplayed cards may sit off to the left/right of the page; drag the whole
+   fan left/right to bring them in, read them, and decide what to promote to the table (WIP).
+   When the fan FITS the zone the same gesture stays exactly what it always was -- reordering the
+   hand. Nothing else about the fan, the card lift, or drag-up-to-read changed. */
+const HAND_W=150, HAND_ADV=132;          // a compact hand card, and how far apart they sit
+const FAN_SPREAD=6;                      // max lean at the ENDS of the fan (~0 in the middle)
+function fanAngle(i,n){                 // a smooth arc: off*4 used to pinwheel 54 deg at 28 cards
+  const off=i-(n-1)/2, m=Math.max(1,(n-1)/2);
+  return FAN_SPREAD*(off/m);
+}
+let handPanX=0;
+function handFanBounds(){                       // measured in BOARD px, so a scaled/rotated stage is fine
+  const hand=document.getElementById("hand");
+  const cs=[...hand.children]; if(!cs.length) return null;
+  const L0=Math.min(...cs.map(e=>e.offsetLeft))-handPanX;
+  const R0=Math.max(...cs.map(e=>e.offsetLeft+e.offsetWidth))-handPanX;
+  return {W:hand.clientWidth||1072, L0, R0, lo:(hand.clientWidth||1072)-R0-8, hi:-L0+8};  // 8px so the end card is never flush
+}
+function fanOverflows(){ const b=handFanBounds(); if(!b) return false;
+  return (b.L0+handPanX)<-8 || (b.R0+handPanX)>b.W+8; }
+function applyHandPan(){                 // moves the whole fan, so a card's own lift/hover still wins
+  const hand=document.getElementById("hand");
+  if(Math.abs(handPanX)<0.5) hand.style.removeProperty("transform");
+  else hand.style.transform=`translateX(${handPanX}px)`;
+}
+function panHand(d){ if(!fanOverflows()) return; const b=handFanBounds();
+  handPanX=Math.max(b.lo,Math.min(b.hi,handPanX+d)); applyHandPan(); }
+document.getElementById("hand").addEventListener("wheel",e=>{
+  if(!fanOverflows()) return; e.preventDefault(); const w=boardDelta(e.deltaX||e.deltaY,0); panHand(w.x);
+},{passive:false});
+/* the stage is scaled, and on a landscape screen it is also rotated 90deg (the panel mount), so every
+   finger delta is converted into BOARD pixels before it moves anything: bx/by are +right/+down ON THE
+   BOARD. stagePoint() is the inverse -- a touch point in the device's own 1080x1920 pixels. */
+function boardDelta(dx,dy){
+  const s=window.__stageScale||1, rot=document.body.classList.contains("rotated-90");
+  const x=dx/s, y=dy/s;
+  return rot ? {x:y, y:-x} : {x:x, y:y};
+}
+function stagePoint(clientX,clientY){
+  const s=window.__stageScale||1, rot=document.body.classList.contains("rotated-90");
+  const x=(clientX-window.innerWidth/2)/s, y=(clientY-window.innerHeight/2)/s;
+  return rot ? {x:540+y, y:960-x} : {x:540+x, y:960+y};
+}
+function homeStage(el){                          // where this card sits in the fan, in board px
+  const hand=document.getElementById("hand");
+  return {x:hand.offsetLeft+(parseFloat(el.style.left)||0)+handPanX, y:hand.offsetTop+el.offsetTop};
+}
+
 /* ---------- hand card gestures: drag UP = preview/play, drag LEFT-RIGHT = reorder the fan ----------
    One touch handler, axis-locked on first movement so the two behaviours never fight. */
 function attachHandDrag(el){
-  const TABLE_SCALE=266/250;
-  let sx=0,sy=0,ox=0,oy=0,hx=0,hy=0,base="",dragging=false,moved=false,mode="",prog=0;
+  const TABLE_SCALE=1.12;                       // the readable face grows a little as you push it up
+  let sx=0,sy=0,ox=0,oy=0,hx=0,hy=0,base="",baseLeft="",dragging=false,moved=false,mode="",prog=0;
   let sibs=[],centers=[],dragIdx=0,homeCenter=0,ni=0;   // reorder scratch
+  let panLast=0;                                        // fan-pan scratch
 
   el.addEventListener("touchstart",e=>{
     if(e.touches.length>1) return;
-    const t=e.touches[0], r=el.getBoundingClientRect();
-    ox=t.clientX-r.left; oy=t.clientY-r.top;   // grab point within the card
-    hx=r.left; hy=r.top;                        // fan-slot home, captured while still in flow
-    sx=t.clientX; sy=t.clientY; base=el.style.transform;
-    dragging=true; moved=false; mode=""; prog=0;
+    const t=e.touches[0], pt=stagePoint(t.clientX,t.clientY), hm=homeStage(el);
+    ox=pt.x-hm.x; oy=pt.y-hm.y;                        // where the finger grabbed the card, board px
+    hx=hm.x; hy=hm.y;                                  // the fan slot it came from, board px
+    sx=t.clientX; sy=t.clientY; base=el.style.transform; baseLeft=el.style.left;
+    dragging=true; moved=false; mode=""; prog=0; panLast=0;
     el.classList.remove("returning","snap");
   },{passive:true});
 
   el.addEventListener("touchmove",e=>{
     if(!dragging) return;
-    const t=e.touches[0], dx=t.clientX-sx, dy=t.clientY-sy;
-    if(!moved){                                 // axis lock: decide preview vs reorder once
+    const t=e.touches[0], dx=t.clientX-sx, dy=t.clientY-sy, d=boardDelta(dx,dy);
+    if(!moved){                                 // axis lock, on the BOARD's own axes (the stage may be rotated)
       if(Math.max(Math.abs(dx),Math.abs(dy))<8) return;
       moved=true;
-      mode = Math.abs(dx) > Math.abs(dy) ? "reorder" : "preview";
+      mode = Math.abs(d.x) > Math.abs(d.y) ? (fanOverflows() ? "pan" : "reorder") : "preview";
       if(mode==="preview"){
+        const c=cards.find(x=>x.id===+el.dataset.id);
+        if(c){ el.classList.remove("mini"); el.innerHTML=fullHTML(c); }   // read it before you play it
         el.style.transformOrigin=ox+"px "+oy+"px";  // scale about the grab point -> stays under finger
         el.classList.add("previewing");
       }else{
         const hand=el.parentElement;                // snapshot fan slot centers for live reorder
         sibs=[...hand.children];
-        centers=sibs.map(s=>{const rr=s.getBoundingClientRect();return rr.left+rr.width/2;});
+        centers=sibs.map(s=>s.offsetLeft+s.offsetWidth/2);   // board px
         dragIdx=sibs.indexOf(el); homeCenter=centers[dragIdx]; ni=dragIdx;
         sibs.forEach(s=>{ if(s!==el) s.classList.add("sliding"); });
         el.classList.add("reordering");
@@ -779,24 +878,28 @@ function attachHandDrag(el){
     e.preventDefault();                          // kill scroll/bounce while dragging
 
     if(mode==="preview"){                         // ---- BEHAVIOUR 1: drag up to read & play ----
-      prog=Math.max(0,Math.min(1,(-dy)/(window.innerHeight*0.42)));
+      const pt=stagePoint(t.clientX,t.clientY);                     // the finger, in board px
+      prog=Math.max(0,Math.min(1,(-d.y)/(1920*0.42)));              // the lift is measured on the board
       const scale=1+prog*(TABLE_SCALE-1);
-      el.style.left=(t.clientX-ox)+"px";
-      el.style.top =(t.clientY-oy)+"px";
+      el.style.left=(pt.x-ox)+"px";
+      el.style.top =(pt.y-oy)+"px";
       el.style.setProperty("transform",`scale(${scale})`,"important");
       return;
     }
 
+    // ---- BEHAVIOUR 1b: fan wider than the zone -> drag the whole fan left/right to read it ----
+    if(mode==="pan"){ panHand(d.x-panLast); panLast=d.x; return; }
+
     // ---- BEHAVIOUR 2: drag left/right to reorder ----
-    const cur=homeCenter+dx;
+    const cur=homeCenter+d.x;
     ni=0; for(let i=0;i<centers.length;i++){ if(i!==dragIdx && centers[i]<cur) ni++; }
-    el.style.setProperty("transform",`translate(${dx}px,-30px) scale(1.06)`,"important"); // follows finger, lifted
+    el.style.setProperty("transform",`translate(${d.x}px,${d.y-30}px) scale(1.06)`,"important"); // follows finger, lifted
     sibs.forEach((s,i)=>{                         // slide the others apart to open a gap at ni
       if(i===dragIdx) return;
       const idxNoDrag=i<dragIdx?i:i-1;
       const finalIdx =idxNoDrag<ni?idxNoDrag:idxNoDrag+1;
       const shift=centers[finalIdx]-centers[i];
-      s.style.setProperty("transform",`translateX(${shift}px) rotate(${(finalIdx-(centers.length-1)/2)*4}deg)`,"important");
+      s.style.setProperty("transform",`translateX(${shift}px) rotate(${fanAngle(finalIdx,centers.length)}deg)`,"important");
     });
   },{passive:false});
 
@@ -816,11 +919,14 @@ function attachHandDrag(el){
         el.classList.add("returning");
         el.style.left=hx+"px"; el.style.top=hy+"px"; el.style.transform="scale(1)";
         setTimeout(()=>{ el.classList.remove("previewing","returning");
-          el.style.left=el.style.top=el.style.transformOrigin="";
+          const c=cards.find(x=>x.id===+el.dataset.id); if(c){ el.innerHTML=handHTML(c); el.classList.add("mini"); }
+          el.style.left=baseLeft; el.style.top=el.style.transformOrigin="";   // back to its fan slot
           el.style.transform=base; },300);
       }
       return;
     }
+
+    if(mode==="pan") return;            // the fan already moved live; nothing to commit
 
     // reorder commit: rebuild the id order with the dragged card dropped at slot ni
     const ids=sibs.map(s=>+s.dataset.id);
@@ -847,13 +953,13 @@ function attachDrag(el){
   });
   el.addEventListener("pointermove",e=>{
     if(!dragging) return;
-    const dx=e.clientX-sx, dy=e.clientY-sy;
+    const sc=window.__stageScale||1, dx=(e.clientX-sx)/sc, dy=(e.clientY-sy)/sc;
     el.style.transform=`translate(${dx*0.4}px,${dy}px) rotate(${dx*0.02}deg)`;
     el.style.opacity=String(Math.max(.4,1+dy/500));
   });
   el.addEventListener("pointerup",e=>{
     if(!dragging) return; dragging=false; el.classList.remove("dragging");
-    const dy=e.clientY-sy;
+    const dy=(e.clientY-sy)/(window.__stageScale||1);
     if(dy<-120){ openLay(+el.dataset.id); el.style.transform=base; el.style.opacity="1"; }
     else if(dy>120){ returnToHand(+el.dataset.id); return; }  // drag down -> return to hand
     else { el.style.transform=base; el.style.opacity="1"; }
