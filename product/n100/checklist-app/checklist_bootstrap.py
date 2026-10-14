@@ -24,11 +24,13 @@ SECRETS = "/etc/taza/secrets"
 APP     = "/home/taza/checklist-app"
 CACHE   = os.path.join(APP, "cache")
 OUT     = os.path.join(APP, "out")
-# TazaHP is a PERMANENT, non-browsed IPP queue (created 2026-10-08).
-# Do NOT use the cups-browsed "HP_DeskJet_3700_series_760AB1" implicitclass queue:
-# when the printer naps its Wi-Fi, that queue loses its destination and every job
-# dies with "No destination host name supplied by cups-browsed" (jobs 26 & 27).
-PRINTER = os.environ.get("CHECKLIST_PRINTER", "TazaHP")
+# PRINTER is the CUPS CLASS "Checklist" (created 2026-10-13, D84): member 1 TazaHP-USB
+# (the ipp-usb endpoint on n100, localhost:60000), member 2 TazaHP (Wi-Fi fallback, dead
+# until the printer's radio is back). Print to the class, never to a single queue or a
+# cups-browsed queue - TazaHP is a Wi-Fi address now, and a browsed implicitclass queue
+# loses its destination when the printer naps, killing every job with "No destination
+# host name supplied by cups-browsed" (jobs 26 & 27).
+PRINTER = os.environ.get("CHECKLIST_PRINTER", "Checklist")
 SPOOL   = os.path.join(APP, "spool")
 ORIGIN  = "85007"                                   # KB: shop, Central City / Capitol
 DAYS    = int(os.environ.get("CHECKLIST_WINDOW_DAYS", "4"))

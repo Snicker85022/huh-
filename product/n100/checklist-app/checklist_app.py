@@ -19,7 +19,9 @@ APP     = "/home/taza/checklist-app"
 OUT     = os.path.join(APP, "out")
 SPOOL   = os.path.join(APP, "spool")
 CRED    = "/home/taza/viewer_ro.cred"
-PRINTER = os.environ.get("CHECKLIST_PRINTER", "TazaHP")
+# PRINT TO THE CLASS, never to a queue: Checklist = TazaHP-USB (USB, ipp-usb) then
+# TazaHP (Wi-Fi fallback). Created 2026-10-13 (D84). Env var still overrides.
+PRINTER = os.environ.get("CHECKLIST_PRINTER", "Checklist")
 DAYS    = int(os.environ.get("CHECKLIST_WINDOW_DAYS", "4"))
 CONSUMER = "checklist_app"          # 14.1 application_name
 
