@@ -10,3 +10,19 @@ job_runner/.venv/
 __pycache__/
 .pytest_cache/
 .venv/
+secrets/
+
+# ── derived artifacts: machine-written, never hand-edited, never a source of truth ──
+# (README-FIRST: the databases ARE the authority; these are copies that churn on a timer)
+factory/index/index.json
+factory/index/index.tsv
+factory/index/stats.json
+factory/index/build.log
+factory/spec-export/specs.csv
+factory/spec-export/specs.meta.json
+factory/spec-export/watch.log
+factory/team-log/**
+# ...except Nick's approved proposal documents — those ARE worth keeping
+!factory/team-log/SPEC-PROPOSAL-*.md
+factory/fusion-harness/**/*.bak-*
+factory/fusion-harness/*.bak-*

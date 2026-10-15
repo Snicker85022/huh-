@@ -1,0 +1,31 @@
+# Cloud-only debate stack — ornith removed (out of debate duty 2026-08-29).
+# rune: Fable 5 architect · flux: Gemini 3.7 Flash primary/Main · drift: DeepSeek V4 Pro · fire: Kimi K3
+- name: rune
+  model: anthropic/claude-fable-5
+  thinking: medium
+  architect: true
+  color: "#7DD3FC"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md
+
+- name: flux
+  model: google/gemini-3.7-flash
+  thinking: medium
+  primary: true
+  color: "#F59E0B"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md
+
+- name: drift
+  model: fireworks/accounts/fireworks/models/deepseek-v4-pro-0813
+  thinking: medium
+  color: "#34D399"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md
+
+- name: fire
+  model: fireworks/accounts/fireworks/models/kimi-k3
+  thinking: medium
+  color: "#CC0000"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md

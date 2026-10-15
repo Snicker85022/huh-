@@ -1,0 +1,39 @@
+# HEAVYWEIGHT stack — frontier + free heavyweight debaters.
+# claude-fable-5: architect · gpt-5.6-sol: primary/Main ·
+# nemotron-3-ultra-550b(free) + glm-5.2 + ox-alpha(free): debaters
+- name: fable
+  model: openrouter/anthropic/claude-fable-5
+  thinking: high
+  architect: true
+  color: "#A78BFA"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md
+
+- name: sol
+  model: openrouter/openai/gpt-5.6-sol
+  thinking: medium
+  primary: true
+  color: "#F59E0B"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md
+
+- name: nemotron
+  model: openrouter/nvidia/nemotron-3-ultra-550b-a55b:free
+  thinking: medium
+  color: "#34D399"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md
+
+- name: glm
+  model: openrouter/z-ai/glm-5.2
+  thinking: medium
+  color: "#38BDF8"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md
+
+- name: ox
+  model: openrouter/stealth/ox-alpha
+  thinking: medium
+  color: "#2DD4BF"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md

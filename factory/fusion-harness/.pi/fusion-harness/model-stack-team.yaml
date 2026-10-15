@@ -1,0 +1,65 @@
+# Nick's CODING HELPERS TEAM — 5 slots, 5 roles.
+# Replaces the older 4-slot sample of the same name (backed up as .bak-20261015).
+#
+# The 6th role is deliberate: AC/VM lives INSIDE the spec-validator, because the URS table
+# (spec.taza_os_user_requirement_specifications) carries the AC columns (ac_normal, ac_edge,
+# ac_negative, ac_silent_failure, ac_challenge, ac_block) and the VM columns (verification_methods,
+# vm_count, vm_auto_count, vm_nick_count) side by side. Mapping the build to the specs and grading
+# its AC/VM are one job.
+#
+# Models: cheap OpenRouter guard only (run-tui.sh FH_ALLOWED_MODELS). One key, zero surprise cost.
+# deep  = deepseek-v4-pro        ARCHITECT   — decomposition + integration, names the spec_ids
+# flash = deepseek-v4-flash      CODE EXPERT — primary/Main builder, the voice of the session
+# glm   = qwen3-235b-a22b-2507   RED TEAM    — breaks it: false claims, silent failure, blast radius
+#         (swapped off glm-5.3-flash 2026-10-15 — glm FABRICATED a probe table it never ran;
+#          qwen3-235b refused the same trap and marks unverified claims explicitly)
+# cohere= glm-5.3-flash         SPEC VALIDATOR + AC/VM — maps build -> URS specs table
+#         (moved off north-mini-code:free 2026-10-15 — it echoed prompts instead of answering;
+#          a whole team turn costs ~$0.0014, so 'free' bought nothing but unreliability)
+# pool  = deepseek-v4-flash     DOCUMENTARIAN — decisions/spec records, the one-markdown rule
+#         (moved off laguna-s-2.1:free 2026-10-15 — it was 429 rate-limiting mid-conversation)
+#
+# Role contracts: ../../prompts/team/ROLE_*.md   (edit those files, not this one)
+# Communication contract: ../../system_prompt_fixing_opus_5_great_communication.md
+
+- name: deep
+  model: openrouter/deepseek/deepseek-v4-pro
+  thinking: medium
+  architect: true
+  color: "#34D399"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md
+    - ../../prompts/team/ROLE_ARCHITECT.md
+
+- name: flash
+  model: openrouter/deepseek/deepseek-v4-flash
+  thinking: medium
+  primary: true
+  color: "#F59E0B"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md
+    - ../../prompts/team/ROLE_CODE_EXPERT.md
+
+- name: glm
+  model: openrouter/qwen/qwen3-235b-a22b-2507
+  thinking: medium
+  color: "#F472B6"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md
+    - ../../prompts/team/ROLE_RED_TEAM.md
+
+- name: cohere
+  model: openrouter/z-ai/glm-5.3-flash
+  thinking: medium
+  color: "#22D3EE"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md
+    - ../../prompts/team/ROLE_SPEC_VALIDATOR.md
+
+- name: pool
+  model: openrouter/deepseek/deepseek-v4-flash
+  thinking: medium
+  color: "#A78BFA"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md
+    - ../../prompts/team/ROLE_DOCUMENTARIAN.md

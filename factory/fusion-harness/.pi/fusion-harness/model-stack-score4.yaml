@@ -1,0 +1,27 @@
+# Per-model SCORING stack — one turn each on the SAME debate prompt (the cheap5 team tests those already).
+- name: gemini
+  model: openrouter/google/gemini-3-flash-preview
+  thinking: off
+  architect: true
+  color: "#A78BFA"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md
+- name: hy3
+  model: openrouter/tencent/hy3-preview
+  thinking: off
+  primary: true
+  color: "#F59E0B"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md
+- name: oss
+  model: openrouter/openai/gpt-oss-120b
+  thinking: off
+  color: "#34D399"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md
+- name: laguna
+  model: openrouter/poolside/laguna-s-2.1:free
+  thinking: off
+  color: "#22D3EE"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md

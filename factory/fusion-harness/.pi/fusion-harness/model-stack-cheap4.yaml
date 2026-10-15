@@ -1,0 +1,31 @@
+# CHEAP cloud-only debate stack — NO expensive models, NO ornith debater.
+# deepseek-v4-pro: architect (RECON) · deepseek-v4-flash: primary/Main ·
+# glm (z-ai/glm-5.3-flash) + qwen3-coder-flash: debaters. All via OpenRouter, one key.
+# NOTE: stealth/ox-alpha was retired by OpenRouter (404). glm-5.3-flash IS ox-alpha's
+# underlying model (made public after the stealth testing period) and works + is cheap.
+- name: deep
+  model: openrouter/deepseek/deepseek-v4-pro
+  thinking: medium
+  architect: true
+  color: "#34D399"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md
+- name: flash
+  model: openrouter/deepseek/deepseek-v4-flash
+  thinking: medium
+  primary: true
+  color: "#F59E0B"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md
+- name: glm
+  model: openrouter/z-ai/glm-5.3-flash
+  thinking: medium
+  color: "#A78BFA"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md
+- name: qwen
+  model: openrouter/qwen/qwen3-coder-flash
+  thinking: off
+  color: "#38BDF8"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md

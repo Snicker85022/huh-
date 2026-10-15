@@ -1,0 +1,36 @@
+# CHEAP/FREE 5-slot cloud debate stack — NO expensive models, NO ornith.
+# deep (deepseek-v4-pro): recon/architect · flash (deepseek-v4-flash): primary/Main ·
+# glm (glm-5.3-flash) + cohere (north-mini-code:free) + pool (laguna-s-2.1:free): debaters
+# All verified live 2026-08-30. All via OpenRouter, one key.
+- name: deep
+  model: openrouter/deepseek/deepseek-v4-pro
+  thinking: medium
+  architect: true
+  color: "#34D399"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md
+- name: flash
+  model: openrouter/deepseek/deepseek-v4-flash
+  thinking: medium
+  primary: true
+  color: "#F59E0B"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md
+- name: glm
+  model: openrouter/z-ai/glm-5.3-flash
+  thinking: medium
+  color: "#A78BFA"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md
+- name: cohere
+  model: openrouter/cohere/north-mini-code:free
+  thinking: off
+  color: "#22D3EE"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md
+- name: pool
+  model: openrouter/poolside/laguna-s-2.1:free
+  thinking: medium
+  color: "#F472B6"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md

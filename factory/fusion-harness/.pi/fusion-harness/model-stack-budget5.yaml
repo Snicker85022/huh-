@@ -1,0 +1,39 @@
+# DEEP-BUDGET stack — best price/performance + free.
+# deepseek-v4-pro: architect · glm-4.7-flash: primary/Main ($0.06/M) ·
+# qwen3-coder-flash + nemotron-3-super(free) + ornith(local): debaters
+- name: deepseek
+  model: openrouter/deepseek/deepseek-v4-pro
+  thinking: medium
+  architect: true
+  color: "#34D399"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md
+
+- name: glmflash
+  model: openrouter/z-ai/glm-4.7-flash
+  thinking: medium
+  primary: true
+  color: "#F59E0B"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md
+
+- name: qwen
+  model: openrouter/qwen/qwen3-coder-flash
+  thinking: off
+  color: "#38BDF8"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md
+
+- name: nemotron
+  model: openrouter/nvidia/nemotron-3-super-120b-a12b:free
+  thinking: medium
+  color: "#A78BFA"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md
+
+- name: ornith
+  model: ornith/ornith-1.5-35b
+  thinking: off
+  color: "#2DD4BF"
+  append_system_prompt:
+    - ../../system_prompt_fixing_opus_5_great_communication.md

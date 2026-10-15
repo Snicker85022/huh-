@@ -83,7 +83,7 @@ MODEL = {
         "http_result": "202 Accepted (fire-and-forget)",
         "login": "POST /ipcLogin with SOAP header <userid>/<passwd> = DES('WebLogin', value) hexed. "
                  "NOTE web password != ONVIF admin/admin (web returns passwordError). session=0 still accepted.",
-        "browser": "if you need the real UI session: puppeteer at /home/taza/pm_web/shots/node_modules/puppeteer + "
+        "browser": "if you need the real UI session: puppeteer at /home/taza/archive/retired-2026-10-15/pm_web/shots/node_modules/puppeteer + "
                    "chrome-headless-shell 152 at ~/.cache/puppeteer/chrome-headless-shell/linux-152.0.7977.54/"
                    "chrome-headless-shell-linux64/  (run with LD_LIBRARY_PATH pointing at that same dir for libgbm.so.1)",
     },
