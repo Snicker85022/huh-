@@ -1,0 +1,63 @@
+# Factory viewers — read-only windows onto the databases that ARE the record.
+#
+# WHY THIS FILE EXISTS (D139, D140 / 2026-10-16)
+#   The two pgweb containers already on n100 (pgweb -> tazaos, pgweb-dev-pipeline ->
+#   dev_pipeline) were started by hand with `docker run`. Nothing in the repo declares
+#   them; they survive a box restart only via restart=unless-stopped. Nick asked to view
+#   the SPEC database and the DECISIONS changelog, and to have the change recorded — so
+#   this one is declared, and the two that follow it are declared here too.
+#
+# THE RULE THIS HONOURS
+#   README-FIRST: the spec database is the SOLE source of truth, and the URL should say
+#   what it points at. So each viewer is named for the database it serves.
+#
+# READ-ONLY, BY ROLE AND NOT BY HOPE
+#   Both containers connect as `viewer_ro` — not a superuser, no CREATE, SELECT only.
+#   Verified 2026-10-16: UPDATE, DELETE and CREATE TABLE are all refused
+#   ("cannot execute ... in a read-only transaction"). A viewer cannot alter a spec or a
+#   decision.
+#
+# THE CREDENTIAL
+#   viewer_ro's password is read from the environment at run time, NOT stored here.
+#   On n100:  export PGWEB_RO_PASSWORD="$(cat /home/taza/viewer_ro.cred)"
+#   Then:     docker compose up -d
+#   Never inline the password in this file. Never commit the credential.
+#
+# HOSTNAMES (the tunnel runs on gflip and reaches n100 by LAN IP):
+#   specs.tazacateringphoenix.com      -> 192.168.2.102:8082  (this file, service: pgweb-spec)
+#   decisions.tazacateringphoenix.com  -> 192.168.2.102:8083  (this file, service: pgweb-decisions)
+#
+# RUN FROM gflip? No — these run ON n100. Copy this file to n100 and run it there:
+#   scp factory/pgweb/docker-compose.yml taza@192.168.2.102:/home/taza/pgweb/
+
+# NETWORK — compose's own bridge (pgweb_default, 172.18.0.0/16).
+# The two hand-run viewers sit on docker0 (172.17.0.0/16). Docker will not let a
+# user-defined network overlap docker0's range, so the compose network gets its own
+# subnet and pg_hba.conf grants BOTH ranges to viewer_ro (added 2026-10-16, D140).
+# Attempting `external: bridge` fails: compose cannot attach to the built-in bridge.
+
+services:
+
+  # The spec database — 294 URS rows. The source of truth.
+  pgweb-spec:
+    image: sosedoff/pgweb
+    container_name: pgweb-spec
+    restart: unless-stopped
+    ports:
+      - "8082:8081"
+    environment:
+      # sslmode=disable because the container talks to Postgres over docker's bridge on
+      # the same host; matches the existing pgweb container's convention.
+      DATABASE_URL: "postgres://viewer_ro:${PGWEB_RO_PASSWORD}@172.17.0.1:5432/spec?sslmode=disable"
+    command: ["--bind=0.0.0.0", "--listen=8081"]
+
+  # The decisions changelog — 162 decisions, 172 change records, build log, debt register.
+  pgweb-decisions:
+    image: sosedoff/pgweb
+    container_name: pgweb-decisions
+    restart: unless-stopped
+    ports:
+      - "8083:8081"
+    environment:
+      DATABASE_URL: "postgres://viewer_ro:${PGWEB_RO_PASSWORD}@172.17.0.1:5432/decisions?sslmode=disable"
+    command: ["--bind=0.0.0.0", "--listen=8081"]
