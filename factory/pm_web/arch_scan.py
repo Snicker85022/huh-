@@ -131,7 +131,7 @@ KNOWN_LISTENERS = {
     },
     "taza-gflip": {
         "22": "sshd", "53": "systemd-resolved (loopback)",
-        "80": "nginx (stock welcome page)", "443": "nginx", "631": "cupsd (loopback)",
+        "80": "nginx (redirects to https)", "443": "nginx (chat., architecture.)", "631": "cupsd (loopback)",
         "1935": "mediamtx rtmp", "3000": "admin-panel (docker)",
         "3001": "open-webui (docker)", "3080": "LibreChat (docker)",
         "4444": "mcp-shell (user@1000 unit)", "7684": "fusion-tui.service",
@@ -560,7 +560,7 @@ def build(hosts, issues, prev, errors):
         card("one repo, one way in", "done",
              desc="The one repo (huh-) holds product/ and factory/. The factory rules are readable over plain "
                   "HTTP: the rules door -- whitelist only, read-only, one unit in the repo.",
-             note="LAN http://192.168.2.107:8099/   |   tunnel https://rules.tazacateringphoenix.com/",
+             note="LAN http://192.168.2.107:8099/   |   tailnet http://100.65.71.49:8099/  (the public name was deleted 2026-10-15, D137)",
              deps="factory/rules-door/serve_rules.py",
              needed=["/README-FIRST.md   /roles.json   /architecture.json", "404 for everything else"]),
     ]))
