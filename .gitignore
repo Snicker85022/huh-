@@ -22,7 +22,11 @@ factory/spec-export/specs.csv
 factory/spec-export/specs.meta.json
 factory/spec-export/watch.log
 factory/team-log/**
-# ...except Nick's approved proposal documents — those ARE worth keeping
+# ...except the documents worth keeping: the proposals, and the receipts of rows
+# actually written into the spec database. Everything else (per-turn transcripts,
+# LATEST-reply.md) stays out. Match case-insensitively so a receipt cannot be
+# dropped by capitalisation.
 !factory/team-log/SPEC-PROPOSAL-*.md
+!factory/team-log/[Ll][Oo][Aa][Dd][Ee][Dd]-*.sql
 factory/fusion-harness/**/*.bak-*
 factory/fusion-harness/*.bak-*
