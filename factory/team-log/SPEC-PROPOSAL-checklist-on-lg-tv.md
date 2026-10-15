@@ -2,6 +2,13 @@ SPEC PROPOSAL: URS-DISP-007 — LG webOS TV presents live checklist
 ================================================================================
 
 Proposed: 2026-10-15 / deep (ARCHITECT — spec_id, dependencies, integration)
+Aligned:  2026-10-16 — minor edits to match the facts established 2026-10-15/16:
+            * the TV is now its own spec row [[SPEC:HW-012]]; this row CONSUMES it
+              rather than re-describing the device inline
+            * the item-completion source is now known: [[SPEC:URS-KANBAN-006]]
+              (proposed `task.closed`), not an unnamed placeholder
+            * Nick's decisions from the clarify pass are recorded, so the open
+              questions are only the genuinely undecided ones
 Supersedes: the earlier draft in this file (flash). The content, failure and
 out-of-scope sections were largely sound; the spec_id, the invented status
 topic, and the non-house AC format are corrected here.
@@ -50,9 +57,10 @@ crew can read the current gig's tasks at a glance without touching anything.
 
 ----------------------------------------------------------------------
 functional_requirement:
-The LG webOS TV (OLED55B7A, wired 192.168.2.127 primary / wifi .137 fallback)
-runs com.webos.app.browser in locked kiosk pointed at a checklist page served
-by n100. The page renders the current checklist(s) from the intercom
+The LG webOS TV (see [[SPEC:HW-012]] for the device and its proven control
+surface: SSAP over WebSocket :3000, com.webos.app.browser, paired client-key on
+n100) runs that browser in a locked kiosk pointed at a checklist page served by
+n100. The page renders the current checklist(s) from the intercom
 (order.captured, the same topic checklist_app.py consumes — product/n100/
 checklist-app/checklist_app.py:48-49). Task lines show VERB + ITEM (e.g.
 "PACK — chafers"), never a bare count, matching the paper task block's
@@ -91,12 +99,14 @@ dependency_notes:
 - Cancellation source: [[SPEC:PROD-20]] topic `invoice.canceled` (LIVE — 1 event;
   emitted by product/n100/square-sync/square_invoice_sync.py:312
   `emit("invoice.canceled", iid, p_status, "CANCELED",`).
-- Status feed = PLACEHOLDER. No live topic carries item started/completed.
-  system_events topics verified: event.created, invoice.canceled/changed/
-  created/deposit_received/paid, ops.printer_state, order.captured, test.ping.
-  Item status goes live only when [[SPEC:URS-KANBAN-005]] -> [[SPEC:PROD-38]]
-  (Canonical Task Close Contract, Spec Drafted) -> [[SPEC:PROD-20]] emit. Do NOT
-  name a status topic; attach to PROD-38's TaskCloseEvent emit when it lands.
+- Status feed = [[SPEC:URS-KANBAN-006]] (Kanban task lifecycle, canonical close
+  contract, and bus publication; Spec Drafted 2026-10-16). It implements PROD-38's
+  TaskCloseEvent and proposes the topic `task.closed`, carrying task_id, close_kind,
+  close_method, crew_id and invoice. Item COMPLETION therefore has a source; it is
+  not live yet because URS-KANBAN-006 is written but not built.
+  Still absent everywhere: a `started` signal (hand->table is client-side only).
+  The 12-minute pulse depends on that and cannot fire until it exists - see Q2.
+  Do NOT name a second status topic; consume URS-KANBAN-006's emit.
 - Push: [[SPEC:INFRA-009]] (Shared push/pull hybrid client library, Spec
   Drafted) WebSocket + polling watchdog. NOTE: its watchdog is 10s, this spec
   needs 2.5s — see Q3.
@@ -119,9 +129,11 @@ dependency_notes:
 
 ----------------------------------------------------------------------
 consumes:
-  [[SPEC:PROD-20]] `order.captured` (content) and `invoice.canceled`
-  (cancellation); [[SPEC:PROD-38]] TaskCloseEvent (PLACEHOLDER — item status);
-  SSAP control (launch + foreground heal) on the LG TV.
+  [[SPEC:HW-012]] the device and its proven control surface (SSAP :3000 launch +
+  foreground heal); [[SPEC:PROD-20]] `order.captured` (content) and
+  `invoice.canceled` (cancellation); [[SPEC:URS-KANBAN-006]] for item completion
+  (not yet built, so completion is not yet live); [[SPEC:URS-KANBAN-005]] and
+  [[SPEC:PROD-38]] for the close contract it depends on.
 
 consumed_by:
   None — leaf display. Alerts fan out via [[SPEC:PROD-25]] (ntfy) and
@@ -129,28 +141,31 @@ consumed_by:
 
 ----------------------------------------------------------------------
 open_questions:
-Q1. Priority: I propose P1 / required_for_release=NO (the TV is additive;
-    paper + kanban are the safety net). flash proposed P2. URS-DISP house is P1.
-    Confirm P1 vs P2.
-Q2. Status feed is the hard blocker. No live topic carries started/completed
-    ([[SPEC:PROD-38]] + [[SPEC:URS-KANBAN-005]] are Spec Drafted). Ship the
-    checklist view now with all items "pending" until that path emits, or hold
-    this spec until the task-close emit is built? This decides whether the TV is
-    shippable in isolation.
-Q3. 2.5s vs INFRA-009: INFRA-009's polling watchdog is 10s, the decided budget
-    is 2.5s. Tighten the watchdog to 2.5s, or accept 2.5s only while push is
-    healthy (polling fallback may lag)?
-Q4. Content form: I specify a static n100-served HTML page rendered in
-    com.webos.app.browser, pushed over WebSocket with 2.5s polling fallback —
-    not a PWA ([[SPEC:TV-012]]), which the webOS browser may not kiosk. Confirm.
-Q5. The 12-min pulse needs "an item marked started", but item status has no live
-    source yet (Q2). Until the status feed lands, the day-of-service pulse can
-    never fire. Accept pulse deferred to the status feed, or tie the pulse to
-    service_date only?
-Q6. Cycle semantics with 2+ gigs: 15s per gig, or 15s total split evenly?
-Q7. Serving: which port/process serves the TV page on n100, and who owns it
-    (new process vs existing dashboard.py / server_kanban.py)? flash proposed
-    9004 — unverified, needs Nick.
+DECIDED by Nick 2026-10-15 (recorded here; no longer open):
+  Q1. Priority = P1, required_for_release = NO. The TV is additive; paper and
+      kanban remain the safety net.
+  Q2. SHIP NOW. Build the view against what exists; items render as not-yet-complete
+      until URS-KANBAN-006 is built and emitting. Do not hold this spec.
+  Q3. 2.5s while push is healthy; accept the 10s polling fallback on degradation.
+      Do not loosen INFRA-009's fleet watchdog for this one screen.
+  Q5. Pulse DEFERRED. It needs a `started` signal, which has no source anywhere
+      (hand->table is client-side only). Until that exists the pulse cannot fire;
+      show the "last updated" timestamp only.
+  Q6. 15 seconds PER GIG (so two gigs take 30s to cycle fully), and only for gigs
+      that are currently active. service_date is present in the order.captured
+      payload (verified 2026-10-15), so the window [today, today+4d] is computable.
+  Q7. PORT 9004, and a DEDICATED process for this page (verified free 2026-10-15:
+      9000/9001/9003 are in use). Not an endpoint bolted onto dashboard.py.
+
+STILL OPEN for Nick:
+  Q4. Content form is a static n100-served page in com.webos.app.browser (proven to
+      launch), not a PWA ([[SPEC:TV-012]]). Confirm this reading.
+  Q8. Who owns the page process on n100, and does it join the display fleet's
+      deploy pattern? Also: does the "gig is complete" computation (all cards done)
+      live here or belong to URS-KANBAN-006? URS-KANBAN-006 DEF-9 records it as
+      currently unowned.
+  Q9. "Started" has no source. Add a hand->table emit to URS-KANBAN-006 as its own
+      gap, so the pulse can eventually be implemented? (Recommended: yes.)
 
 ================================================================================
 AC
