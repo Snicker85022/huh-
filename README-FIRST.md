@@ -96,6 +96,11 @@ Derived mirrors exist and are **not** authorities — never cite one as spec tru
 | `factory/spec-export/specs.csv` | on every change | copies the spec database. The database is the authority. |
 | `urs/tables/*.tsv`, `export/murs_specs.csv` | by hand, from `master-urs.md` | a DIFFERENT source (markdown). These drift. Noise — do not use. |
 
+`factory/team-log/` holds the team's **proposals and their history** — a proposal is not a
+spec and is never binding; once a row is approved it goes into the database above, and after
+that the database is the record. The folder also holds receipts (`LOADED-*.sql`) of rows
+actually written: **those are historical, never run them.** For any spec, query the database.
+
 ## How to behave
 
 1. Read this file, then the map, then the databases. Never the old markdown.
