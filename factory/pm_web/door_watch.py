@@ -29,7 +29,7 @@ HOW IT DECIDES
 
 READ-ONLY. It changes nothing: no DNS edit, no tunnel reload, no service touched.
 """
-import json, os, re, subprocess, sys, datetime
+import json, os, re, subprocess, sys, datetime, time
 
 ZONE = "tazacateringphoenix.com"
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "door_watch.json")
@@ -39,6 +39,23 @@ CFG = "/etc/cloudflared/config.yml"
 #   private = expected to resolve into the tailnet (no outside handle)
 #   public  = deliberately reachable from the internet
 # Anything found that is not here is reported. Add a line only with a decision.
+# ── THE ROUTER (D147) ────────────────────────────────────────────────────────
+# A port-forward on the ER605 is a door too, and a worse one: it sends WAN traffic
+# straight to a LAN host and is INVISIBLE to every Cloudflare policy. It never shows
+# up in DNS or tunnel ingress, which is why door_watch did not see it.
+#
+# Read from the 5-minute ER605 snapshot pulled by er605_pull.sh. If that snapshot is
+# older than MAX_SNAPSHOT_AGE_MIN the router check REFUSES TO JUDGE and says so,
+# rather than reporting on stale data.
+SNAPSHOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "arch", "er605_live.json")
+MAX_SNAPSHOT_AGE_MIN = 30
+
+# Forwards Nick has DECIDED to keep. Empty is the goal: nothing should be forwarded.
+# Key is "<name>|<external port>". Adding a line here IS the decision.
+ALLOW_FORWARDS = {
+    # e.g. "SomeService|8080": "D999 justified because ...",
+}
+
 ALLOW = {
     "architecture": "private",   # D143 the live map
     "fusion":       "private",   # D144 the team terminal (was an open shell)
@@ -104,6 +121,58 @@ def tunnel_ingress():
     return names
 
 
+def check_router():
+    """Port-forwards are doors that never touch DNS. Read the ER605 snapshot.
+
+    Returns (findings, rows_ok, note). Refuses to judge on a stale snapshot.
+    """
+    findings, ok = [], []
+    try:
+        d = json.load(open(SNAPSHOT))
+    except Exception as e:
+        return [], [], "router snapshot unreadable (%s) -- router NOT checked" % e
+
+    if not d.get("ok") or not d.get("logged_in"):
+        return [], [], "router snapshot was not a successful logged-in read -- NOT checked"
+
+    # Staleness guard: a watch built on an old snapshot is worse than no watch.
+    #
+    # USE THE EPOCH FIELD, NOT THE "iso" STRING. er605_live.py writes `iso` in the
+    # ROUTER'S local time (US/Mountain) while this script runs on gflip, which is UTC.
+    # Comparing the two produced a phantom 422-minute gap and the check refused to run.
+    # `ts` is a plain Unix timestamp and is timezone-independent - that is the one to use.
+    age_min = None
+    try:
+        ts = d.get("ts")
+        if ts:
+            age_min = abs(time.time() - float(ts)) / 60.0
+        else:
+            when = datetime.datetime.strptime(d.get("iso") or "", "%Y-%m-%d %H:%M:%S")
+            age_min = abs((datetime.datetime.now() - when).total_seconds()) / 60.0
+    except Exception:
+        age_min = None   # cannot tell: fall through, judge the rows, note the weakness
+    if age_min is not None and age_min > MAX_SNAPSHOT_AGE_MIN:
+        return [], [], ("router snapshot is %.0f min old (max %d) -- NOT checked"
+                        % (age_min, MAX_SNAPSHOT_AGE_MIN))
+
+    rows = (d.get("tables") or {}).get("port_forward") or []
+    # first row is the header; the rest are forwards
+    for r in rows[1:]:
+        if len(r) < 10:
+            continue
+        _blank, rid, name, iface, wanip, ext, internal, host, proto, status = r[:10]
+        if (status or "").strip().lower() != "enabled":
+            continue
+        key = "%s|%s" % (name, ext)
+        entry = {"id": rid, "name": name, "external": ext, "internal": internal,
+                 "host": host, "proto": proto, "status": status, "iface": iface}
+        if key in ALLOW_FORWARDS:
+            ok.append(dict(entry, allowed=ALLOW_FORWARDS[key]))
+        else:
+            findings.append(entry)
+    return findings, ok, ""
+
+
 def main():
     now = datetime.datetime.now(datetime.timezone.utc).astimezone().isoformat(timespec="seconds")
     findings, ok, dead = [], [], []
@@ -146,8 +215,29 @@ def main():
         else:
             ok.append({"host": name, "state": "public", "ips": ips, "https": http_code(name)})
 
+    # ── the router: port-forwards are doors too, and invisible to DNS ──
+    rfind, rok, rnote = check_router()
+    for fw in rfind:
+        findings.append({
+            "host": "ER605 port-forward",
+            "severity": "critical",
+            "what": ("the router forwards WAN :%s straight to %s (rule %r). A port-forward "
+                     "bypasses Cloudflare entirely -- DNS, Access and the tunnel are all "
+                     "irrelevant to it." % (fw["external"], fw["host"], fw["name"])),
+            "ips": [],
+            "do": "disable it in the router UI (Transmission > NAT > Virtual Servers), "
+                  "or add it to ALLOW_FORWARDS in door_watch.py with a decision",
+            "rule": fw,
+        })
+
     payload = {
         "ts": now,
+        "router": {
+            "checked": not rnote,
+            "note": rnote,
+            "forwards_enabled": rfind + rok,
+            "allowed": rok,
+        },
         "what": "A door is a hostname someone can reach from the internet.",
         "allow_list": ALLOW,
         "private_ok": [o for o in ok if o["state"] == "private"],
@@ -156,7 +246,9 @@ def main():
         "findings": findings,
         "counts": {"private": len([o for o in ok if o["state"] == "private"]),
                    "public": len([o for o in ok if o["state"] == "public"]),
-                   "not_doors": len(dead), "findings": len(findings)},
+                   "not_doors": len(dead), "findings": len(findings),
+                   "router_checked": (1 if not rnote else 0),
+                   "router_forwards": len(rfind + rok)},
     }
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     tmp = OUT + ".tmp"
@@ -165,6 +257,8 @@ def main():
     os.replace(tmp, OUT)
 
     print(json.dumps(payload["counts"]))
+    if rnote:
+        print("  NOTICE: %s" % rnote)
     for f in findings:
         print("  FINDING [%s] %s -- %s" % (f["severity"], f["host"], f["what"]))
     if not findings:
