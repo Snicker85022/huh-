@@ -110,10 +110,15 @@ actually written: **those are historical, never run them.** For any spec, query 
 3. **Copy, don't move,** until the new path is verified working. Never `rm` — retire means stop +
    disable + archive copy.
 4. Never invent a table or a column. Never create markdown in the factory.
-5. "Idle", "active" and exit 0 are not proof — prove the outcome (paper in the tray, HTTP 200,
+5. **Compare epochs, never formatted timestamps.** gflip is UTC and n100 is
+   America/Phoenix — the clocks agree, the *display* differs. Reading a formatted stamp and
+   assuming its timezone has already caused two bugs (2026-10-16). Share the instant, not the
+   display. Both boxes now sync to NIST (`time-a-g.nist.gov`) so the instant is authoritative;
+   the hourly map carries a **Clocks** section that says so or says otherwise.
+6. "Idle", "active" and exit 0 are not proof — prove the outcome (paper in the tray, HTTP 200,
    hash match, row count).
-6. After ONE failed attempt: stop, read the docs, retry. Never retry-loop.
-7. One bounded action per step: `STEP / CMD / EXPECT / GOT / VERDICT / NEXT`.
+7. After ONE failed attempt: stop, read the docs, retry. Never retry-loop.
+8. One bounded action per step: `STEP / CMD / EXPECT / GOT / VERDICT / NEXT`.
 
 ## The lists — five of them
 

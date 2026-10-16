@@ -148,7 +148,8 @@ KNOWN_LISTENERS = {
 
 def parse(text):
     d = dict(host={}, svc=[], dead=[], ports=[], timers=[], cron=[], repos=[], sqlite=[],
-             pgdb=[], pgrow=[], pgver="", docker=[], ls=[], files=[], shadow=[], dirs=[], tailnet=[], ts={})
+             pgdb=[], pgrow=[], pgver="", docker=[], ls=[], files=[], shadow=[], dirs=[], tailnet=[], ts={},
+             clock={})
     for line in text.splitlines():
         f = line.split("\t")
         t = f[0]
@@ -193,6 +194,11 @@ def parse(text):
                 d["ts"] = dict(state=f[1], version=f[2], self=f[3])
             elif t == "TS" and len(f) >= 6:
                 d["tailnet"].append(dict(host=f[1], ip=f[2], os=f[3], state=f[4], kind=f[5]))
+            elif t == "CLOCK" and len(f) >= 6:
+                # D148: the INSTANT this box believes, plus where it came from.
+                # Epoch only -- a formatted stamp is what caused two bugs on 2026-10-16.
+                d["clock"] = dict(epoch=f[1], tz=f[2], server=f[3], synced=f[4],
+                                  offset=f[5], root_distance=(f[6] if len(f) > 6 else ""))
             elif t == "SHADOW" and len(f) >= 4:
                 d["shadow"].append(dict(name=f[1], path=f[2], bytes=int(f[3] or 0)))
         except (IndexError, ValueError):
@@ -534,6 +540,75 @@ def _doors_section():
                 components=cards)
 
 
+# ── CLOCKS (D148) ───────────────────────────────────────────────────────────
+def _clocks_section(hosts):
+    """Do the boxes agree on the time, and from where? Compare EPOCHS, not stamps.
+
+    gflip is UTC and n100 is America/Phoenix, so a formatted string is meaningless
+    across them -- that mismatch caused two bugs on 2026-10-16. The epoch is the
+    instant and is timezone-independent, so that is what is compared here.
+    """
+    rows, missing = [], []
+    for h in hosts:
+        c = h.get("clock") or {}
+        name = h["host"].get("name", "?")
+        if not c.get("epoch"):
+            missing.append(name)
+            continue
+        rows.append(dict(host=name, epoch=int(c["epoch"]), tz=c.get("tz", "?"),
+                         server=c.get("server") or "?", synced=c.get("synced") or "?",
+                         offset=c.get("offset") or "?", dist=c.get("root_distance") or "?"))
+    cards = []
+    if len(rows) >= 2:
+        srv = {r["server"] for r in rows}
+        # DO NOT compare the two epochs against each other.
+        # They are sampled SEQUENTIALLY (the collector runs on gflip, then is piped to
+        # n100 over ssh), so any gap between them is mostly ATTRIBUTABLE TO WHEN EACH
+        # WAS POLLED, not to clock drift. A first version flagged "6s skew" on two boxes
+        # that were provably within the same second - a false alarm, and a watch that
+        # cries wolf is worse than no watch.
+        #
+        # What CAN be judged from a single sample is: is each box synchronised at all,
+        # and are they using the SAME source. Genuine drift between boxes needs an
+        # external reference (a third clock), which is out of scope here.
+        if len(srv) > 1:
+            cards.append(card("CLOCKS -- different NTP sources", "fork",
+                              desc="the boxes sync to different servers: %s" % ", ".join(sorted(srv)),
+                              note="pin both to the same source (D148) so they cannot diverge",
+                              deps="", needed=["set NTP= in /etc/systemd/timesyncd.conf.d/ on both",
+                                               "then: sudo systemctl restart systemd-timesyncd"]))
+        elif len(srv) == 1 and rows:
+            src = next(iter(srv))
+            if "nist" not in src.lower():
+                cards.append(card("CLOCKS -- shared source is not NIST", "fork",
+                                  desc="both boxes use %s" % src,
+                                  note="they agree with each other, but not with an authoritative clock",
+                                  deps="", needed=[]))
+        bad = [r for r in rows if r["synced"] != "yes"]
+        if bad:
+            cards.append(card("CLOCK -- not synchronised", "fork",
+                              desc="%s reports NTPSynchronized != yes"
+                                   % ", ".join(r["host"] for r in bad),
+                              note="time may be wrong on that box",
+                              deps="", needed=[]))
+    if missing:
+        cards.append(card("CLOCK -- no clock facts from %s" % ", ".join(missing), "fork",
+                          desc="the collector did not report CLOCK for that box",
+                          note="arch_collect.sh needs a CLOCK line there",
+                          deps="", needed=[]))
+    if not cards and rows:
+        cards = [card("(in sync) -- both boxes on the same source", "done",
+                      desc="; ".join("%s %s via %s (offset %s)" % (r["host"], r["tz"], r["server"], r["offset"])
+                                     for r in rows),
+                      note="epochs agree; the timezones are meant to differ",
+                      deps="D148", needed=[])]
+    return dict(id="clocks", name="Clocks  (%d)" % len([c for c in cards if c.get("status") == "fork"]),
+                tagline="Do the boxes agree on the time, and from where? Compared by EPOCH, "
+                        "never by formatted stamp -- gflip is UTC and n100 is America/Phoenix, "
+                        "and that mismatch caused two bugs on 2026-10-16.",
+                components=cards)
+
+
 def build(hosts, issues, prev, errors):
     g = next((h for h in hosts if h["host"].get("name") == "taza-gflip"), {})
     n = next((h for h in hosts if h["host"].get("name") == "taza-server"), {})
@@ -748,6 +823,9 @@ def build(hosts, issues, prev, errors):
     _ds = _doors_section()
     if _ds:
         sections.append(_ds)
+
+    # ---- clocks (D148): do the boxes agree, and from where --------------
+    sections.append(_clocks_section(hosts))
 
     # ---- databases -------------------------------------------------------
     cards = []
@@ -1004,7 +1082,8 @@ def build(hosts, issues, prev, errors):
                 scan_seconds=round(time.time() - started, 1),
                 errors=errors, decisions=issues, canonical=CANON,
                 hosts=[{k: v for k, v in h.items() if k in ("host", "svc", "dead", "ports", "timers",
-                                                            "cron", "sqlite", "pgdb", "pgrow", "pgver")}
+                                                            "cron", "sqlite", "pgdb", "pgrow", "pgver",
+                                                            "clock")}
                        for h in hosts],
                 repositories=[dict(host=h["host"].get("name"), **r) for h in hosts for r in h["repos"]],
                 shadow={s["name"]: s["path"] for h in hosts for s in h["shadow"]},
