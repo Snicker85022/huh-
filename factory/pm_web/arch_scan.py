@@ -490,6 +490,50 @@ DB_NOTE = {
 }
 
 
+# ── DOORS (D146) ────────────────────────────────────────────────────────────
+def _run_door_watch():
+    """Which hostnames can the internet reach? Run the watch as part of the hourly
+    scan so the map reports the doors it just measured and the two cannot drift.
+
+    READ-ONLY and failure-tolerant: if door_watch cannot run, the scan still runs.
+    A broken watch must never take down the map.
+    """
+    try:
+        import subprocess as _sp
+        _sp.run([sys.executable, os.path.join(HERE, "door_watch.py")],
+                capture_output=True, text=True, timeout=240)
+        with open(os.path.join(HERE, "data", "door_watch.json")) as fh:
+            return json.load(fh)
+    except Exception:
+        return None
+
+
+def _doors_section():
+    """A door is a hostname someone can reach from the internet."""
+    d = _run_door_watch()
+    if not d:
+        return None
+    cards = []
+    for f in d.get("findings", []):
+        cards.append(card("DOOR -- %s" % f["host"], "fork",
+                          desc=f.get("what", ""),
+                          note="%s" % f.get("do", ""),
+                          deps="severity: %s" % f.get("severity", "?"),
+                          needed=["resolves to: %s" % ", ".join(f.get("ips", []))]))
+    c = d.get("counts", {})
+    if not cards and c.get("findings", 0) == 0:
+        cards = [card("(none) -- every door is as decided", "done",
+                      desc="%d private (tailnet only, no outside handle), %d public by "
+                           "decision, %d names that are not doors"
+                           % (c.get("private", 0), c.get("public", 0), c.get("not_doors", 0)),
+                      note="this list must stay empty", deps="", needed=[])]
+    return dict(id="doors", name="Doors  (%d)" % len(d.get("findings", [])),
+                tagline="Every hostname the internet can reach. A name resolving to a "
+                        "tailnet address (100.64.0.0/10) is a door with no outside handle. "
+                        "Compared against the allow-list in door_watch.py (D146).",
+                components=cards)
+
+
 def build(hosts, issues, prev, errors):
     g = next((h for h in hosts if h["host"].get("name") == "taza-gflip"), {})
     n = next((h for h in hosts if h["host"].get("name") == "taza-server"), {})
@@ -700,6 +744,10 @@ def build(hosts, issues, prev, errors):
     sections.append(dict(id="listeners", name="Unknown listeners", tagline="Every TCP socket on the "
                          "estate that the inventory does NOT name. A port with no name is how noVNC hid "
                          "on n100:6080 for months. This list must be empty.", components=cards))
+    # ---- doors (D146): every hostname the internet can reach ------------
+    _ds = _doors_section()
+    if _ds:
+        sections.append(_ds)
 
     # ---- databases -------------------------------------------------------
     cards = []
