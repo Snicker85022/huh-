@@ -1,23 +1,36 @@
 -- ══════════════════════════════════════════════════════════════════════════════
--- SPEC LOAD — 2026-10-16
--- Loads two approved proposals into spec.taza_os_user_requirement_specifications.
+-- HISTORICAL RECORD — this is a RECEIPT, not a tool.
 --
--- Source proposals (verbatim; these are the record):
---   factory/team-log/SPEC-PROPOSAL-kanban-task-lifecycle.md  -> URS-KANBAN-006
---   factory/team-log/SPEC-PROPOSAL-lg-tv-hw-012.md           -> HW-012
+-- *** DO NOT RUN THIS FILE. ***
+-- The rows below are ALREADY in the database. This file exists only to record what
+-- was written on 2026-10-16, and from which two proposals.
 --
--- NOT loaded: the checklist-on-LG-TV feature row. Its spec_id (URS-TV-CHECKLIST-001)
--- was rejected during the build because TV-* is the Android/ADB fleet namespace; it
--- belongs under URS-DISP-007. It is held until it is rewritten against the facts
--- learned on 2026-10-15 (PROD-38, the kanban close contract, the SSAP control path).
+-- The spec database is the SOLE SOURCE OF TRUTH:
+--     n100:5432  database `spec`  schema `spec`
+--     spec.taza_os_user_requirement_specifications
+-- If you want to know what a spec says, QUERY THE DATABASE. Never read a .sql file
+-- for spec content: it is a copy of a moment and it is already stale.
 --
--- STATUS = 'Spec Drafted': these are loaded to stop them getting lost, not because
+-- The two rows this recorded:
+--   URS-KANBAN-006  Kanban task lifecycle, canonical close contract, and bus publication
+--                   P0 / Atomic Requirement / Production Core / required_for_release=YES
+--                   source: SPEC-PROPOSAL-kanban-task-lifecycle.md
+--   HW-012          LG webOS TV OLED55B7A (kitchen checklist display)
+--                   P1 / Atomic Requirement / System Infrastructure / required_for_release=NO
+--                   source: SPEC-PROPOSAL-lg-tv-hw-012.md
+--
+-- NOT loaded, and why: the checklist-on-LG-TV feature row. Its proposed id
+-- (URS-TV-CHECKLIST-001) was rejected during the build because TV-* is the legacy
+-- Android/ADB namespace; it belongs under URS-DISP-007. Loading it would have put a
+-- contradicting spec_id in the database.
+--
+-- Both rows are status 'Spec Drafted': loaded so they could not get lost, NOT because
 -- they are final. Nick re-debates them once each app has a good spec.
--- Idempotent: guarded by a NOT EXISTS on spec_id, so re-running is safe.
 --
--- is_current is set EXPLICITLY to true. Every existing row is 't' (291 of 291) and the
--- spec-export mirror filters `where is_current`, which SQL excludes NULL from — so a row
--- inserted without it would be invisible to the CSV. Learned the hard way on this load.
+-- Note for the record — the INSERTs are idempotent (guarded by NOT EXISTS on spec_id),
+-- and is_current is set explicitly here because the spec-export mirror filters
+-- `where is_current`, which SQL excludes NULL from. Both rows were invisible to the
+-- mirror until a follow-up UPDATE set it; that is fixed in the statements below.
 -- ══════════════════════════════════════════════════════════════════════════════
 
 BEGIN;
