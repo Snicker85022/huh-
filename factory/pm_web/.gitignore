@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+data/
+shots/node_modules/
+*.bak*
+architecture.json
+architecture.json.prev
+*.log

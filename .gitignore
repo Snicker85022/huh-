@@ -30,3 +30,21 @@ factory/team-log/**
 !factory/team-log/[Ll][Oo][Aa][Dd][Ee][Dd]-*.sql
 factory/fusion-harness/**/*.bak-*
 factory/fusion-harness/*.bak-*
+
+# ── hand-maintained INVENTORY stays out of git (D149, 2026-10-16) ──────────────
+# devices.json and roles.json are edited by hand, not generated, and they already
+# carry `updated` + `verified_by`. Versioning them would make every inventory tweak
+# a commit and a conflict, for no gain over the decision log. Equipment and role
+# changes are recorded as DECISIONS instead, naming the file and its new timestamp —
+# the same split as specs: the record lives in the database, the artifact carries a
+# stamp. The CODE that reads them IS versioned; the data is not.
+factory/arch/devices.json
+factory/arch/roles.json
+factory/arch/ledger.json
+factory/arch/ip_mac_map.json
+# the live router read is generated every 5 minutes by er605_pull.sh
+factory/arch/er605_live.json
+# and 150KB of backup churn that should not be in the repo
+factory/arch/*.bak
+factory/arch/*.bak-*
+factory/arch/*.bak.*

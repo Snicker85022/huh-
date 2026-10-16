@@ -1,0 +1,108 @@
+========================================================================
+INSTALL-THIS-SKILL AND-APPLY-THESE-FIXES  ·  build-from-scratch handoff
+Target: another agent instance working in /home/taza/repo on gflip
+========================================================================
+
+PURPOSE
+------
+Install the "code-consistency-check" skill (a static rename-drift audit) and
+apply the one real bug fix it should catch. This prompt is self-contained: a
+fresh instance can follow it top to bottom without prior context.
+
+========================================================================
+STEP 1 — CREATE THE SKILL (two files, verbatim, no edits)
+========================================================================
+mkdir -p /home/taza/repo/tools/code-consistency-check/scripts
+
+File A: /home/taza/repo/tools/code-consistency-check/SKILL.md
+
+A skill markdown file with frontmatter:
+  ---
+  name: code-consistency-check
+  description: "... run a static rename-drift audit on a Python file BEFORE
+    executing, testing, or importing it ... catches the bug class where a
+    function/dataclass field/self. attribute is renamed partway through a
+    rewrite and a call site keeps the old name, which Python only surfaces at
+    runtime as NameError/TypeError/AttributeError ..."
+  ---
+Body sections (paraphrase is fine — content matters, byte-identity does not):
+  - WHY: same bug class recurred >=5 times; rename that didn't propagate;
+    discovered only at runtime, sometimes at the recursion limit.
+    Past incidents: error_distill.py normalize_error vs normalize_error_head;
+    KnownFix(root_error=) vs field root_cause; DistillLesson(source=1) vs field
+    source_task_id; add_attempt 7-vs-8 positional; detect_collapse window vs
+    n_samples; pm_web/service.py page(...) vs stale shell(...) callers.
+  - WHEN: run scripts/audit_refs.py (1) right after writing/rewriting a .py
+    (before first pytest / python -c / service start), (2) after any "rewrite
+    cleanly" pass, (3) after any signature rename — re-audit every caller file,
+    (4) before moving on in a multi-file build.
+  - HOW: python3 scripts/audit_refs.py file.py [files...]; exit 0 = clean
+    (still run real tests), exit 1 = findings to fix.
+  - SCOPE: single-file; catches undefined-call, bad-keyword,
+    too-many-positional, missing-required, self-attr-missing. Does NOT resolve
+    cross-file/imports, kwargs/args spread, getattr, decorators, non-self calls.
+    Clean = this class absent, NOT proof of correctness.
+
+File B: /home/taza/repo/tools/code-consistency-check/scripts/audit_refs.py
+A pure-stdlib, single-file AST checker with these semantics:
+  - Parse the file; collect signatures of every top-level function and class,
+    and of every @dataclass class (its annotated fields = its required params).
+  - Walk every Call. For a plain-name call to a locally-defined target, verify:
+      * no keyword arg is a name the target doesn't have  -> bad-keyword
+      * positional count <= target's max positional       -> too-many-positional
+      * every required param is satisfied by position or keyword
+                                                          -> missing-required
+    For a call to an undefined name (not builtin, not imported, not a param,
+    not private) emit undefined-call.
+  - Walk each class for self.attr reads never assigned in that class
+    (skip dataclass/annotated fields, self-methods, __class__/__dict__) -> self-attr-missing.
+  - Output: "path: N finding(s)" + one line per finding; exit 0 clean, exit 1
+    findings. The list MUST not crash on any file containing classes/dataclasses.
+
+Note for a fresh instance: do NOT hand-write from memory and hope for an exact
+hash — just build a correct, self-tested checker (the functional test below
+defines correctness).
+
+========================================================================
+STEP 2 — SELF-TEST THE CHECKER (stop if any of these deviate)
+========================================================================
+Positive control (MUST find missing-required for b, exit 1):
+  write /tmp/broken.py  -> def f(a,b): pass  /  def g(): return f(1)
+  python3 scripts/audit_refs.py /tmp/broken.py   # expect 1 finding, exit 1
+
+No-crash + emits clean on real files (exit 0):
+  python3 /home/taza/repo/tools/code-consistency-check/scripts/audit_refs.py \
+    /home/taza/repo/job_runner/scheduler/error_distill.py \
+    /home/taza/repo/job_runner/scheduler/research.py \
+    /home/taza/pm_web/service.py
+  (controller.py likewise if it exists.)
+
+========================================================================
+STEP 3 — APPLY THE REAL FIX IT SHOULD CATCH (service shell->project_page)
+========================================================================
+pm_web/service.py historically defined a helper named (say) project_page(...)
+but its two route handlers called it by a different, undefined name (shell) —
+a rename that never propagated.
+Check:  grep -n "def preset_page\|def shell\|return shell(" pm_web/service.py
+Fix the two call sites so the route handlers call the real helper (same name
+and same argument list as its def). Re-run the audit until service.py is clean.
+Confirm the service still imports and serves /architecture and /kanban 200.
+
+========================================================================
+STEP 4 — PERSIST THE RULE
+========================================================================
+Add/replace the "Code consistency check" block in /home/taza/repo/CLAUDE.md:
+  Before running pytest / python -c / starting a service against any .py you
+  just wrote or edited, run:
+    python3 /home/taza/repo/tools/code-consistency-check/scripts/audit_refs.py <file.py>
+  Fix every finding before testing. Point to SKILL.md for rationale.
+
+========================================================================
+ACCEPTANCE (prove it, don't claim it)
+========================================================================
+- The two tool files exist under tools/code-consistency-check/.
+- Positive control prints exactly 1 finding (missing required).
+- All listed real files audit clean with exit 0 (no crash).
+- grep shows service.py now calls the real helper; service re-audits clean and
+  /architecture + /kanban return 200.
+========================================================================

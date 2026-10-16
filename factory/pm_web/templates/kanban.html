@@ -1,0 +1,367 @@
+<div id="board" style="display:flex;gap:14px;align-items:stretch;overflow-x:auto;overflow-y:auto;max-height:calc(100vh - 72px);padding-bottom:10px;width:100%"></div>
+
+<div id="modal-wrap" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:100;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:14px;padding:22px;width:440px;max-width:92vw;max-height:92vh;overflow:auto;box-shadow:0 20px 50px rgba(15,23,42,.25)">
+    <h3 id="modal-title" style="margin:0 0 14px;font-size:19px">New card</h3>
+    <label class="muted small" style="display:block;margin-bottom:4px">Title *</label>
+    <input id="f-title" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:9px;font:inherit" placeholder="Short imperative task">
+    <label class="muted small" style="display:block;margin:12px 0 4px">Description</label>
+    <textarea id="f-desc" rows="8" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:9px;font:inherit"></textarea>
+    <p class="muted small" style="margin:6px 0 0">Rich text: <code>**bold**</code>, <code>*italic*</code>, <code>`code`</code>, <code>[link](https://…)</code>, <code>- bullet</code>, <code>## heading</code>.</p>
+    <div style="display:flex;gap:12px;margin-top:12px">
+      <div style="flex:1">
+        <label class="muted small">Priority</label>
+        <select id="f-pri" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:9px;font:inherit">
+          <option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option>
+        </select>
+      </div>
+      <div style="flex:1">
+        <label class="muted small">Column</label>
+        <select id="f-col" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:9px;font:inherit"></select>
+      </div>
+    </div>
+    <label class="muted small" style="display:block;margin:12px 0 4px">Depends on (select one or more)</label>
+    <select id="f-deps" multiple size="5" style="width:100%;padding:6px;border:1px solid var(--line);border-radius:9px;font:inherit"></select>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px">
+      <button onclick="closeModal()" style="padding:9px 16px;border:1px solid var(--line);border-radius:9px;background:#fff;cursor:pointer;font:inherit">Cancel</button>
+      <button onclick="saveCard()" style="padding:9px 16px;border:none;border-radius:9px;background:#0f766e;color:#fff;font-weight:600;cursor:pointer">Save</button>
+    </div>
+    <input type="hidden" id="f-cardid">
+  </div>
+</div>
+
+<style>
+main{padding:12px 18px 24px}
+.column{background:#eef2f7;border:1px solid var(--line);border-radius:14px;flex:1 1 0;min-width:240px;padding:10px}
+.col-head{display:flex;align-items:center;gap:6px;margin-bottom:10px;position:sticky;top:0;background:#eef2f7;z-index:2000;padding:2px 0 8px;border-bottom:1px solid var(--line)}
+.col-title{font-weight:700;font-size:14px}
+.count{background:#e2e7ef;border-radius:20px;padding:1px 8px;font-size:11.5px;color:var(--muted)}
+.col-sort{border:1px solid var(--line);background:#fff;border-radius:7px;padding:0 7px;font-size:11px;cursor:pointer;color:var(--muted);line-height:17px}
+.col-menu{position:relative}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;cursor:pointer;box-shadow:0 1px 2px rgba(15,23,42,.05);position:relative}
+.card.collapsed{padding:9px 10px 8px;display:block;font-size:13px}
+.card.collapsed .c-row{display:flex;align-items:center;gap:7px}
+.card.collapsed .t{font-weight:600;font-size:13px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.card.collapsed .preview{font-size:11.5px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.35;margin-top:3px}
+.card.collapsed .depbadge{font-size:10px;font-weight:700;color:#b45309;flex:0 0 auto}
+.card.collapsed + .card.collapsed{margin-top:-5px}
+.col-head + .card.collapsed{margin-top:0}
+.card.expanded{margin:8px 0;padding:11px 12px;z-index:1000}
+.card-head{display:flex;align-items:center;gap:7px;margin-bottom:4px}
+.card-head .t{font-weight:600;font-size:14px;flex:1}
+.card-x{border:none;background:none;font-size:16px;line-height:1;cursor:pointer;color:var(--muted);padding:0 4px}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:0 0 8px}
+.dot.hi{background:#b91c1c}.dot.med{background:#b45309}.dot.lo{background:#1e40af}
+.card .d{font-size:12.5px;color:var(--muted);margin-bottom:6px;overflow-wrap:break-word;word-break:break-word}
+.card .d ul{margin:4px 0;padding-left:18px}
+.card .d li{margin:1px 0}
+.card .d p{margin:0 0 4px}
+.card .d code{background:#eef2f7;border-radius:4px;padding:0 4px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px}
+.card .d a{color:#0f766e}
+.card .d h1,.card .d h2,.card .d h3{font-size:13px;margin:4px 0 2px;font-weight:700}
+.deps{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}
+.dep{font-size:11px;background:#eef2f7;border:1px solid var(--line);border-radius:20px;padding:1px 8px;color:var(--muted)}
+.dep.done{background:#dcfce7;color:#15803d;border-color:#bbf7d0}
+.dep-title{font-size:10.5px;font-weight:700;color:var(--muted);margin:6px 0 2px}
+.mv{display:flex;gap:2px;flex:0 0 auto}
+.mv button{font-size:10px;border:1px solid var(--line);background:#fff;border-radius:5px;padding:0 5px;cursor:pointer;color:var(--muted);line-height:16px}
+.card .ops{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.card .ops button{font-size:11.5px;border:1px solid var(--line);background:#fff;border-radius:6px;padding:2px 7px;cursor:pointer}
+.dropdown{display:none;position:absolute;right:0;top:20px;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(15,23,42,.12);min-width:150px;z-index:30}
+.dropdown button{display:block;width:100%;text-align:left;padding:8px 12px;border:none;background:none;cursor:pointer;font:inherit;font-size:13px}
+.dropdown button:hover{background:#f1f5f9}
+</style>
+
+<script>
+var state={cols:[],open:{},byId:{}};
+var PRI={low:'lo',medium:'med',high:'hi'};
+var RANK={high:2,medium:1,low:0};
+
+function esc(s){var t=document.createElement('span');t.textContent=s==null?'':s;return t.innerHTML;}
+function plain(s){return (s||'').replace(/\*\*|`|~~/g,'').replace(/^#{1,3}\s+/gm,'').replace(/\[([^\]]+)\]\([^)]+\)/g,'$1');}
+
+function inlineRich(s){
+  s = s.replace(/(^|[^`])`([^`\n]+)`/g, '$1<code>$2</code>');
+  s = s.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>');
+  s = s.replace(/(^|[^_])_([^_\n]+)_(?!_)/g, '$1<em>$2</em>');
+  s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  s = s.replace(/~~([^~\n]+)~~/g, '<s>$1</s>');
+  return s;
+}
+
+function renderRich(txt){
+  var lines = esc(txt).split('\n');
+  var html = '', inList = false;
+  for (var i = 0; i < lines.length; i++){
+    var raw = lines[i];
+    var line = raw.trim();
+    if (/^[-*]\s+/.test(line)){
+      if (!inList){ html += '<ul>'; inList = true; }
+      html += '<li>' + inlineRich(line.replace(/^[-*]\s+/, '')) + '</li>';
+      continue;
+    }
+    if (inList){ html += '</ul>'; inList = false; }
+    if (line === ''){ html += '<p></p>'; continue; }
+    var m = line.match(/^(#{1,3})\s+(.*)$/);
+    if (m){ html += '<h' + m[1].length + '>' + inlineRich(m[2]) + '</h' + m[1].length + '>'; continue; }
+    html += '<div>' + inlineRich(raw) + '</div>';
+  }
+  if (inList) html += '</ul>';
+  return html;
+}
+
+function openDeps(cd){
+  var ids=(cd.deps||'').split(',').map(function(s){return parseInt(s,10);}).filter(function(n){return n;});
+  var n=0;
+  ids.forEach(function(id){ var x=state.byId[id]; if(x && x.column_name!=='Done') n++; });
+  return n;
+}
+
+function depChips(cd){
+  var ids = (cd.deps||'').split(',').map(function(s){return parseInt(s,10);}).filter(function(n){return n;});
+  if (!ids.length) return '';
+  var html = '<div class="dep-title">DEPENDS ON</div><div class="deps">';
+  ids.forEach(function(id){
+    var t = state.byId[id];
+    if (!t) return;
+    var done = t.column_name === 'Done';
+    html += '<span class="dep'+(done?' done':'')+'">'+(done?'✓ ':'')+esc(t.title)+'</span>';
+  });
+  html += '</div>';
+  return html;
+}
+
+function cardEl(cd, idx, total){
+  var d = document.createElement('div');
+  d.className = 'card ' + (state.open[cd.id] ? 'expanded' : 'collapsed');
+  d.dataset.id = cd.id;
+  d.style.zIndex = state.open[cd.id] ? 1000 : (total - idx);
+  var dot = '<span class="dot '+PRI[cd.priority]+'"></span>';
+  if (state.open[cd.id]){
+    d.innerHTML = '<div class="card-head" data-tg="1">'+dot+'<span class="t">'+esc(cd.title)+'</span><button type="button" class="card-x" data-tg="1" title="collapse">−</button></div>'+
+      (cd.description ? '<div class="d">'+renderRich(cd.description)+'</div>' : '')+
+      depChips(cd)+
+      '<div class="ops">'+
+        '<button type="button" data-up="1" title="move up">▲</button>'+
+        '<button type="button" data-down="1" title="move down">▼</button>'+
+        '<button type="button" data-m="left" title="move to previous column">◀</button>'+
+        '<button type="button" data-m="right" title="move to next column">▶</button>'+
+        '<button type="button" data-e="1" title="edit">✎</button>'+
+        '<button type="button" data-v="1" title="delete" style="color:#b91c1c">✕</button></div>';
+  } else {
+    var open = openDeps(cd);
+    var preview = cd.description ? '<div class="preview">'+esc(plain(cd.description))+'</div>' : '';
+    d.innerHTML = '<div class="c-row">'+dot+'<span class="t">'+esc(cd.title)+'</span>'+(open?'<span class="depbadge">&#9888; '+open+'</span>':'')+'<span class="mv"><button type="button" data-m="left" title="move left">&#9664;</button><button type="button" data-m="right" title="move right">&#9654;</button></span></div>'+preview;
+  }
+  d.addEventListener('click', function(e){
+    if (e.target.closest('[data-tg]')){ toggle(cd.id); return; }
+    if (e.target.closest('[data-m]')){ step(cd.id, e.target.closest('[data-m]').dataset.m==='left'?-1:1); return; }
+    if (e.target.closest('[data-up]')){ moveUp(cd.id); return; }
+    if (e.target.closest('[data-down]')){ moveDown(cd.id); return; }
+    if (e.target.closest('[data-e]')){ openModal(cd); return; }
+    if (e.target.closest('[data-v]')){ if(confirm('Delete "'+cd.title+'"?')) delCard(cd.id); }
+    else if (!state.open[cd.id]){ toggle(cd.id); }
+  });
+  return d;
+}
+
+function toggle(id){
+  if (state.open[id]){ delete state.open[id]; }
+  else {
+    var fc = findCard(id);
+    if (fc){ fc.col.cards.forEach(function(x){ delete state.open[x.id]; }); }
+    state.open[id] = true;
+  }
+  renderBoard();
+}
+
+function load(){
+  fetch('/api/sprinttracker/board').then(function(r){return r.json();}).then(function(d){
+    state.cols = d.map(function(c){
+      c.cards.forEach(function(x){ x.column_name = c.name; });
+      return c;
+    });
+    renderBoard(); fillCols();
+  });
+}
+
+function colOptions(){
+  var s = document.getElementById('f-col'); s.innerHTML='';
+  state.cols.forEach(function(c){ var o=document.createElement('option'); o.value=c.id; o.textContent=c.name; s.appendChild(o); });
+}
+function fillCols(){
+  colOptions();
+  var sd = document.getElementById('f-deps'); sd.innerHTML='';
+  state.cols.forEach(function(c){ c.cards.forEach(function(x){
+    var o=document.createElement('option'); o.value=x.id; o.textContent=c.name+' · '+x.title; sd.appendChild(o);
+  });});
+}
+
+function renderBoard(){
+  state.byId = {};
+  state.cols.forEach(function(c){ c.cards.forEach(function(x){ state.byId[x.id]=x; }); });
+  var b = document.getElementById('board'); b.innerHTML='';
+  state.cols.forEach(function(c){
+    var el = document.createElement('div'); el.className='column'; el.dataset.col=c.id;
+    var head = document.createElement('div'); head.className='col-head'; head.dataset.col=c.id;
+    head.innerHTML = '<span class="col-title">'+esc(c.name)+'</span>'+
+      '<span class="count">'+c.cards.length+'</span>'+
+      '<button type="button" class="col-sort" data-sort="'+c.id+'" title="Sort by priority (high first)">⇅</button>'+
+      '<span class="col-menu"><button type="button" class="menu-btn">⋯</button>'+
+      '<div class="dropdown">'+
+      '<button data-act="left">◀ Move left</button>'+
+      '<button data-act="right">Move right ▶</button>'+
+      '<button data-act="rename">Rename</button>'+
+      '<button data-act="del">Delete column</button></div></span>';
+    el.appendChild(head);
+    c.cards.forEach(function(cd, i){ el.appendChild(cardEl(cd, i, c.cards.length)); });
+
+    el.addEventListener('click', function(e){
+      var sort = e.target.closest('[data-sort]');
+      if (sort){ sortByPriority(parseInt(sort.dataset.sort,10)); return; }
+      var btn = e.target.closest('.menu-btn');
+      if (btn){ var dd = btn.parentNode.querySelector('.dropdown'); dd.style.display = dd.style.display==='block'?'none':'block'; return; }
+      var act = e.target.closest('[data-act]');
+      if (act){
+        var name = c.name;
+        if (act.dataset.act==='rename'){ var n=prompt('Rename column',name); if(n&&n.trim()) renameColumn(c.id,n.trim()); }
+        if (act.dataset.act==='del'){ if(confirm('Delete column "'+name+'"? Its cards move to the first column.')) delColumn(c.id); }
+        if (act.dataset.act==='left'){ moveColumn(c.id,-1); }
+        if (act.dataset.act==='right'){ moveColumn(c.id,1); }
+      }
+    });
+    b.appendChild(el);
+  });
+  document.querySelectorAll('.dropdown').forEach(function(dd){ dd.style.display='none'; });
+}
+
+function colIndex(id){ return state.cols.findIndex(function(c){ return c.id===id; }); }
+function findCard(id){
+  for (var i=0;i<state.cols.length;i++){
+    var f = state.cols[i].cards.find(function(x){ return x.id===id; });
+    if (f) return {card:f, col:state.cols[i]};
+  }
+  return null;
+}
+function step(id, dir){
+  var fc = findCard(id); if(!fc) return;
+  var ci = colIndex(fc.col.id); var nc = state.cols[ci+dir]; if(!nc) return;
+  fc.col.cards = fc.col.cards.filter(function(x){ return x.id!==id; });
+  nc.cards.push(fc.card);
+  persistOrder();
+  renderBoard();
+}
+function moveUp(id){
+  var fc = findCard(id); if(!fc) return;
+  var arr = fc.col.cards, i = arr.findIndex(function(x){ return x.id===id; });
+  if (i<=0) return;
+  var tmp = arr[i-1]; arr[i-1] = arr[i]; arr[i] = tmp;
+  persistOrder();
+  renderBoard();
+}
+function moveDown(id){
+  var fc = findCard(id); if(!fc) return;
+  var arr = fc.col.cards, i = arr.findIndex(function(x){ return x.id===id; });
+  if (i<0 || i>=arr.length-1) return;
+  var tmp = arr[i+1]; arr[i+1] = arr[i]; arr[i] = tmp;
+  persistOrder();
+  renderBoard();
+}
+function sortByPriority(colId){
+  var c = state.cols.find(function(x){ return x.id===colId; }); if(!c) return;
+  c.cards.sort(function(a,b){
+    var d = RANK[b.priority]-RANK[a.priority];
+    if (d!==0) return d;
+    return (a.position||0)-(b.position||0);
+  });
+  persistOrder();
+  renderBoard();
+}
+function persistOrder(){
+  var payload = {columns: state.cols.map(function(c){
+    return {column_id:c.id, card_ids:c.cards.map(function(x){ return x.id; })};
+  })};
+  fetch('/api/sprinttracker/reorder',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).catch(function(){});
+}
+
+function reorderColumn(id, targetId){
+  var idx = colIndex(id), ti = colIndex(targetId);
+  if (idx<0||ti<0||idx===ti) return;
+  var ids = state.cols.map(function(c){ return c.id; });
+  ids.splice(idx,1); ids.splice(ti,0,id);
+  apiP('/api/sprinttracker/columns/'+id,{position:ids.indexOf(id)},'PATCH').then(load);
+}
+function moveColumn(id, dir){
+  var idx = colIndex(id), ni = idx+dir;
+  if (ni<0||ni>=state.cols.length) return;
+  reorderColumn(id, state.cols[ni].id);
+}
+
+function openModal(cd){
+  document.getElementById('modal-wrap').style.display='flex';
+  document.getElementById('modal-title').textContent = cd ? 'Edit card' : 'New card';
+  document.getElementById('f-title').value = cd ? cd.title : '';
+  document.getElementById('f-desc').value = cd ? cd.description : '';
+  document.getElementById('f-pri').value = cd ? cd.priority : 'medium';
+  document.getElementById('f-col').value = cd ? cd.column_id : (state.cols[0] ? state.cols[0].id : '');
+  document.getElementById('f-cardid').value = cd ? cd.id : '';
+  var deps = (cd && cd.deps ? cd.deps : '').split(',').map(function(s){ return s.trim(); });
+  var sd = document.getElementById('f-deps');
+  for (var i=0;i<sd.options.length;i++){ sd.options[i].selected = deps.indexOf(sd.options[i].value) >= 0; }
+  document.getElementById('f-title').focus();
+}
+function closeModal(){ document.getElementById('modal-wrap').style.display='none'; }
+
+async function saveCard(){
+  var title = document.getElementById('f-title').value.trim();
+  if (!title){ alert('Title is required'); return; }
+  var sd = document.getElementById('f-deps'); var deps = [];
+  for (var i=0;i<sd.options.length;i++){ if (sd.options[i].selected) deps.push(sd.options[i].value); }
+  var body = {title:title, description:document.getElementById('f-desc').value,
+    priority:document.getElementById('f-pri').value,
+    column_id:parseInt(document.getElementById('f-col').value,10),
+    deps:deps.join(',')};
+  var id = document.getElementById('f-cardid').value;
+  if (id){ await apiP('/api/sprinttracker/cards/'+id, body, 'PATCH'); }
+  else { await apiP('/api/sprinttracker/cards', body, 'POST'); }
+  closeModal(); load();
+}
+function apiP(url, body, method){
+  return fetch(url,{method:method,headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(function(r){ if(!r.ok) throw new Error(url); return r.json(); });
+}
+function delCard(id){ return fetch('/api/sprinttracker/cards/'+id,{method:'DELETE'}).then(load); }
+function addColumn(){
+  var n = document.getElementById('new-col').value.trim();
+  if (!n) return;
+  return apiP('/api/sprinttracker/columns',{name:n},'POST').then(function(){ document.getElementById('new-col').value=''; load(); });
+}
+function renameColumn(id, name){ return apiP('/api/sprinttracker/columns/'+id,{name:name},'PATCH').then(load); }
+function delColumn(id){ return fetch('/api/sprinttracker/columns/'+id,{method:'DELETE'}).then(load); }
+
+document.addEventListener('click', function(e){
+  if (!e.target.closest('.col-menu')) document.querySelectorAll('.dropdown').forEach(function(x){ x.style.display='none'; });
+});
+document.getElementById('modal-wrap').addEventListener('click', function(e){ if (e.target===this) closeModal(); });
+load();
+</script>
+
+<!-- QC bootstrap: camera floats over the board; one card at a time. -->
+<script>
+(function(){
+  function mount(){
+    if(document.getElementById("qc-ov")) return;
+    var c=document.querySelector("[data-qc-card]");
+    var card=c?c.getAttribute("data-qc-card"):"";
+    var dish=c?c.getAttribute("data-qc-dish"):"";
+    var f=document.createElement("iframe"); f.id="qc-ov";
+    f.src="http://"+location.hostname+":8090/qc/capture?card_id="+encodeURIComponent(card)
+        +"&dish="+encodeURIComponent(dish);
+    f.style.cssText="position:fixed;right:16px;bottom:16px;width:380px;height:520px;border:0;z-index:2147483647;background:transparent";
+    document.body.appendChild(f);
+  }
+  window.addEventListener("load", function(){ setTimeout(mount, 1200); });
+  window.qcMount = mount;
+})();
+</script>

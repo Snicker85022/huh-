@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd /home/taza/pm_web
+git diff --cached --name-only --diff-filter=ACM -- '*.py' | xargs -r -I{} python3 -m py_compile {}

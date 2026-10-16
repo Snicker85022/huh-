@@ -1,0 +1,14 @@
+[Unit]
+Description=rules door - single whitelisted HTTP door to factory rules (:8099)
+After=network.target
+
+[Service]
+Type=simple
+User=taza
+WorkingDirectory=/home/taza/repo/factory/rules-door
+ExecStart=/usr/bin/python3 /home/taza/repo/factory/rules-door/serve_rules.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
